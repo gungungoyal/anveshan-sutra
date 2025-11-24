@@ -23,9 +23,9 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/org-profile" element={<OrgProfile />} />
-            <Route path="/org-submit" element={<OrgSubmit />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/org-profile/:id" element={<OrgProfile />} />
+          <Route path="/org-submit" element={<OrgSubmit />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
