@@ -70,7 +70,8 @@ export default function Dashboard() {
           <div className="mb-12">
             <h1 className="text-display-md mb-2 text-foreground">Dashboard</h1>
             <p className="text-lg text-muted-foreground">
-              Search for organizations, view alignments, and discover partnership opportunities.
+              Search for organizations, view alignments, and discover
+              partnership opportunities.
             </p>
           </div>
 
@@ -143,17 +144,28 @@ export default function Dashboard() {
           {/* Quick Stats */}
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <div className="p-6 bg-card rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground mb-2">Organizations Found</p>
-              <p className="text-3xl font-bold text-foreground">{results.length}</p>
-            </div>
-            <div className="p-6 bg-card rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground mb-2">Verified Organizations</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                Organizations Found
+              </p>
               <p className="text-3xl font-bold text-foreground">
-                {results.filter((r) => r.verificationStatus === "verified").length}
+                {results.length}
               </p>
             </div>
             <div className="p-6 bg-card rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground mb-2">Best Alignment</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                Verified Organizations
+              </p>
+              <p className="text-3xl font-bold text-foreground">
+                {
+                  results.filter((r) => r.verificationStatus === "verified")
+                    .length
+                }
+              </p>
+            </div>
+            <div className="p-6 bg-card rounded-lg border border-border">
+              <p className="text-sm text-muted-foreground mb-2">
+                Best Alignment
+              </p>
               <p className="text-3xl font-bold text-primary">
                 {results.length > 0 ? Math.round(results[0].alignmentScore) : 0}
               </p>
@@ -163,7 +175,9 @@ export default function Dashboard() {
           {/* Results */}
           {hasSearched && results.length > 0 ? (
             <div className="space-y-4 mb-12">
-              <h2 className="text-heading-md text-foreground">Search Results</h2>
+              <h2 className="text-heading-md text-foreground">
+                Search Results
+              </h2>
               {results.map((org) => (
                 <Link
                   key={org.id}
@@ -173,7 +187,9 @@ export default function Dashboard() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-heading-md text-foreground">{org.name}</h3>
+                        <h3 className="text-heading-md text-foreground">
+                          {org.name}
+                        </h3>
                         {org.verificationStatus === "verified" && (
                           <span className="px-3 py-1 bg-accent/10 text-accent text-xs rounded-full font-semibold">
                             Verified
@@ -183,7 +199,9 @@ export default function Dashboard() {
                       <p className="text-sm text-muted-foreground mb-3">
                         {org.type} • {org.headquarters} • {org.region}
                       </p>
-                      <p className="text-foreground line-clamp-2">{org.description}</p>
+                      <p className="text-foreground line-clamp-2">
+                        {org.description}
+                      </p>
                       <div className="flex items-center gap-4 mt-3">
                         <div className="text-sm text-muted-foreground">
                           {org.focusAreas.slice(0, 2).join(", ")}
@@ -223,7 +241,9 @@ export default function Dashboard() {
                           </span>
                         </div>
                       </div>
-                      <span className="text-xs text-muted-foreground">Match</span>
+                      <span className="text-xs text-muted-foreground">
+                        Match
+                      </span>
                     </div>
                   </div>
                 </Link>
@@ -234,9 +254,12 @@ export default function Dashboard() {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertCircle className="w-8 h-8 text-primary" />
               </div>
-              <h2 className="text-heading-md mb-2 text-foreground">No Results Found</h2>
+              <h2 className="text-heading-md mb-2 text-foreground">
+                No Results Found
+              </h2>
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Try adjusting your search filters or keywords to find organizations.
+                Try adjusting your search filters or keywords to find
+                organizations.
               </p>
             </div>
           ) : null}
@@ -246,17 +269,22 @@ export default function Dashboard() {
             <div className="p-6 bg-card rounded-lg border border-border">
               <div className="flex items-center gap-2 mb-4">
                 <Heart className="w-5 h-5 text-accent" />
-                <h3 className="text-heading-md text-foreground">Saved Organizations</h3>
+                <h3 className="text-heading-md text-foreground">
+                  Saved Organizations
+                </h3>
               </div>
               <p className="text-muted-foreground mb-4">
-                No saved organizations yet. Click the heart icon on any organization to save it.
+                No saved organizations yet. Click the heart icon on any
+                organization to save it.
               </p>
             </div>
 
             <div className="p-6 bg-card rounded-lg border border-border">
               <div className="flex items-center gap-2 mb-4">
                 <Clock className="w-5 h-5 text-primary" />
-                <h3 className="text-heading-md text-foreground">Recent Activity</h3>
+                <h3 className="text-heading-md text-foreground">
+                  Recent Activity
+                </h3>
               </div>
               <p className="text-muted-foreground mb-4">
                 Your recent searches and actions will appear here.

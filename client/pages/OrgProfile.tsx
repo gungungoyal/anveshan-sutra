@@ -1,5 +1,12 @@
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Download, Share2, FileText, CheckCircle, Loader } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Share2,
+  FileText,
+  CheckCircle,
+  Loader,
+} from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useEffect, useState } from "react";
@@ -57,8 +64,12 @@ export default function OrgProfile() {
               Back to Dashboard
             </Link>
             <div className="text-center p-12">
-              <h1 className="text-heading-lg text-foreground mb-2">Organization Not Found</h1>
-              <p className="text-muted-foreground">The organization you're looking for doesn't exist.</p>
+              <h1 className="text-heading-lg text-foreground mb-2">
+                Organization Not Found
+              </h1>
+              <p className="text-muted-foreground">
+                The organization you're looking for doesn't exist.
+              </p>
             </div>
           </div>
         </main>
@@ -87,7 +98,9 @@ export default function OrgProfile() {
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-6">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-display-md text-foreground">{org.name}</h1>
+                  <h1 className="text-display-md text-foreground">
+                    {org.name}
+                  </h1>
                   {org.verificationStatus === "verified" && (
                     <div className="px-3 py-1 bg-accent/10 text-accent text-sm rounded-full font-semibold flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
@@ -118,7 +131,9 @@ export default function OrgProfile() {
 
           {/* Alignment Score Ring */}
           <div className="bg-card rounded-xl border border-border p-8 mb-8">
-            <h2 className="text-heading-md mb-6 text-foreground">Alignment Score</h2>
+            <h2 className="text-heading-md mb-6 text-foreground">
+              Alignment Score
+            </h2>
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="relative w-32 h-32">
                 <svg className="w-full h-full" viewBox="0 0 120 120">
@@ -145,14 +160,16 @@ export default function OrgProfile() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-3xl font-bold text-primary">{Math.round(org.alignmentScore)}</span>
+                  <span className="text-3xl font-bold text-primary">
+                    {Math.round(org.alignmentScore)}
+                  </span>
                 </div>
               </div>
               <div className="flex-1">
                 <p className="text-muted-foreground mb-4">
-                  Strong alignment with your search criteria. This organization matches on focus
-                  areas, geographic regions, and funding type, making it a great collaboration
-                  opportunity.
+                  Strong alignment with your search criteria. This organization
+                  matches on focus areas, geographic regions, and funding type,
+                  making it a great collaboration opportunity.
                 </p>
                 <div className="space-y-2">
                   <div>
@@ -174,13 +191,17 @@ export default function OrgProfile() {
           {/* Organization Details */}
           <div className="grid md:grid-cols-2 gap-8 mb-8">
             <div className="bg-card rounded-xl border border-border p-8">
-              <h3 className="text-heading-md mb-4 text-foreground">Mission Statement</h3>
+              <h3 className="text-heading-md mb-4 text-foreground">
+                Mission Statement
+              </h3>
               <p className="text-foreground mb-4">{org.mission}</p>
               <p className="text-muted-foreground text-sm">{org.description}</p>
             </div>
 
             <div className="bg-card rounded-xl border border-border p-8">
-              <h3 className="text-heading-md mb-4 text-foreground">Key Information</h3>
+              <h3 className="text-heading-md mb-4 text-foreground">
+                Key Information
+              </h3>
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Type</p>
@@ -188,15 +209,21 @@ export default function OrgProfile() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Headquarters</p>
-                  <p className="font-semibold text-foreground">{org.headquarters}</p>
+                  <p className="font-semibold text-foreground">
+                    {org.headquarters}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Focus Areas</p>
-                  <p className="font-semibold text-foreground">{org.focusAreas.join(", ")}</p>
+                  <p className="font-semibold text-foreground">
+                    {org.focusAreas.join(", ")}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Funding Type</p>
-                  <p className="font-semibold text-foreground capitalize">{org.fundingType}</p>
+                  <p className="font-semibold text-foreground capitalize">
+                    {org.fundingType}
+                  </p>
                 </div>
               </div>
             </div>
@@ -205,23 +232,39 @@ export default function OrgProfile() {
           {/* Sections */}
           <div className="space-y-8">
             <div className="bg-card rounded-xl border border-border p-8">
-              <h3 className="text-heading-md mb-4 text-foreground">Programs & Projects</h3>
+              <h3 className="text-heading-md mb-4 text-foreground">
+                Programs & Projects
+              </h3>
               <div className="space-y-4">
                 {org.projects.map((project, index) => (
-                  <div key={index} className="pb-4 border-b border-border last:border-0">
-                    <h4 className="font-semibold text-foreground mb-1">{project.title}</h4>
-                    <p className="text-sm text-muted-foreground mb-2">{project.year}</p>
-                    <p className="text-foreground text-sm">{project.description}</p>
+                  <div
+                    key={index}
+                    className="pb-4 border-b border-border last:border-0"
+                  >
+                    <h4 className="font-semibold text-foreground mb-1">
+                      {project.title}
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {project.year}
+                    </p>
+                    <p className="text-foreground text-sm">
+                      {project.description}
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="bg-card rounded-xl border border-border p-8">
-              <h3 className="text-heading-md mb-4 text-foreground">Partnership History</h3>
+              <h3 className="text-heading-md mb-4 text-foreground">
+                Partnership History
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {org.partnerHistory.map((partner, index) => (
-                  <span key={index} className="px-3 py-2 bg-secondary rounded-lg text-sm text-foreground">
+                  <span
+                    key={index}
+                    className="px-3 py-2 bg-secondary rounded-lg text-sm text-foreground"
+                  >
                     {partner}
                   </span>
                 ))}
@@ -229,10 +272,15 @@ export default function OrgProfile() {
             </div>
 
             <div className="bg-card rounded-xl border border-border p-8">
-              <h3 className="text-heading-md mb-4 text-foreground">Target Beneficiaries</h3>
+              <h3 className="text-heading-md mb-4 text-foreground">
+                Target Beneficiaries
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {org.targetBeneficiaries.map((beneficiary, index) => (
-                  <span key={index} className="px-3 py-2 bg-primary/10 text-primary rounded-lg text-sm">
+                  <span
+                    key={index}
+                    className="px-3 py-2 bg-primary/10 text-primary rounded-lg text-sm"
+                  >
                     {beneficiary}
                   </span>
                 ))}
@@ -242,9 +290,12 @@ export default function OrgProfile() {
 
           {/* Contact CTA */}
           <div className="mt-12 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-8 text-center">
-            <h3 className="text-heading-md mb-2 text-foreground">Ready to Connect?</h3>
+            <h3 className="text-heading-md mb-2 text-foreground">
+              Ready to Connect?
+            </h3>
             <p className="text-muted-foreground mb-6">
-              Generate a personalized proposal or email draft to start the conversation.
+              Generate a personalized proposal or email draft to start the
+              conversation.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold">

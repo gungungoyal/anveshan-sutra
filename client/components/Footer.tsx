@@ -35,24 +35,29 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           {/* Brand Section */}
           <div className="md:col-span-1">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="flex items-center gap-2 font-bold text-xl text-primary hover:opacity-80 transition-opacity mb-4"
             >
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-black text-sm">AR</span>
+                <span className="text-primary-foreground font-black text-sm">
+                  AR
+                </span>
               </div>
               <span>Anveshan</span>
             </Link>
             <p className="text-muted-foreground text-sm">
-              Discover, evaluate, and partner with the right organizations in minutes.
+              Discover, evaluate, and partner with the right organizations in
+              minutes.
             </p>
           </div>
 
           {/* Links Sections */}
           {sections.map((section) => (
             <div key={section.title}>
-              <h3 className="font-semibold text-foreground mb-4">{section.title}</h3>
+              <h3 className="font-semibold text-foreground mb-4">
+                {section.title}
+              </h3>
               <ul className="space-y-3">
                 {section.links.map((link) => (
                   <li key={link.href}>

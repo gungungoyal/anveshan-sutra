@@ -17,12 +17,14 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
       <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo */}
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="flex items-center gap-2 font-bold text-2xl text-primary hover:opacity-80 transition-opacity"
         >
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-black text-sm">AR</span>
+            <span className="text-primary-foreground font-black text-sm">
+              AR
+            </span>
           </div>
           <span className="hidden sm:inline">Anveshan</span>
         </Link>

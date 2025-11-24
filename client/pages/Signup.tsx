@@ -13,12 +13,16 @@ export default function Signup() {
           <div className="grid md:grid-cols-2 gap-12">
             {/* Left Side - Benefits */}
             <div className="hidden md:block">
-              <h2 className="text-heading-lg mb-8 text-foreground">Why join Anveshan?</h2>
+              <h2 className="text-heading-lg mb-8 text-foreground">
+                Why join Anveshan?
+              </h2>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
                   <div>
-                    <p className="font-semibold text-foreground">Discover Verified Partners</p>
+                    <p className="font-semibold text-foreground">
+                      Discover Verified Partners
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       Access a curated database of verified organizations
                     </p>
@@ -27,7 +31,9 @@ export default function Signup() {
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
                   <div>
-                    <p className="font-semibold text-foreground">Smart Alignment Scoring</p>
+                    <p className="font-semibold text-foreground">
+                      Smart Alignment Scoring
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       Get instant compatibility scores with visual insights
                     </p>
@@ -36,7 +42,9 @@ export default function Signup() {
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
                   <div>
-                    <p className="font-semibold text-foreground">AI-Generated Materials</p>
+                    <p className="font-semibold text-foreground">
+                      AI-Generated Materials
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       Create proposals and presentations automatically
                     </p>
@@ -45,7 +53,9 @@ export default function Signup() {
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
                   <div>
-                    <p className="font-semibold text-foreground">Save Time & Resources</p>
+                    <p className="font-semibold text-foreground">
+                      Save Time & Resources
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       Reduce partner discovery from weeks to minutes
                     </p>
@@ -57,7 +67,9 @@ export default function Signup() {
             {/* Right Side - Form */}
             <div className="bg-card rounded-xl border border-border p-8">
               <div className="text-center mb-8">
-                <h1 className="text-heading-lg text-foreground mb-2">Create Account</h1>
+                <h1 className="text-heading-lg text-foreground mb-2">
+                  Create Account
+                </h1>
                 <p className="text-muted-foreground">Join Anveshan today</p>
               </div>
 
@@ -136,14 +148,23 @@ export default function Signup() {
 
                 {/* Terms */}
                 <label className="flex items-start gap-3 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 rounded border-border mt-1" />
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-border mt-1"
+                  />
                   <span className="text-sm text-muted-foreground">
                     I agree to the{" "}
-                    <Link to="/terms" className="text-primary hover:text-primary/80 transition-colors">
+                    <Link
+                      to="/terms"
+                      className="text-primary hover:text-primary/80 transition-colors"
+                    >
                       Terms of Service
                     </Link>{" "}
                     and{" "}
-                    <Link to="/privacy" className="text-primary hover:text-primary/80 transition-colors">
+                    <Link
+                      to="/privacy"
+                      className="text-primary hover:text-primary/80 transition-colors"
+                    >
                       Privacy Policy
                     </Link>
                   </span>
@@ -175,7 +196,10 @@ export default function Signup() {
               <div className="text-center mt-8">
                 <p className="text-muted-foreground">
                   Already have an account?{" "}
-                  <Link to="/login" className="text-primary hover:text-primary/80 transition-colors font-semibold">
+                  <Link
+                    to="/login"
+                    className="text-primary hover:text-primary/80 transition-colors font-semibold"
+                  >
                     Sign in
                   </Link>
                 </p>

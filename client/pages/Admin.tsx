@@ -11,28 +11,39 @@ export default function Admin() {
         <div className="container mx-auto max-w-6xl">
           {/* Header */}
           <div className="mb-12">
-            <h1 className="text-display-md mb-2 text-foreground">Admin Dashboard</h1>
+            <h1 className="text-display-md mb-2 text-foreground">
+              Admin Dashboard
+            </h1>
             <p className="text-lg text-muted-foreground">
-              Manage organization verifications, scraping jobs, and system operations.
+              Manage organization verifications, scraping jobs, and system
+              operations.
             </p>
           </div>
 
           {/* Admin Stats */}
           <div className="grid md:grid-cols-4 gap-4 mb-12">
             <div className="p-6 bg-card rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground mb-2">Pending Verifications</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                Pending Verifications
+              </p>
               <p className="text-3xl font-bold text-primary">0</p>
             </div>
             <div className="p-6 bg-card rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground mb-2">Verified Orgs</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                Verified Orgs
+              </p>
               <p className="text-3xl font-bold text-accent">0</p>
             </div>
             <div className="p-6 bg-card rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground mb-2">Total Organizations</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                Total Organizations
+              </p>
               <p className="text-3xl font-bold text-foreground">0</p>
             </div>
             <div className="p-6 bg-card rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground mb-2">Active Scrape Jobs</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                Active Scrape Jobs
+              </p>
               <p className="text-3xl font-bold text-foreground">0</p>
             </div>
           </div>
@@ -58,8 +69,12 @@ export default function Admin() {
                   <AlertCircle className="w-6 h-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-foreground">Organization Name</h3>
-                  <p className="text-sm text-muted-foreground">Submitted 2 days ago</p>
+                  <h3 className="font-semibold text-foreground">
+                    Organization Name
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Submitted 2 days ago
+                  </p>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -78,8 +93,12 @@ export default function Admin() {
             <div className="flex items-center justify-center p-12 bg-secondary rounded-lg border border-border">
               <div className="text-center">
                 <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
-                <p className="text-foreground font-semibold mb-2">No Pending Verifications</p>
-                <p className="text-muted-foreground">All organizations have been processed.</p>
+                <p className="text-foreground font-semibold mb-2">
+                  No Pending Verifications
+                </p>
+                <p className="text-muted-foreground">
+                  All organizations have been processed.
+                </p>
               </div>
             </div>
           </div>
@@ -93,8 +112,12 @@ export default function Admin() {
             <div className="flex items-center justify-center p-12 bg-secondary rounded-lg border border-border">
               <div className="text-center">
                 <AlertCircle className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
-                <p className="text-foreground font-semibold mb-2">No Active Scrape Jobs</p>
-                <p className="text-muted-foreground">Click to start a new scraping job.</p>
+                <p className="text-foreground font-semibold mb-2">
+                  No Active Scrape Jobs
+                </p>
+                <p className="text-muted-foreground">
+                  Click to start a new scraping job.
+                </p>
               </div>
             </div>
           </div>

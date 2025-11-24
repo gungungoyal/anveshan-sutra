@@ -12,8 +12,12 @@ export default function Login() {
         <div className="container mx-auto max-w-md">
           <div className="bg-card rounded-xl border border-border p-8">
             <div className="text-center mb-8">
-              <h1 className="text-heading-lg text-foreground mb-2">Welcome Back</h1>
-              <p className="text-muted-foreground">Sign in to your Anveshan account</p>
+              <h1 className="text-heading-lg text-foreground mb-2">
+                Welcome Back
+              </h1>
+              <p className="text-muted-foreground">
+                Sign in to your Anveshan account
+              </p>
             </div>
 
             <form className="space-y-6">
@@ -50,7 +54,10 @@ export default function Login() {
               {/* Remember & Forgot */}
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 rounded border-border" />
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-border"
+                  />
                   <span className="text-sm text-foreground">Remember me</span>
                 </label>
                 <Link
@@ -87,7 +94,10 @@ export default function Login() {
             <div className="text-center mt-8">
               <p className="text-muted-foreground">
                 Don't have an account?{" "}
-                <Link to="/signup" className="text-primary hover:text-primary/80 transition-colors font-semibold">
+                <Link
+                  to="/signup"
+                  className="text-primary hover:text-primary/80 transition-colors font-semibold"
+                >
                   Sign up
                 </Link>
               </p>
@@ -96,7 +106,9 @@ export default function Login() {
 
           {/* Info Box */}
           <div className="mt-8 p-6 bg-secondary rounded-xl border border-border">
-            <h3 className="font-semibold text-foreground mb-2">Demo Credentials</h3>
+            <h3 className="font-semibold text-foreground mb-2">
+              Demo Credentials
+            </h3>
             <p className="text-sm text-muted-foreground mb-3">
               For testing purposes, you can use:
             </p>

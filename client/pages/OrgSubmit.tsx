@@ -8,9 +8,21 @@ export default function OrgSubmit() {
   const [currentStep, setCurrentStep] = useState(1);
 
   const steps = [
-    { number: 1, title: "Basic Info", description: "Organization name and type" },
-    { number: 2, title: "Details", description: "Mission, focus areas, and regions" },
-    { number: 3, title: "Documents", description: "Upload verification documents" },
+    {
+      number: 1,
+      title: "Basic Info",
+      description: "Organization name and type",
+    },
+    {
+      number: 2,
+      title: "Details",
+      description: "Mission, focus areas, and regions",
+    },
+    {
+      number: 3,
+      title: "Documents",
+      description: "Upload verification documents",
+    },
     { number: 4, title: "Review", description: "Preview and submit" },
   ];
 
@@ -31,9 +43,12 @@ export default function OrgSubmit() {
 
           {/* Header */}
           <div className="mb-12">
-            <h1 className="text-display-md mb-2 text-foreground">Submit Your Organization</h1>
+            <h1 className="text-display-md mb-2 text-foreground">
+              Submit Your Organization
+            </h1>
             <p className="text-lg text-muted-foreground">
-              Help us verify and list your organization in Anveshan to connect with partners.
+              Help us verify and list your organization in Anveshan to connect
+              with partners.
             </p>
           </div>
 
@@ -41,15 +56,18 @@ export default function OrgSubmit() {
           <div className="mb-12">
             <div className="flex items-center gap-4 overflow-x-auto pb-4">
               {steps.map((step, index) => (
-                <div key={step.number} className="flex items-center gap-4 flex-shrink-0">
+                <div
+                  key={step.number}
+                  className="flex items-center gap-4 flex-shrink-0"
+                >
                   <div className="flex items-center gap-2">
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
                         step.number < currentStep
                           ? "bg-accent text-accent-foreground"
                           : step.number === currentStep
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground"
                       }`}
                     >
                       {step.number < currentStep ? (
@@ -59,8 +77,12 @@ export default function OrgSubmit() {
                       )}
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground text-sm">{step.title}</p>
-                      <p className="text-xs text-muted-foreground">{step.description}</p>
+                      <p className="font-semibold text-foreground text-sm">
+                        {step.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {step.description}
+                      </p>
                     </div>
                   </div>
                   {index < steps.length - 1 && (
@@ -75,8 +97,10 @@ export default function OrgSubmit() {
           <div className="bg-card rounded-xl border border-border p-8 mb-8">
             {currentStep === 1 && (
               <div className="space-y-6">
-                <h2 className="text-heading-md text-foreground">Basic Information</h2>
-                
+                <h2 className="text-heading-md text-foreground">
+                  Basic Information
+                </h2>
+
                 <div>
                   <label className="block text-sm font-semibold text-foreground mb-2">
                     Organization Name *
@@ -117,7 +141,9 @@ export default function OrgSubmit() {
 
             {currentStep === 2 && (
               <div className="space-y-6">
-                <h2 className="text-heading-md text-foreground">Organization Details</h2>
+                <h2 className="text-heading-md text-foreground">
+                  Organization Details
+                </h2>
 
                 <div>
                   <label className="block text-sm font-semibold text-foreground mb-2">
@@ -135,14 +161,25 @@ export default function OrgSubmit() {
                     Focus Areas *
                   </label>
                   <div className="grid grid-cols-2 gap-3">
-                    {["Education", "Health", "Environment", "Livelihood", "Governance", "Technology"].map(
-                      (area) => (
-                        <label key={area} className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" className="w-4 h-4 rounded border-border" />
-                          <span className="text-sm text-foreground">{area}</span>
-                        </label>
-                      )
-                    )}
+                    {[
+                      "Education",
+                      "Health",
+                      "Environment",
+                      "Livelihood",
+                      "Governance",
+                      "Technology",
+                    ].map((area) => (
+                      <label
+                        key={area}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-border"
+                        />
+                        <span className="text-sm text-foreground">{area}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
 
@@ -161,21 +198,29 @@ export default function OrgSubmit() {
 
             {currentStep === 3 && (
               <div className="space-y-6">
-                <h2 className="text-heading-md text-foreground">Upload Documents</h2>
+                <h2 className="text-heading-md text-foreground">
+                  Upload Documents
+                </h2>
                 <p className="text-muted-foreground text-sm">
-                  Upload documents to verify your organization. Accepted formats: PDF, DOC, DOCX
+                  Upload documents to verify your organization. Accepted
+                  formats: PDF, DOC, DOCX
                 </p>
 
                 <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
                   <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="font-semibold text-foreground mb-1">Click to upload or drag and drop</p>
+                  <p className="font-semibold text-foreground mb-1">
+                    Click to upload or drag and drop
+                  </p>
                   <p className="text-sm text-muted-foreground">
-                    Registration documents, annual reports, or legal certifications
+                    Registration documents, annual reports, or legal
+                    certifications
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm font-semibold text-foreground">Document Types</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    Document Types
+                  </p>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>✓ Registration Certificate</li>
                     <li>✓ Annual Report (last 2 years)</li>
@@ -188,30 +233,47 @@ export default function OrgSubmit() {
 
             {currentStep === 4 && (
               <div className="space-y-6">
-                <h2 className="text-heading-md text-foreground">Review & Submit</h2>
+                <h2 className="text-heading-md text-foreground">
+                  Review & Submit
+                </h2>
                 <p className="text-muted-foreground">
-                  Please review your information before submitting. Our verification team will review within 5-7 business days.
+                  Please review your information before submitting. Our
+                  verification team will review within 5-7 business days.
                 </p>
 
                 <div className="bg-secondary rounded-lg p-6 space-y-4">
                   <div className="flex justify-between pb-4 border-b border-border">
-                    <span className="text-muted-foreground">Organization Name</span>
-                    <span className="font-semibold text-foreground">Your Organization</span>
+                    <span className="text-muted-foreground">
+                      Organization Name
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      Your Organization
+                    </span>
                   </div>
                   <div className="flex justify-between pb-4 border-b border-border">
-                    <span className="text-muted-foreground">Organization Type</span>
+                    <span className="text-muted-foreground">
+                      Organization Type
+                    </span>
                     <span className="font-semibold text-foreground">NGO</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Verification Status</span>
-                    <span className="font-semibold text-primary">Pending Review</span>
+                    <span className="text-muted-foreground">
+                      Verification Status
+                    </span>
+                    <span className="font-semibold text-primary">
+                      Pending Review
+                    </span>
                   </div>
                 </div>
 
                 <label className="flex items-center gap-3 p-4 bg-secondary rounded-lg cursor-pointer hover:bg-secondary/80 transition-colors">
-                  <input type="checkbox" className="w-4 h-4 rounded border-border" />
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-border"
+                  />
                   <span className="text-sm text-foreground">
-                    I confirm that the information provided is accurate and agree to the terms
+                    I confirm that the information provided is accurate and
+                    agree to the terms
                   </span>
                 </label>
               </div>

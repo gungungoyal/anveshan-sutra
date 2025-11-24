@@ -69,7 +69,8 @@ export const mockOrganizations: Organization[] = [
     headquarters: "Karnataka",
     region: "Southern India",
     focusAreas: ["Environment", "Livelihood"],
-    mission: "Promoting sustainable livelihoods through environmental conservation.",
+    mission:
+      "Promoting sustainable livelihoods through environmental conservation.",
     description:
       "Green Earth Collective works on reforestation, organic farming, and sustainable tourism in Western Ghats. We engage local communities in conservation efforts.",
     verificationStatus: "verified",
@@ -158,7 +159,8 @@ export const mockOrganizations: Organization[] = [
     headquarters: "Andhra Pradesh",
     region: "Southern India",
     focusAreas: ["Livelihood", "Education"],
-    mission: "Providing vocational training to youth for employment and entrepreneurship.",
+    mission:
+      "Providing vocational training to youth for employment and entrepreneurship.",
     description:
       "Vocational Skills India runs training centers in rural Andhra Pradesh, offering courses in construction, hospitality, and healthcare. We have trained 10000+ youth.",
     verificationStatus: "unverified",
@@ -187,7 +189,8 @@ export const mockOrganizations: Organization[] = [
     headquarters: "Rajasthan",
     region: "Western India",
     focusAreas: ["Livelihood", "Governance"],
-    mission: "Empowering rural women through self-help groups and economic opportunities.",
+    mission:
+      "Empowering rural women through self-help groups and economic opportunities.",
     description:
       "WEN facilitates self-help groups across Rajasthan, providing microfinance, business training, and market linkages. We support 5000+ women entrepreneurs.",
     verificationStatus: "verified",
@@ -216,7 +219,8 @@ export const mockOrganizations: Organization[] = [
     headquarters: "Tamil Nadu",
     region: "Southern India",
     focusAreas: ["Education", "Governance"],
-    mission: "Developing next-generation leaders through civic engagement and skills training.",
+    mission:
+      "Developing next-generation leaders through civic engagement and skills training.",
     description:
       "YLF runs leadership programs in schools, colleges, and communities across Tamil Nadu. We focus on youth civic engagement and social responsibility.",
     verificationStatus: "verified",
@@ -275,7 +279,8 @@ export const mockOrganizations: Organization[] = [
     headquarters: "Hyderabad",
     region: "Southern India",
     focusAreas: ["Technology", "Governance"],
-    mission: "Enabling digital solutions for social good through innovation and collaboration.",
+    mission:
+      "Enabling digital solutions for social good through innovation and collaboration.",
     description:
       "DIL works with social enterprises to develop tech solutions for governance, healthcare, and education. We provide technical support, funding, and market linkages.",
     verificationStatus: "pending",

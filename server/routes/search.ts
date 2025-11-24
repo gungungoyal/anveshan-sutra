@@ -2,21 +2,26 @@ import { RequestHandler } from "express";
 import { SearchParams, SearchResponse, SearchResult } from "@shared/api";
 import { mockOrganizations } from "../data/organizations";
 
-function calculateAlignmentScore(orgIndex: number, params: SearchParams): number {
+function calculateAlignmentScore(
+  orgIndex: number,
+  params: SearchParams,
+): number {
   const org = mockOrganizations[orgIndex];
   let score = 50; // Base score
 
   // Focus area match
   if (params.focusArea) {
     const areaMatch = org.focusAreas.some(
-      (area) => area.toLowerCase() === params.focusArea?.toLowerCase()
+      (area) => area.toLowerCase() === params.focusArea?.toLowerCase(),
     );
     if (areaMatch) score += 20;
   }
 
   // Region match
   if (params.region) {
-    const regionMatch = org.region.toLowerCase().includes(params.region.toLowerCase());
+    const regionMatch = org.region
+      .toLowerCase()
+      .includes(params.region.toLowerCase());
     if (regionMatch) score += 15;
   }
 
@@ -42,7 +47,9 @@ export const handleSearch: RequestHandler = (req, res) => {
       region: (req.query.region as string) || "",
       fundingType: (req.query.fundingType as string) || "",
       verificationStatus: (req.query.verificationStatus as string) || "",
-      sortBy: (req.query.sortBy as "alignment" | "recency" | "confidence" | "name") || "alignment",
+      sortBy:
+        (req.query.sortBy as "alignment" | "recency" | "confidence" | "name") ||
+        "alignment",
     };
 
     // Filter organizations
@@ -62,14 +69,16 @@ export const handleSearch: RequestHandler = (req, res) => {
       // Focus area filter
       if (params.focusArea) {
         const hasArea = org.focusAreas.some(
-          (area) => area.toLowerCase() === params.focusArea?.toLowerCase()
+          (area) => area.toLowerCase() === params.focusArea?.toLowerCase(),
         );
         if (!hasArea) return false;
       }
 
       // Region filter
       if (params.region) {
-        const regionMatch = org.region.toLowerCase().includes(params.region.toLowerCase());
+        const regionMatch = org.region
+          .toLowerCase()
+          .includes(params.region.toLowerCase());
         if (!regionMatch) return false;
       }
 
@@ -91,7 +100,7 @@ export const handleSearch: RequestHandler = (req, res) => {
       ...org,
       alignmentScore: calculateAlignmentScore(
         mockOrganizations.indexOf(org),
-        params
+        params,
       ),
     }));
 
@@ -136,7 +145,7 @@ export const handleGetOrganization: RequestHandler = (req, res) => {
     // Calculate alignment score with empty params (baseline)
     const alignmentScore = calculateAlignmentScore(
       mockOrganizations.indexOf(org),
-      {}
+      {},
     );
 
     const result: SearchResult = {
