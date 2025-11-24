@@ -85,11 +85,12 @@ export default function Home() {
                   Start Exploring
                   <ArrowRight className="w-5 h-5" />
                 </Link>
-                <button
-                  className="px-8 py-4 border-2 border-primary text-primary rounded-lg hover:bg-primary/5 transition-colors font-semibold"
+                <Link
+                  to="/dashboard"
+                  className="px-8 py-4 border-2 border-primary text-primary rounded-lg hover:bg-primary/5 transition-colors font-semibold text-center"
                 >
-                  Watch Demo
-                </button>
+                  Browse Organizations
+                </Link>
               </div>
               <p className="text-sm text-muted-foreground">
                 ✓ No credit card required · ✓ Free tier available · ✓ Verified organizations
