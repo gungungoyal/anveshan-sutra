@@ -8,6 +8,124 @@ export interface DemoResponse {
   message: string;
 }
 
+// ==================== NEW ANVESHAN TYPES ====================
+
+// Focus Areas (Controlled Taxonomy)
+export interface FocusArea {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+}
+
+// User Types
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: "ngo" | "funder";
+  profile_complete: boolean;
+  verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SignUpRequest {
+  email: string;
+  password: string;
+  name: string;
+  role: "ngo" | "funder";
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+// Organization Types
+export interface AnveshanOrganization {
+  id: string;
+  user_id: string;
+  name: string;
+  type: "NGO" | "CSR" | "Foundation" | "Social Enterprise" | "Donor";
+  description: string;
+  mission: string;
+  vision: string;
+  founded_year?: number;
+  headquarters: string;
+  website?: string;
+  focus_area_ids: string[];
+  regions: string[];
+  international_partnerships?: string;
+  document_urls?: string[];
+  verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateOrganizationRequest {
+  name: string;
+  type: "NGO" | "CSR" | "Foundation" | "Social Enterprise" | "Donor";
+  description: string;
+  mission: string;
+  vision: string;
+  headquarters: string;
+  website?: string;
+  focus_area_ids: string[];
+  regions: string[];
+  international_partnerships?: string;
+  document_urls?: string[];
+}
+
+// Match Types
+export interface Match {
+  id: string;
+  organization_a_id: string;
+  organization_b_id: string;
+  alignment_score: number;
+  match_reason: string;
+  status: "pending" | "accepted" | "rejected" | "shortlisted" | "excluded";
+  user_action?: "shortlist" | "exclude" | "contacted";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SearchWithFiltersRequest {
+  query?: string;
+  focus_areas?: string[];
+  regions?: string[];
+  org_type?: string;
+  sort_by?: "alignment" | "name" | "recent";
+  limit?: number;
+  offset?: number;
+}
+
+export interface MatchResult extends AnveshanOrganization {
+  alignment_score: number;
+  match_reason: string;
+}
+
+export interface SearchResponse {
+  organizations: MatchResult[];
+  total: number;
+}
+
+// Shortlist Types
+export interface ShortlistItem {
+  id: string;
+  user_id: string;
+  organization_id: string;
+  notes?: string;
+  created_at: string;
+}
+
+// ==================== OLD TYPES (KEPT FOR BACKWARD COMPATIBILITY) ====================
+
 export interface SubmitOrganizationRequest {
   name: string;
   type: "NGO" | "Foundation" | "Incubator" | "CSR" | "Social Enterprise";
