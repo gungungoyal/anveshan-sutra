@@ -1,28 +1,46 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, Search, Zap, Award, ArrowRight } from "lucide-react";
+import {
+  CheckCircle2,
+  Search,
+  Zap,
+  Award,
+  ArrowRight,
+  FileText,
+  Clock,
+} from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export default function Home() {
   const steps = [
     {
+      number: 1,
       icon: Search,
       title: "Search & Discover",
       description:
-        "Find potential partners and funders using advanced filters and intelligent alignment scoring.",
+        "Browse our verified database of 50+ NGOs, foundations, and incubators. Filter by focus area and region to find the right partners.",
     },
     {
+      number: 2,
       icon: Zap,
-      title: "Auto-Generate Materials",
+      title: "View Alignment",
       description:
-        "Generate summaries, proposals, and presentations in seconds using AI-powered tools.",
+        "See instant compatibility scores showing how well each organization aligns with your mission and goals.",
     },
     {
-      icon: Award,
-      title: "Build Relationships",
+      number: 3,
+      icon: FileText,
+      title: "Generate Materials",
       description:
-        "Connect with verified organizations and track partnership opportunities in one place.",
+        "Create professional emails, proposals, and presentations with a single click to start conversations.",
     },
+  ];
+
+  const benefits = [
+    "✓ No credit card required",
+    "✓ All organizations verified",
+    "✓ Instant alignment scoring",
+    "✓ Auto-generate presentations",
   ];
 
   const testimonials = [
@@ -30,86 +48,88 @@ export default function Home() {
       name: "Priya Singh",
       role: "Director, Education NGO",
       quote:
-        "Anveshan cut our partner discovery time from weeks to hours. The alignment scoring helped us find the perfect CSR partner.",
+        "Anveshan cut our partner discovery time from weeks to just hours. The alignment scoring helped us find the perfect CSR partner immediately.",
       avatar: "PS",
     },
     {
       name: "Rajesh Kumar",
       role: "Founder, Social Enterprise",
       quote:
-        "The auto-generated PPT presentations saved us countless hours of manual work. Highly recommended!",
+        "The auto-generated PPT presentations saved us countless hours. We were able to present to potential partners the same day we found them.",
       avatar: "RK",
     },
     {
       name: "Anjali Patel",
-      role: "Grant Manager, Foundation",
+      role: "Grant Manager",
       quote:
-        "The verified badge system gives us confidence in the organizations we partner with. Best investment we made.",
+        "The verified badge system gives us confidence in the organizations we partner with. Highly recommended for any NGO.",
       avatar: "AP",
     },
-  ];
-
-  const features = [
-    "Verified organization profiles",
-    "Alignment scoring with visual rings",
-    "Auto-generated summaries & PPTs",
-    "Smart search & filtering",
-    "Email & proposal templates",
-    "Admin verification workflow",
   ];
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 bg-gradient-to-b from-secondary to-background">
+      {/* Hero Section - Large and Inviting */}
+      <section className="pt-32 pb-20 px-4 sm:px-6 bg-gradient-to-b from-secondary to-background">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="animate-slide-in-up">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="order-2 lg:order-1">
               <div className="inline-block px-4 py-2 rounded-full bg-accent/10 text-accent mb-6">
-                <span className="text-sm font-semibold">
-                  Discover. Evaluate. Partner.
+                <span className="text-base font-bold">
+                  The Partner Discovery Platform for NGOs
                 </span>
               </div>
-              <h1 className="text-display-lg mb-6 leading-tight text-foreground">
-                Find the Right Partners in Minutes
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
+                Find Your Perfect Partner in Minutes
               </h1>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Anveshan helps NGOs, incubators, and innovation centers discover
-                verified organizations, evaluate alignment, and generate
-                partnership materials—all in one place.
+              <p className="text-xl sm:text-2xl text-muted-foreground mb-8 leading-relaxed">
+                Stop spending weeks searching for the right collaborators. Anveshan uses intelligent matching to connect you with verified organizations that share your mission and goals.
               </p>
+
+              {/* Big CTAs */}
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
                 <Link
                   to="/dashboard"
-                  className="px-8 py-4 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold flex items-center justify-center gap-2 text-center"
+                  className="px-8 py-5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-bold text-lg sm:text-xl flex items-center justify-center gap-3 shadow-lg"
                 >
-                  Start Exploring
-                  <ArrowRight className="w-5 h-5" />
+                  Start Searching Now
+                  <ArrowRight className="w-6 h-6" />
                 </Link>
                 <Link
                   to="/dashboard"
-                  className="px-8 py-4 border-2 border-primary text-primary rounded-lg hover:bg-primary/5 transition-colors font-semibold text-center"
+                  className="px-8 py-5 border-2 border-primary text-primary rounded-xl hover:bg-primary/5 transition-colors font-bold text-lg sm:text-xl text-center"
                 >
                   Browse Organizations
                 </Link>
               </div>
-              <p className="text-sm text-muted-foreground">
-                ✓ No credit card required · ✓ Free tier available · ✓ Verified
-                organizations
-              </p>
+
+              {/* Benefits */}
+              <div className="space-y-2">
+                {benefits.map((benefit, i) => (
+                  <p
+                    key={i}
+                    className="text-lg text-foreground font-semibold"
+                  >
+                    {benefit}
+                  </p>
+                ))}
+              </div>
             </div>
 
             {/* Hero Illustration */}
-            <div className="hidden md:block">
-              <div className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl p-8 aspect-square flex items-center justify-center">
+            <div className="order-1 lg:order-2">
+              <div className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl p-12 aspect-square flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Search className="w-16 h-16 text-primary" />
+                  <div className="w-40 h-40 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Search className="w-20 h-20 text-primary" />
                   </div>
-                  <p className="text-primary font-semibold">
-                    Intelligent Search & Matching
+                  <p className="text-2xl font-bold text-primary">
+                    Intelligent Matching
+                  </p>
+                  <p className="text-lg text-primary/70 mt-2">
+                    Find the right fit instantly
                   </p>
                 </div>
               </div>
@@ -118,16 +138,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-20 px-4">
+      {/* How It Works - Large and Clear */}
+      <section className="py-24 px-4 sm:px-6">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-display-md mb-4 text-foreground">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl sm:text-6xl font-bold text-foreground mb-4">
               How It Works
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Three simple steps to discover and connect with the right
-              organizations.
+            <p className="text-xl sm:text-2xl text-muted-foreground max-w-2xl mx-auto">
+              Three simple steps to discover and connect with the right organizations
             </p>
           </div>
 
@@ -137,20 +156,24 @@ export default function Home() {
               return (
                 <div
                   key={index}
-                  className="relative p-8 bg-card rounded-xl border border-border hover:border-primary transition-colors"
+                  className="relative p-10 bg-card rounded-2xl border-2 border-border hover:border-primary transition-colors"
                 >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <Icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="text-3xl font-bold text-primary/30">
-                      {index + 1}
-                    </div>
+                  {/* Step Number */}
+                  <div className="absolute -top-6 -left-6 w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-2xl shadow-lg">
+                    {step.number}
                   </div>
-                  <h3 className="text-heading-md mb-3 text-foreground">
-                    {step.title}
-                  </h3>
-                  <p className="text-muted-foreground">{step.description}</p>
+
+                  <div className="mt-6">
+                    <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                      <Icon className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-foreground mb-3">
+                      {step.title}
+                    </h3>
+                    <p className="text-lg text-muted-foreground leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
               );
             })}
@@ -158,43 +181,76 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-4 bg-secondary">
+      {/* Why Anveshan - Key Benefits */}
+      <section className="py-24 px-4 sm:px-6 bg-secondary">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-display-md mb-4 text-foreground">
-              Powerful Features
+          <div className="text-center mb-20">
+            <h2 className="text-5xl sm:text-6xl font-bold text-foreground mb-4">
+              Why NGOs Love Anveshan
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to discover, evaluate, and partner with
-              organizations.
+            <p className="text-xl sm:text-2xl text-muted-foreground max-w-2xl mx-auto">
+              Built by NGO leaders, for NGO leaders
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 p-4 bg-background rounded-lg border border-border"
-              >
-                <CheckCircle2 className="w-5 h-5 text-accent flex-shrink-0" />
-                <span className="text-foreground font-medium">{feature}</span>
-              </div>
-            ))}
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              {
+                icon: Clock,
+                title: "Save Time",
+                description:
+                  "Reduce partner discovery from weeks to hours. Spend less time searching, more time building relationships.",
+              },
+              {
+                icon: Award,
+                title: "Find Verified Partners",
+                description:
+                  "Every organization in our database is verified and vetted. No guesswork, no wasted outreach.",
+              },
+              {
+                icon: Zap,
+                title: "Instant Alignment Scoring",
+                description:
+                  "See at a glance how well each organization aligns with your mission. Make faster, better decisions.",
+              },
+              {
+                icon: FileText,
+                title: "Generate Materials Fast",
+                description:
+                  "Create professional presentations, emails, and proposals in seconds. Start conversations with confidence.",
+              },
+            ].map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={index}
+                  className="p-8 bg-background rounded-2xl border-2 border-border hover:border-primary transition-colors"
+                >
+                  <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+                    <Icon className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-3">
+                    {feature.title}
+                  </h3>
+                  <p className="text-lg text-muted-foreground">
+                    {feature.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 px-4">
+      {/* Testimonials - Large Cards */}
+      <section className="py-24 px-4 sm:px-6">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-display-md mb-4 text-foreground">
-              What Users Say
+          <div className="text-center mb-20">
+            <h2 className="text-5xl sm:text-6xl font-bold text-foreground mb-4">
+              Trusted by NGO Leaders
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Hear from NGO leaders, social entrepreneurs, and foundation
-              managers who use Anveshan.
+            <p className="text-xl sm:text-2xl text-muted-foreground max-w-2xl mx-auto">
+              See what other organizations are achieving with Anveshan
             </p>
           </div>
 
@@ -202,51 +258,52 @@ export default function Home() {
             {testimonials.map((testimonial, index) => (
               <div
                 key={index}
-                className="p-8 bg-card rounded-xl border border-border hover:border-primary transition-colors"
+                className="p-8 bg-card rounded-2xl border-2 border-border hover:border-primary transition-colors"
               >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-lg">
                     {testimonial.avatar}
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">
+                    <p className="font-bold text-lg text-foreground">
                       {testimonial.name}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground">
                       {testimonial.role}
                     </p>
                   </div>
                 </div>
-                <p className="text-foreground italic">"{testimonial.quote}"</p>
+                <p className="text-lg text-foreground italic leading-relaxed">
+                  "{testimonial.quote}"
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-r from-primary/10 to-accent/10">
+      {/* Final CTA */}
+      <section className="py-24 px-4 sm:px-6 bg-gradient-to-r from-primary/10 to-accent/10">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-display-md mb-4 text-foreground">
+          <h2 className="text-5xl sm:text-6xl font-bold text-foreground mb-6">
             Ready to Find Your Partners?
           </h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            Start discovering verified organizations and building meaningful
-            partnerships today.
+          <p className="text-xl sm:text-2xl text-muted-foreground mb-10">
+            Join NGOs across India who are discovering the right collaborators with Anveshan.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/dashboard"
-              className="px-8 py-4 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold flex items-center justify-center gap-2"
+              className="px-8 sm:px-10 py-5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-bold text-lg sm:text-xl flex items-center justify-center gap-3 shadow-lg"
             >
-              Explore Now
-              <ArrowRight className="w-5 h-5" />
+              Start Exploring Now
+              <ArrowRight className="w-6 h-6" />
             </Link>
             <Link
               to="/org-submit"
-              className="px-8 py-4 border-2 border-primary text-primary rounded-lg hover:bg-primary/5 transition-colors font-semibold"
+              className="px-8 sm:px-10 py-5 border-2 border-primary text-primary rounded-xl hover:bg-primary/5 transition-colors font-bold text-lg sm:text-xl"
             >
-              Submit Organization
+              Submit Your Organization
             </Link>
           </div>
         </div>
