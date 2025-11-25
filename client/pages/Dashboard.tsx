@@ -294,14 +294,14 @@ export default function Dashboard() {
                 No Results Found
               </h2>
               <p className="text-lg text-muted-foreground mb-6 max-w-md mx-auto">
-                Try adjusting your search terms or filters. You can also submit your own organization to expand the database.
+                Try adjusting your search terms or filters. You can also submit a new organization to the database.
               </p>
               <Link
                 to="/org-submit"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-bold text-base"
               >
                 <Plus className="w-5 h-5" />
-                Submit Organization
+                Submit New Organization
               </Link>
             </div>
           ) : null}
