@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
-import OrgProfile from "./pages/OrgProfile";
+import OrgProfileDetail from "./pages/OrgProfileDetail";
 import Admin from "./pages/Admin";
 import OrgSubmit from "./pages/OrgSubmit";
 import AuthPage from "./pages/AuthPage";
@@ -29,7 +29,7 @@ export default function App() {
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/search" element={<Search />} />
-            <Route path="/org-profile/:id" element={<OrgProfile />} />
+            <Route path="/org-profile/:id" element={<OrgProfileDetail />} />
             <Route path="/org-submit" element={<OrgSubmit />} />
 
             {/* Legacy Routes (keeping for backward compatibility) */}
