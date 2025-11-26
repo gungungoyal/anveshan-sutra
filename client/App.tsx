@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
+import NGODashboard from "./pages/NGODashboard";
 import OrgProfileDetail from "./pages/OrgProfileDetail";
 import PPTViewer from "./pages/PPTViewer";
 import Admin from "./pages/Admin";
@@ -28,7 +28,7 @@ export default function App() {
             {/* ANVESHAN New Platform Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<NGODashboard />} />
             <Route path="/search" element={<Search />} />
             <Route path="/org-profile/:id" element={<OrgProfileDetail />} />
             <Route path="/ppt/:id" element={<PPTViewer />} />
