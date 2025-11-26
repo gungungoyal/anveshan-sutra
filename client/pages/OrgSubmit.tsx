@@ -8,6 +8,11 @@ import { SubmitOrganizationRequest } from "@shared/api";
 
 interface FormData extends SubmitOrganizationRequest {
   confirmation: boolean;
+  userRole?: "ngo" | "funder";
+  grantBudget?: string;
+  maxGrantSize?: string;
+  preferredNGOTypes?: string[];
+  minYearsOperation?: number;
 }
 
 const initialFormData: FormData = {
@@ -24,15 +29,21 @@ const initialFormData: FormData = {
   partnerHistory: [],
   projects: [],
   confirmation: false,
+  userRole: undefined,
 };
 
 export default function OrgSubmit() {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const steps = [
+    {
+      number: 0,
+      title: "I Am A...",
+      description: "Select your organization type",
+    },
     {
       number: 1,
       title: "Basic Info",
