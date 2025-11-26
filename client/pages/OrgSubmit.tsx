@@ -481,6 +481,107 @@ export default function OrgSubmit() {
                     ))}
                   </select>
                 </div>
+
+                {formData.userRole === "funder" && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Grant Budget Range
+                      </label>
+                      <select
+                        value={formData.grantBudget || ""}
+                        onChange={(e) =>
+                          handleInputChange("grantBudget", e.target.value)
+                        }
+                        className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="">Select budget range</option>
+                        <option value="0-100k">Under $100K</option>
+                        <option value="100k-500k">$100K - $500K</option>
+                        <option value="500k-1m">$500K - $1M</option>
+                        <option value="1m+">$1M+</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Maximum Grant Size
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g., $500,000"
+                        value={formData.maxGrantSize || ""}
+                        onChange={(e) =>
+                          handleInputChange("maxGrantSize", e.target.value)
+                        }
+                        className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Preferred NGO Types
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {["NGO", "Social Enterprise", "Incubator", "Foundation"].map(
+                          (type) => (
+                            <label
+                              key={type}
+                              className="flex items-center gap-2 cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={
+                                  formData.preferredNGOTypes?.includes(type) ||
+                                  false
+                                }
+                                onChange={(e) => {
+                                  const types =
+                                    formData.preferredNGOTypes || [];
+                                  if (e.target.checked) {
+                                    handleInputChange("preferredNGOTypes", [
+                                      ...types,
+                                      type,
+                                    ]);
+                                  } else {
+                                    handleInputChange(
+                                      "preferredNGOTypes",
+                                      types.filter((t) => t !== type)
+                                    );
+                                  }
+                                }}
+                                className="w-4 h-4 rounded border-border"
+                              />
+                              <span className="text-sm text-foreground">
+                                {type}
+                              </span>
+                            </label>
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Minimum Years in Operation
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="e.g., 2"
+                        value={formData.minYearsOperation || ""}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "minYearsOperation",
+                            parseInt(e.target.value)
+                          )
+                        }
+                        className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                        min="0"
+                        max="100"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
