@@ -98,7 +98,7 @@ export default function Home() {
                   <ArrowRight className="w-6 h-6" />
                 </Link>
                 <Link
-                  to="/dashboard"
+                  to="/search"
                   className="px-8 py-5 border-2 border-primary text-primary rounded-xl hover:bg-primary/5 transition-colors font-bold text-lg sm:text-xl text-center"
                 >
                   Search Organizations
