@@ -12,88 +12,94 @@
    * A different format will require also updating the theme in tailwind.config.ts.
   */
   :root {
-    /* Neutral grays */
-    --background: 0 0% 100%;
-    --foreground: 214 32% 15%;
+    /* ANVESHAN Color Palette */
+    /* #1A1A1D - Deep Dark (backgrounds, text) */
+    /* #3B1C32 - Dark Purple (accents, borders) */
+    /* #6A1E55 - Purple (primary buttons, key actions) */
+    /* #A64D79 - Light Purple (secondary actions, hover states) */
+
+    --background: 0 0% 98%;
+    --foreground: 240 5% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 214 32% 15%;
+    --card-foreground: 240 5% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 214 32% 15%;
+    --popover-foreground: 240 5% 11%;
 
-    /* Primary: Professional Blue */
-    --primary: 217 91% 44%;
+    /* Primary: ANVESHAN Purple (#6A1E55) */
+    --primary: 315 56% 27%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Neutral warm gray */
-    --secondary: 210 14% 94%;
-    --secondary-foreground: 214 32% 15%;
+    /* Secondary: Light purple tint */
+    --secondary: 320 41% 48%;
+    --secondary-foreground: 0 0% 100%;
 
-    /* Muted: Light grays */
-    --muted: 213 14% 92%;
-    --muted-foreground: 215 16% 47%;
+    /* Muted: Dark purple accents (#3B1C32) */
+    --muted: 320 35% 17%;
+    --muted-foreground: 320 35% 60%;
 
-    /* Accent: Teal/Green for NGO vibrancy */
-    --accent: 174 67% 47%;
+    /* Accent: Deep Dark (#1A1A1D) for contrast */
+    --accent: 240 5% 11%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 213 14% 88%;
-    --input: 213 14% 94%;
-    --ring: 217 91% 44%;
+    --border: 320 35% 17%;
+    --input: 0 0% 95%;
+    --ring: 315 56% 27%;
 
     --radius: 0.625rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 214 32% 15%;
-    --sidebar-primary: 217 91% 44%;
+    --sidebar-background: 240 5% 11%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 315 56% 27%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 174 67% 47%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 213 14% 88%;
-    --sidebar-ring: 217 91% 44%;
+    --sidebar-accent: 320 41% 48%;
+    --sidebar-accent-foreground: 240 5% 11%;
+    --sidebar-border: 320 35% 17%;
+    --sidebar-ring: 315 56% 27%;
   }
 
   .dark {
-    --background: 214 32% 12%;
-    --foreground: 213 14% 93%;
+    /* ANVESHAN Dark Mode - Deep purple theme */
+    --background: 240 5% 11%;
+    --foreground: 0 0% 98%;
 
-    --card: 214 32% 18%;
-    --card-foreground: 213 14% 93%;
+    --card: 320 35% 17%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 214 32% 18%;
-    --popover-foreground: 213 14% 93%;
+    --popover: 320 35% 17%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 217 91% 55%;
-    --primary-foreground: 214 32% 12%;
+    --primary: 315 56% 40%;
+    --primary-foreground: 240 5% 11%;
 
-    --secondary: 214 32% 25%;
-    --secondary-foreground: 213 14% 93%;
+    --secondary: 320 41% 55%;
+    --secondary-foreground: 240 5% 11%;
 
-    --muted: 214 32% 25%;
-    --muted-foreground: 215 16% 65%;
+    --muted: 320 30% 30%;
+    --muted-foreground: 0 0% 75%;
 
-    --accent: 174 67% 55%;
-    --accent-foreground: 214 32% 12%;
+    --accent: 320 41% 48%;
+    --accent-foreground: 240 5% 11%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 22%;
-    --input: 214 32% 22%;
-    --ring: 217 91% 55%;
+    --border: 320 35% 25%;
+    --input: 320 35% 22%;
+    --ring: 315 56% 40%;
 
-    --sidebar-background: 214 32% 12%;
-    --sidebar-foreground: 213 14% 93%;
-    --sidebar-primary: 217 91% 55%;
-    --sidebar-primary-foreground: 214 32% 12%;
-    --sidebar-accent: 174 67% 55%;
-    --sidebar-accent-foreground: 214 32% 12%;
-    --sidebar-border: 214 32% 22%;
-    --sidebar-ring: 217 91% 55%;
+    --sidebar-background: 240 5% 11%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 315 56% 40%;
+    --sidebar-primary-foreground: 240 5% 11%;
+    --sidebar-accent: 320 41% 48%;
+    --sidebar-accent-foreground: 240 5% 11%;
+    --sidebar-border: 320 35% 25%;
+    --sidebar-ring: 315 56% 40%;
   }
 }
 

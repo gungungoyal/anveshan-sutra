@@ -8,7 +8,7 @@ export default function Header() {
 
   const navLinks = [
     { href: "/", label: "Home", icon: null },
-    { href: "/dashboard", label: "Search Organizations", icon: Search },
+    { href: "/search", label: "Search Organizations", icon: Search },
     { href: "/org-submit", label: "Submit Organization", icon: Plus },
   ];
 

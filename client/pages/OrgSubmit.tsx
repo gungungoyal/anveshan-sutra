@@ -8,6 +8,11 @@ import { SubmitOrganizationRequest } from "@shared/api";
 
 interface FormData extends SubmitOrganizationRequest {
   confirmation: boolean;
+  userRole?: "ngo" | "funder";
+  grantBudget?: string;
+  maxGrantSize?: string;
+  preferredNGOTypes?: string[];
+  minYearsOperation?: number;
 }
 
 const initialFormData: FormData = {
@@ -24,15 +29,21 @@ const initialFormData: FormData = {
   partnerHistory: [],
   projects: [],
   confirmation: false,
+  userRole: undefined,
 };
 
 export default function OrgSubmit() {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const steps = [
+    {
+      number: 0,
+      title: "I Am A...",
+      description: "Select your organization type",
+    },
     {
       number: 1,
       title: "Basic Info",
@@ -85,6 +96,12 @@ export default function OrgSubmit() {
 
   const validateStep = (step: number): boolean => {
     switch (step) {
+      case 0:
+        if (!formData.userRole) {
+          toast.error("Please select whether you are an NGO or Funder");
+          return false;
+        }
+        return true;
       case 1:
         if (!formData.name.trim()) {
           toast.error("Organization name is required");
@@ -131,6 +148,10 @@ export default function OrgSubmit() {
     if (validateStep(currentStep)) {
       setCurrentStep(Math.min(4, currentStep + 1));
     }
+  };
+
+  const getTotalSteps = () => {
+    return formData.userRole ? 5 : 1; // If no role selected, only show role selection
   };
 
   const handlePrevious = () => {
@@ -262,6 +283,63 @@ export default function OrgSubmit() {
 
           {/* Form Content */}
           <div className="bg-card rounded-xl border border-border p-8 mb-8">
+            {currentStep === 0 && (
+              <div className="space-y-8">
+                <div>
+                  <h2 className="text-heading-md text-foreground mb-2">
+                    Are you an NGO or Funder?
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Tell us what type of organization you represent so we can customize your experience.
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* NGO Option */}
+                  <div
+                    onClick={() => handleInputChange("userRole", "ngo")}
+                    className={`p-8 rounded-xl border-2 cursor-pointer transition-all ${
+                      formData.userRole === "ngo"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="text-3xl mb-3">🏢</div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">
+                      I'm an NGO
+                    </h3>
+                    <p className="text-muted-foreground text-sm">
+                      Looking for funders, partners, and collaboration opportunities
+                    </p>
+                    {formData.userRole === "ngo" && (
+                      <div className="mt-4 text-primary font-semibold">✓ Selected</div>
+                    )}
+                  </div>
+
+                  {/* Funder Option */}
+                  <div
+                    onClick={() => handleInputChange("userRole", "funder")}
+                    className={`p-8 rounded-xl border-2 cursor-pointer transition-all ${
+                      formData.userRole === "funder"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="text-3xl mb-3">💰</div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">
+                      I'm a Funder
+                    </h3>
+                    <p className="text-muted-foreground text-sm">
+                      Looking for NGO partners and impact investment opportunities
+                    </p>
+                    {formData.userRole === "funder" && (
+                      <div className="mt-4 text-primary font-semibold">✓ Selected</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {currentStep === 1 && (
               <div className="space-y-6">
                 <h2 className="text-heading-md text-foreground">
@@ -403,6 +481,107 @@ export default function OrgSubmit() {
                     ))}
                   </select>
                 </div>
+
+                {formData.userRole === "funder" && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Grant Budget Range
+                      </label>
+                      <select
+                        value={formData.grantBudget || ""}
+                        onChange={(e) =>
+                          handleInputChange("grantBudget", e.target.value)
+                        }
+                        className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="">Select budget range</option>
+                        <option value="0-100k">Under $100K</option>
+                        <option value="100k-500k">$100K - $500K</option>
+                        <option value="500k-1m">$500K - $1M</option>
+                        <option value="1m+">$1M+</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Maximum Grant Size
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g., $500,000"
+                        value={formData.maxGrantSize || ""}
+                        onChange={(e) =>
+                          handleInputChange("maxGrantSize", e.target.value)
+                        }
+                        className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Preferred NGO Types
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {["NGO", "Social Enterprise", "Incubator", "Foundation"].map(
+                          (type) => (
+                            <label
+                              key={type}
+                              className="flex items-center gap-2 cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={
+                                  formData.preferredNGOTypes?.includes(type) ||
+                                  false
+                                }
+                                onChange={(e) => {
+                                  const types =
+                                    formData.preferredNGOTypes || [];
+                                  if (e.target.checked) {
+                                    handleInputChange("preferredNGOTypes", [
+                                      ...types,
+                                      type,
+                                    ]);
+                                  } else {
+                                    handleInputChange(
+                                      "preferredNGOTypes",
+                                      types.filter((t) => t !== type)
+                                    );
+                                  }
+                                }}
+                                className="w-4 h-4 rounded border-border"
+                              />
+                              <span className="text-sm text-foreground">
+                                {type}
+                              </span>
+                            </label>
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Minimum Years in Operation
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="e.g., 2"
+                        value={formData.minYearsOperation || ""}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "minYearsOperation",
+                            parseInt(e.target.value)
+                          )
+                        }
+                        className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                        min="0"
+                        max="100"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -520,14 +699,14 @@ export default function OrgSubmit() {
             >
               Previous
             </button>
-            {currentStep < 4 ? (
+            {currentStep < getTotalSteps() - 1 ? (
               <button
                 onClick={handleNext}
                 className="px-8 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold"
               >
                 Next
               </button>
-            ) : (
+            ) : currentStep === getTotalSteps() - 1 ? (
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
@@ -535,7 +714,7 @@ export default function OrgSubmit() {
               >
                 {isSubmitting ? "Submitting..." : "Submit for Verification"}
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       </main>

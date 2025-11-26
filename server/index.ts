@@ -5,6 +5,12 @@ import { handleDemo } from "./routes/demo";
 import { handleSearch, handleGetOrganization } from "./routes/search";
 import { handleSubmitOrganization } from "./routes/submit";
 import { handleSignup, handleLogin, handleGetCurrentUser } from "./routes/auth";
+import {
+  handleGetMatches,
+  handleExcludeMatch,
+  handleGetFocusAreas,
+  handleGetRegions,
+} from "./routes/matches";
 
 export function createServer() {
   const app = express();
@@ -31,6 +37,14 @@ export function createServer() {
   app.post("/api/orgs/submit", handleSubmitOrganization);
   app.get("/api/orgs/search", handleSearch);
   app.get("/api/orgs/:id", handleGetOrganization);
+
+  // Match & recommendation routes
+  app.get("/api/matches/recommendations", handleGetMatches);
+  app.post("/api/matches/:org_a_id/:org_b_id/exclude", handleExcludeMatch);
+
+  // Filter/metadata routes
+  app.get("/api/focus-areas", handleGetFocusAreas);
+  app.get("/api/regions", handleGetRegions);
 
   return app;
 }
