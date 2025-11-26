@@ -24,14 +24,15 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             {/* ANVESHAN New Platform Routes */}
+            <Route path="/" element={<Home />} />
             <Route path="/auth" element={<AuthPage />} />
-
-            {/* Legacy Routes (keeping for backward compatibility) */}
-            <Route path="/" element={<OrgSubmit />} />
-            <Route path="/home" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/org-profile/:id" element={<OrgProfile />} />
             <Route path="/org-submit" element={<OrgSubmit />} />
+            <Route path="/search" element={<Dashboard />} />
+
+            {/* Legacy Routes (keeping for backward compatibility) */}
+            <Route path="/home" element={<Home />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
