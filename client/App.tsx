@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import OrgProfileDetail from "./pages/OrgProfileDetail";
+import PPTViewer from "./pages/PPTViewer";
 import Admin from "./pages/Admin";
 import OrgSubmit from "./pages/OrgSubmit";
 import AuthPage from "./pages/AuthPage";
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/search" element={<Search />} />
             <Route path="/org-profile/:id" element={<OrgProfileDetail />} />
+            <Route path="/ppt/:id" element={<PPTViewer />} />
             <Route path="/org-submit" element={<OrgSubmit />} />
 
             {/* Legacy Routes (keeping for backward compatibility) */}
