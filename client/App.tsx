@@ -12,6 +12,7 @@ import AuthPage from "./pages/AuthPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import Search from "./pages/Search";
 
 const queryClient = new QueryClient();
 
@@ -27,9 +28,9 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/search" element={<Search />} />
             <Route path="/org-profile/:id" element={<OrgProfile />} />
             <Route path="/org-submit" element={<OrgSubmit />} />
-            <Route path="/search" element={<Dashboard />} />
 
             {/* Legacy Routes (keeping for backward compatibility) */}
             <Route path="/home" element={<Home />} />
