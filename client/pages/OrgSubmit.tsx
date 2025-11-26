@@ -283,6 +283,63 @@ export default function OrgSubmit() {
 
           {/* Form Content */}
           <div className="bg-card rounded-xl border border-border p-8 mb-8">
+            {currentStep === 0 && (
+              <div className="space-y-8">
+                <div>
+                  <h2 className="text-heading-md text-foreground mb-2">
+                    Are you an NGO or Funder?
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Tell us what type of organization you represent so we can customize your experience.
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* NGO Option */}
+                  <div
+                    onClick={() => handleInputChange("userRole", "ngo")}
+                    className={`p-8 rounded-xl border-2 cursor-pointer transition-all ${
+                      formData.userRole === "ngo"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="text-3xl mb-3">🏢</div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">
+                      I'm an NGO
+                    </h3>
+                    <p className="text-muted-foreground text-sm">
+                      Looking for funders, partners, and collaboration opportunities
+                    </p>
+                    {formData.userRole === "ngo" && (
+                      <div className="mt-4 text-primary font-semibold">✓ Selected</div>
+                    )}
+                  </div>
+
+                  {/* Funder Option */}
+                  <div
+                    onClick={() => handleInputChange("userRole", "funder")}
+                    className={`p-8 rounded-xl border-2 cursor-pointer transition-all ${
+                      formData.userRole === "funder"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="text-3xl mb-3">💰</div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">
+                      I'm a Funder
+                    </h3>
+                    <p className="text-muted-foreground text-sm">
+                      Looking for NGO partners and impact investment opportunities
+                    </p>
+                    {formData.userRole === "funder" && (
+                      <div className="mt-4 text-primary font-semibold">✓ Selected</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {currentStep === 1 && (
               <div className="space-y-6">
                 <h2 className="text-heading-md text-foreground">
