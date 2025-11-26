@@ -293,14 +293,14 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/"
+              to="/org-submit"
               className="px-8 sm:px-10 py-5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-bold text-lg sm:text-xl flex items-center justify-center gap-3 shadow-lg"
             >
               Submit Your Organization
               <ArrowRight className="w-6 h-6" />
             </Link>
             <Link
-              to="/dashboard"
+              to="/search"
               className="px-8 sm:px-10 py-5 border-2 border-primary text-primary rounded-xl hover:bg-primary/5 transition-colors font-bold text-lg sm:text-xl"
             >
               Search Organizations
