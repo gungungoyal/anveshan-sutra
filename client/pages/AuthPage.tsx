@@ -27,7 +27,8 @@ export default function AuthPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    console.log("Login form submitted");
+
     if (!loginEmail || !loginPassword) {
       toast.error("Please enter email and password");
       return;
@@ -40,30 +41,41 @@ export default function AuthPage() {
         password: loginPassword,
       };
 
+      console.log("Sending login request:", payload);
+
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
+      console.log("Login response status:", response.status);
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Login failed");
+        const errorData = await response.json();
+        // Handle email not confirmed case
+        if (errorData.email_not_confirmed) {
+          toast.error("Please check your email and confirm your account before logging in");
+          return;
+        }
+        throw new Error(errorData.error || "Login failed");
       }
 
       const data: AuthResponse = await response.json();
-      
+      console.log("Login successful:", data);
+
       // Store token
       localStorage.setItem("auth_token", data.token);
       localStorage.setItem("user_role", data.user.role);
 
       toast.success("Logged in successfully!");
-      
+
       // Redirect to appropriate dashboard
       setTimeout(() => {
         navigate(data.user.profile_complete ? `/dashboard/${data.user.role}` : "/onboarding");
       }, 500);
     } catch (error) {
+      console.error("Login error:", error);
       toast.error(error instanceof Error ? error.message : "Login failed");
     } finally {
       setIsLoading(false);
@@ -72,6 +84,7 @@ export default function AuthPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Signup form submitted");
 
     if (!role) {
       toast.error("Please select your user type");
@@ -102,29 +115,55 @@ export default function AuthPage() {
         role: role,
       };
 
+      console.log("Sending signup request:", payload);
+
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
+      console.log("Signup response status:", response.status);
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Signup failed");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Signup failed");
       }
 
-      const data: AuthResponse = await response.json();
-      
-      // Store token
-      localStorage.setItem("auth_token", data.token);
-      localStorage.setItem("user_role", data.user.role);
+      const data = await response.json();
+      console.log("Signup response data:", data);
 
-      toast.success("Account created! Redirecting to profile setup...");
-      
-      setTimeout(() => {
-        navigate("/onboarding");
-      }, 500);
+      // Handle email confirmation requirement
+      if (data.pending_confirmation) {
+        toast.success("Account created! Please check your email for confirmation link.");
+        // Switch to login mode after successful signup
+        setTimeout(() => {
+          setMode("login");
+          setLoginEmail(signupEmail);
+        }, 2000);
+        return;
+      }
+
+      // Handle immediate success (if email confirmations are disabled)
+      if (data.user && data.token) {
+        // Store token
+        localStorage.setItem("auth_token", data.token);
+        localStorage.setItem("user_role", data.user.role);
+
+        toast.success("Account created! Redirecting to profile setup...");
+
+        setTimeout(() => {
+          navigate("/onboarding");
+        }, 500);
+        return;
+      }
+
+      toast.success("Account created! Please check your email for confirmation.");
+      // Switch to login mode
+      setMode("login");
+      setLoginEmail(signupEmail);
     } catch (error) {
+      console.error("Signup error:", error);
       toast.error(error instanceof Error ? error.message : "Signup failed");
     } finally {
       setIsLoading(false);

@@ -15,6 +15,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import Search from "./pages/Search";
+import About from "./pages/About";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ export default function App() {
           <Routes>
             {/* ANVESHAN New Platform Routes */}
             <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={<NGODashboard />} />
             <Route path="/search" element={<Search />} />

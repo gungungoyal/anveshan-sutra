@@ -1,7 +1,16 @@
 import { createClient } from "@supabase/supabase-js";
+import dotenv from "dotenv";
+import path from "path";
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
+// Load environment variables from .env.local
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+console.log("Supabase environment variables:");
+console.log("NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl);
+console.log("SUPABASE_SERVICE_ROLE_KEY:", supabaseServiceKey ? "**** (present)" : "not set");
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.warn("Supabase credentials not configured. Using mock data mode.");

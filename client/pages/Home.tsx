@@ -70,10 +70,20 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-
+      
       {/* Hero Section - Large and Inviting */}
       <section className="pt-32 pb-20 px-4 sm:px-6 bg-gradient-to-b from-secondary to-background">
         <div className="container mx-auto max-w-6xl">
+          {/* About Us Component - Positioned in top-right corner of hero section */}
+          <div className="absolute top-8 right-4">
+            <Link 
+              to="/about" 
+              className="px-5 py-3 text-foreground font-semibold text-xl hover:underline"
+            >
+              About Us
+            </Link>
+          </div>
+          
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
               <div className="inline-block px-4 py-2 rounded-full bg-accent/10 text-accent mb-6">
