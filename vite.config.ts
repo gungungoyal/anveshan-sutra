@@ -15,6 +15,18 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: "dist/spa",
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-ui": ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-popover"],
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-charts": ["recharts"],
+          "vendor-form": ["@hookform/resolvers", "react-hook-form", "zod"],
+          "vendor-supabase": ["@supabase/supabase-js"],
+        },
+      },
+    },
   },
   plugins: [react(), expressPlugin()],
   resolve: {

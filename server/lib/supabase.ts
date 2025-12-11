@@ -5,19 +5,20 @@ import path from "path";
 // Load environment variables from .env.local
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 console.log("Supabase environment variables:");
 console.log("NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl);
-console.log("SUPABASE_SERVICE_ROLE_KEY:", supabaseServiceKey ? "**** (present)" : "not set");
+console.log("NEXT_PUBLIC_SUPABASE_ANON_KEY:", supabaseAnonKey ? "**** (present)" : "not set");
 
-if (!supabaseUrl || !supabaseServiceKey) {
+if (!supabaseUrl || !supabaseAnonKey) {
   console.warn("Supabase credentials not configured. Using mock data mode.");
 }
 
-export const supabase = supabaseUrl && supabaseServiceKey
-  ? createClient(supabaseUrl, supabaseServiceKey)
+export const supabase = supabaseUrl && supabaseAnonKey
+  ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
 export async function isSupabaseConfigured(): Promise<boolean> {

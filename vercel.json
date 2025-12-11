@@ -1,7 +1,7 @@
 {
     "framework": "vite",
     "buildCommand": "pnpm build",
-    "outputDirectory": "dist",
+    "outputDirectory": "dist/spa",
     "installCommand": "pnpm install",
     "functions": {
         "api/search.ts": {
@@ -15,4 +15,9 @@
             "destination": "/index.html"
         }
     ]
+    ,
+    "env": {
+        "NEXT_PUBLIC_SUPABASE_URL": "https://fpkijxrlssphftsdldng.supabase.co",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwa2lqeHJsc3NwaGZ0c2RsZG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjE1MDAsImV4cCI6MjA3OTEzNzUwMH0.BVf9Gc5gbgjbsunkSUXJQLm9ap8Yk6ocjn34VQLpyLY"
+    }
 }
