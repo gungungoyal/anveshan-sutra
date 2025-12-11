@@ -58,6 +58,9 @@ export function createServer() {
   app.get("/api/orgs/search", handleSearch);
   app.get("/api/orgs/:id", handleGetOrganization);
 
+  // Search route for the main Search page
+  app.get("/api/search", handleSearchOrganizations);
+
   // Match & recommendation routes
   app.get("/api/matches/recommendations", handleGetMatches);
   app.post("/api/matches/:org_a_id/:org_b_id/exclude", handleExcludeMatch);

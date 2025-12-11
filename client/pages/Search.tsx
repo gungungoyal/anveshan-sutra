@@ -1,8 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { SearchResult } from "@shared/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,11 +13,45 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, ExternalLink, FileText, CheckCircle2 } from "lucide-react";
+import { Heart, ExternalLink, CheckCircle2, Search as SearchIcon } from "lucide-react";
+
+// Organization type matching the backend response
+interface Organization {
+  id: string;
+  name: string;
+  type: string;
+  website?: string;
+  headquarters?: string;
+  region: string;
+  focusAreas: string[];
+  mission: string;
+  description?: string;
+  verificationStatus?: string;
+  projects?: Array<{
+    title: string;
+    year: number;
+    description: string;
+  }>;
+  fundingType?: string;
+  targetBeneficiaries?: string[];
+  partnerHistory?: string[];
+  confidence?: number;
+  alignmentScore?: number;
+}
+
+// API response type
+interface SearchResponse {
+  success: boolean;
+  results?: Organization[];
+  total?: number;
+  focusAreas?: string[];
+  regions?: string[];
+  error?: string;
+}
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [focusAreas, setFocusAreas] = useState<string[]>([]);
@@ -34,85 +67,59 @@ export default function Search() {
     searchParams.get("region") || ""
   );
   const [sortBy, setSortBy] = useState<"alignment" | "name" | "recency">(
-    (searchParams.get("sort") as any) || "alignment"
+    (searchParams.get("sort") as "alignment" | "name" | "recency") || "alignment"
   );
 
-  // Fetch filter options from backend
-  useEffect(() => {
-    const fetchFilterOptions = async () => {
-      try {
-        const [focusAreasRes, regionsRes] = await Promise.all([
-          fetch("/api/organizations/filters/focus-areas"),
-          fetch("/api/organizations/filters/regions"),
-        ]);
+  // Debounced search function
+  const fetchResults = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-        if (focusAreasRes.ok) {
-          const data = await focusAreasRes.json();
-          setFocusAreas(data.focusAreas || []);
-        }
+    try {
+      const params = new URLSearchParams();
+      if (query.trim()) params.append("q", query.trim());
+      if (selectedFocusArea) params.append("focusArea", selectedFocusArea);
+      if (selectedRegion) params.append("region", selectedRegion);
+      if (sortBy) params.append("sortBy", sortBy);
 
-        if (regionsRes.ok) {
-          const data = await regionsRes.json();
-          setRegions(data.regions || []);
-        }
-      } catch (err) {
-        console.error("Failed to fetch filter options:", err);
-        // Fallback: populate filters from local JSON as backup
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
-          const orgs = require("@/data/organizations.json") as SearchResult[];
-          const areas = Array.from(
-            new Set(orgs.flatMap((o: any) => o.focusAreas || []))
-          );
-          const regs = Array.from(
-            new Set(orgs.map((o: any) => o.region).filter(Boolean))
-          );
-          setFocusAreas(areas);
-          setRegions(regs);
-        } catch (e) {
-          console.error("Fallback failed:", e);
-        }
+      const response = await fetch(`/api/search?${params}`);
+
+      if (!response.ok) {
+        throw new Error("Search request failed");
       }
-    };
 
-    fetchFilterOptions();
-  }, []);
+      const data: SearchResponse = await response.json();
 
-  // Fetch search results from backend
-  useEffect(() => {
-    const fetchResults = async () => {
-      setLoading(true);
-      const timer = setTimeout(async () => {
-        try {
-          const params = new URLSearchParams();
-          if (query) params.append("q", query);
-          if (selectedFocusArea) params.append("focusArea", selectedFocusArea);
-          if (selectedRegion) params.append("region", selectedRegion);
-          if (sortBy) params.append("sortBy", sortBy);
+      if (!data.success) {
+        throw new Error(data.error || "Search failed");
+      }
 
-          const response = await fetch(`/api/organizations/search?${params}`);
+      setResults(data.results || []);
 
-          if (!response.ok) {
-            throw new Error("Search request failed");
-          }
-
-          const data = await response.json();
-          setResults(data.organizations || []);
-          setError(null);
-        } catch (err) {
-          setError("Search failed");
-          console.error(err);
-          setResults([]);
-        } finally {
-          setLoading(false);
-        }
-      }, 200);
-
-      return () => clearTimeout(timer);
-    };
-
-    fetchResults();
+      // Update filter options from the API response
+      if (data.focusAreas && data.focusAreas.length > 0) {
+        setFocusAreas(data.focusAreas);
+      }
+      if (data.regions && data.regions.length > 0) {
+        setRegions(data.regions);
+      }
+    } catch (err) {
+      console.error("Search error:", err);
+      setError(err instanceof Error ? err.message : "Search failed");
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
   }, [query, selectedFocusArea, selectedRegion, sortBy]);
+
+  // Debounced search effect
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchResults();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [fetchResults]);
 
   // Update URL params
   useEffect(() => {
@@ -123,7 +130,7 @@ export default function Search() {
     if (sortBy !== "alignment") params.append("sort", sortBy);
 
     setSearchParams(params, { replace: true });
-  }, [query, selectedFocusArea, selectedRegion, sortBy]);
+  }, [query, selectedFocusArea, selectedRegion, sortBy, setSearchParams]);
 
   const toggleShortlist = (orgId: string) => {
     const newShortlist = new Set(shortlist);
@@ -170,12 +177,15 @@ export default function Search() {
                     <label className="block text-sm font-medium mb-2">
                       Search
                     </label>
-                    <Input
-                      placeholder="Organization name..."
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      className="w-full"
-                    />
+                    <div className="relative">
+                      <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search organizations..."
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        className="w-full pl-10"
+                      />
+                    </div>
                   </div>
 
                   {/* Focus Area Filter */}
@@ -183,7 +193,10 @@ export default function Search() {
                     <label className="block text-sm font-medium mb-2">
                       Focus Area
                     </label>
-                    <Select value={selectedFocusArea || "__all__"} onValueChange={(val) => setSelectedFocusArea(val === "__all__" ? "" : val)}>
+                    <Select
+                      value={selectedFocusArea || "__all__"}
+                      onValueChange={(val) => setSelectedFocusArea(val === "__all__" ? "" : val)}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="All areas" />
                       </SelectTrigger>
@@ -203,7 +216,10 @@ export default function Search() {
                     <label className="block text-sm font-medium mb-2">
                       Region
                     </label>
-                    <Select value={selectedRegion || "__all__"} onValueChange={(val) => setSelectedRegion(val === "__all__" ? "" : val)}>
+                    <Select
+                      value={selectedRegion || "__all__"}
+                      onValueChange={(val) => setSelectedRegion(val === "__all__" ? "" : val)}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="All regions" />
                       </SelectTrigger>
@@ -318,7 +334,7 @@ export default function Search() {
                             </p>
 
                             <div className="flex flex-wrap gap-1 mb-3">
-                              {org.focusAreas.map((area) => (
+                              {org.focusAreas?.map((area) => (
                                 <Badge key={area} variant="outline" className="text-xs">
                                   {area}
                                 </Badge>
@@ -330,7 +346,7 @@ export default function Search() {
                           <div className="md:text-right">
                             <div className="bg-primary/10 rounded-lg p-4 mb-4 min-w-[150px]">
                               <div className="text-3xl font-bold text-primary mb-1">
-                                {org.alignmentScore}
+                                {org.alignmentScore || "N/A"}
                               </div>
                               <div className="text-xs text-muted-foreground">
                                 Alignment Score
@@ -347,11 +363,13 @@ export default function Search() {
                               >
                                 <Link to={`/organization/${org.id}`}>View Details</Link>
                               </Button>
-                              <p className="text-sm text-muted-foreground mb-3">
-                                {org.description && org.description.length > 160
-                                  ? org.description.slice(0, 157) + "..."
-                                  : org.description || org.mission}
-                              </p>
+                              {org.description && (
+                                <p className="text-sm text-muted-foreground mb-3">
+                                  {org.description.length > 160
+                                    ? org.description.slice(0, 157) + "..."
+                                    : org.description}
+                                </p>
+                              )}
                               <Button
                                 variant={shortlist.has(org.id) ? "default" : "outline"}
                                 size="sm"

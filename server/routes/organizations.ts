@@ -108,6 +108,15 @@ export const handleSearchOrganizations: RequestHandler = (req, res) => {
       filtered = filtered.filter((org) => org.verificationStatus === params.verificationStatus);
     }
 
+    // Extract filter options
+    const allOrganizations = loadOrganizations();
+    const focusAreas = Array.from(
+      new Set(allOrganizations.flatMap((org) => org.focusAreas || []))
+    ).sort();
+    const regions = Array.from(
+      new Set(allOrganizations.map((org) => org.region).filter(Boolean))
+    ).sort();
+
     // Sort results
     if (params.sortBy === "name") {
       filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -118,13 +127,20 @@ export const handleSearchOrganizations: RequestHandler = (req, res) => {
       filtered.sort((a, b) => (b.alignmentScore || 0) - (a.alignmentScore || 0));
     }
 
+    // Return response in format expected by Search.tsx
     res.json({
-      organizations: filtered,
+      success: true,
+      results: filtered,
       total: filtered.length,
+      focusAreas,
+      regions,
     });
   } catch (error) {
     console.error("Error searching organizations:", error);
-    res.status(500).json({ error: "Failed to search organizations" });
+    res.status(500).json({
+      success: false,
+      error: "Failed to search organizations"
+    });
   }
 };
 
