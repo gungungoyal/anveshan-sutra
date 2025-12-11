@@ -14,40 +14,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, ExternalLink, CheckCircle2, Search as SearchIcon } from "lucide-react";
+import { searchOrganizations } from "@/lib/services/organizations";
+import { SearchResult } from "@shared/api";
 
-// Organization type matching the backend response
-interface Organization {
-  id: string;
-  name: string;
-  type: string;
-  website?: string;
-  headquarters?: string;
-  region: string;
-  focusAreas: string[];
-  mission: string;
-  description?: string;
-  verificationStatus?: string;
-  projects?: Array<{
-    title: string;
-    year: number;
-    description: string;
-  }>;
-  fundingType?: string;
-  targetBeneficiaries?: string[];
-  partnerHistory?: string[];
-  confidence?: number;
-  alignmentScore?: number;
-}
-
-// API response type
-interface SearchResponse {
-  success: boolean;
-  results?: Organization[];
-  total?: number;
-  focusAreas?: string[];
-  regions?: string[];
-  error?: string;
-}
+// Use SearchResult from shared API
+type Organization = SearchResult;
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -70,33 +41,26 @@ export default function Search() {
     (searchParams.get("sort") as "alignment" | "name" | "recency") || "alignment"
   );
 
-  // Debounced search function
+  // Search function using service layer
   const fetchResults = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const params = new URLSearchParams();
-      if (query.trim()) params.append("q", query.trim());
-      if (selectedFocusArea) params.append("focusArea", selectedFocusArea);
-      if (selectedRegion) params.append("region", selectedRegion);
-      if (sortBy) params.append("sortBy", sortBy);
-
-      const response = await fetch(`/api/search?${params}`);
-
-      if (!response.ok) {
-        throw new Error("Search request failed");
-      }
-
-      const data: SearchResponse = await response.json();
+      const data = await searchOrganizations({
+        query: query.trim() || undefined,
+        focusArea: selectedFocusArea || undefined,
+        region: selectedRegion || undefined,
+        sortBy: sortBy,
+      });
 
       if (!data.success) {
-        throw new Error(data.error || "Search failed");
+        throw new Error("Search failed");
       }
 
       setResults(data.results || []);
 
-      // Update filter options from the API response
+      // Update filter options from the response
       if (data.focusAreas && data.focusAreas.length > 0) {
         setFocusAreas(data.focusAreas);
       }

@@ -4,7 +4,7 @@ import { Mail, Lock, User, Building2, Heart } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
-import { SignUpRequest, LoginRequest, AuthResponse } from "@shared/api";
+import { signIn, signUp } from "@/lib/services/auth";
 
 type AuthMode = "login" | "signup";
 type UserRole = "ngo" | "funder";
@@ -36,43 +36,27 @@ export default function AuthPage() {
 
     setIsLoading(true);
     try {
-      const payload: LoginRequest = {
-        email: loginEmail,
-        password: loginPassword,
-      };
+      console.log("Sending login request");
 
-      console.log("Sending login request:", payload);
+      const { user, token, error } = await signIn(loginEmail, loginPassword);
 
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      console.log("Login response status:", response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        // Handle email not confirmed case
-        if (errorData.email_not_confirmed) {
-          toast.error("Please check your email and confirm your account before logging in");
-          return;
-        }
-        throw new Error(errorData.error || "Login failed");
+      if (error || !user) {
+        throw new Error(error || "Login failed");
       }
 
-      const data: AuthResponse = await response.json();
-      console.log("Login successful:", data);
+      console.log("Login successful:", user);
 
       // Store token
-      localStorage.setItem("auth_token", data.token);
-      localStorage.setItem("user_role", data.user.role);
+      if (token) {
+        localStorage.setItem("auth_token", token);
+      }
+      localStorage.setItem("user_role", user.role);
 
       toast.success("Logged in successfully!");
 
       // Redirect to appropriate dashboard
       setTimeout(() => {
-        navigate(data.user.profile_complete ? `/dashboard/${data.user.role}` : "/onboarding");
+        navigate(user.profile_complete ? `/dashboard/${user.role}` : "/dashboard");
       }, 500);
     } catch (error) {
       console.error("Login error:", error);
@@ -108,52 +92,22 @@ export default function AuthPage() {
 
     setIsLoading(true);
     try {
-      const payload: SignUpRequest = {
-        email: signupEmail,
-        password: signupPassword,
-        name: signupName,
-        role: role,
-      };
+      console.log("Sending signup request");
 
-      console.log("Sending signup request:", payload);
+      const { user, error } = await signUp(signupEmail, signupPassword, signupName, role);
 
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      console.log("Signup response status:", response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Signup failed");
+      if (error) {
+        throw new Error(error);
       }
 
-      const data = await response.json();
-      console.log("Signup response data:", data);
+      console.log("Signup response:", user);
 
-      // Handle email confirmation requirement
-      if (data.pending_confirmation) {
-        toast.success("Account created! Please check your email for confirmation link.");
-        // Switch to login mode after successful signup
-        setTimeout(() => {
-          setMode("login");
-          setLoginEmail(signupEmail);
-        }, 2000);
-        return;
-      }
-
-      // Handle immediate success (if email confirmations are disabled)
-      if (data.user && data.token) {
-        // Store token
-        localStorage.setItem("auth_token", data.token);
-        localStorage.setItem("user_role", data.user.role);
-
-        toast.success("Account created! Redirecting to profile setup...");
+      if (user) {
+        toast.success("Account created! Redirecting...");
+        localStorage.setItem("user_role", user.role);
 
         setTimeout(() => {
-          navigate("/onboarding");
+          navigate("/dashboard");
         }, 500);
         return;
       }

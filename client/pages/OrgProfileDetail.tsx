@@ -15,6 +15,7 @@ import {
   Briefcase,
   Award,
 } from "lucide-react";
+import { getOrganizationById } from "@/lib/services/organizations";
 
 export default function OrgProfileDetail() {
   const { id } = useParams<{ id: string }>();
@@ -30,17 +31,13 @@ export default function OrgProfileDetail() {
     const fetchOrganization = async () => {
       try {
         setLoading(true);
-        // Fetch organization from backend API
-        const response = await fetch(`/api/organizations/${id}`);
+        // Fetch organization using service layer
+        const org = await getOrganizationById(id);
 
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error("Organization not found");
-          }
-          throw new Error("Failed to fetch organization");
+        if (!org) {
+          throw new Error("Organization not found");
         }
 
-        const org = (await response.json()) as SearchResult;
         setOrg(org);
         setError(null);
       } catch (err) {

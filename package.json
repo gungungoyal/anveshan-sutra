@@ -1,5 +1,5 @@
 {
-  "name": "Drivya.AI",
+  "name": "drivya-ai",
   "private": true,
   "version": "0.0.0",
   "packageManager": "pnpm@8.10.0",
@@ -7,7 +7,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "dev": "npx concurrently \"vite\" \"cd textmaker && pnpm dev\"",
+    "dev": "vite",
     "dev:full": "npx concurrently \"pnpm dev\" \"cd textmaker && pnpm dev\"",
     "build": "vite build",
     "build:full": "pnpm build && cd textmaker && pnpm build",

@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   ArrowLeft,
 } from "lucide-react";
+import { getOrganizationById } from "@/lib/services/organizations";
 
 interface PPTSlide {
   slide_number: number;
@@ -38,11 +39,10 @@ export default function PPTViewer() {
       try {
         setLoading(true);
 
-        // Fetch organization
-        const response = await fetch(`/api/orgs/${id}`);
-        if (!response.ok) throw new Error("Organization not found");
+        // Fetch organization using service layer
+        const data = await getOrganizationById(id);
+        if (!data) throw new Error("Organization not found");
 
-        const data = await response.json();
         setOrg(data);
 
         // Generate slides from organization data
@@ -287,11 +287,10 @@ export default function PPTViewer() {
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  index === currentSlide
+                className={`w-3 h-3 rounded-full transition-all ${index === currentSlide
                     ? "bg-primary w-8"
                     : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                }`}
+                  }`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}
@@ -318,11 +317,10 @@ export default function PPTViewer() {
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`relative aspect-video rounded-lg border-2 transition-all p-3 text-left ${
-                  index === currentSlide
+                className={`relative aspect-video rounded-lg border-2 transition-all p-3 text-left ${index === currentSlide
                     ? "border-primary bg-primary/10"
                     : "border-border hover:border-primary/50"
-                }`}
+                  }`}
               >
                 <div className="text-xs font-bold text-foreground truncate">
                   {s.title}

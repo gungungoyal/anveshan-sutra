@@ -1,0 +1,523 @@
+import { Organization, SearchResult, SearchParams } from "@shared/api";
+
+export const mockOrganizations: Organization[] = [
+  {
+    id: "org-001",
+    name: "Future Educators Foundation",
+    type: "NGO",
+    website: "https://futureteachers.org",
+    headquarters: "Uttar Pradesh",
+    region: "Northern India",
+    focusAreas: ["Education", "Livelihood"],
+    mission:
+      "Empowering rural communities through quality education and skill development programs.",
+    description:
+      "Future Educators Foundation works across Uttar Pradesh and Madhya Pradesh, providing educational resources and teacher training to over 50 schools. We focus on making quality education accessible to underprivileged children.",
+    verificationStatus: "verified",
+    projects: [
+      {
+        title: "Village Teacher Training Initiative",
+        year: 2023,
+        description: "Trained 500+ teachers in modern teaching methodologies",
+      },
+      {
+        title: "Digital Literacy Program",
+        year: 2023,
+        description: "Provided computer training to 2000+ students",
+      },
+    ],
+    fundingType: "recipient",
+    targetBeneficiaries: ["School Children 6-18", "Rural Teachers"],
+    partnerHistory: ["UNICEF", "Global Fund for Education"],
+    confidence: 92,
+  },
+  {
+    id: "org-002",
+    name: "Health for All Initiative",
+    type: "Foundation",
+    website: "https://healthforall.org",
+    headquarters: "Maharashtra",
+    region: "Western India",
+    focusAreas: ["Health", "Environment"],
+    mission:
+      "Ensuring access to quality healthcare in underserved communities across India.",
+    description:
+      "Health for All Initiative operates mobile clinics and trains community health workers in rural Maharashtra and Gujarat. We focus on preventive care and health education.",
+    verificationStatus: "verified",
+    projects: [
+      {
+        title: "Mobile Health Clinics",
+        year: 2024,
+        description: "Serving 10000+ patients annually across 50 villages",
+      },
+      {
+        title: "Community Health Worker Training",
+        year: 2023,
+        description: "Trained 300+ local health workers",
+      },
+    ],
+    fundingType: "mixed",
+    targetBeneficiaries: ["Rural Communities", "Women & Children"],
+    partnerHistory: ["WHO", "Gates Foundation"],
+    confidence: 88,
+  },
+  {
+    id: "org-003",
+    name: "Green Earth Collective",
+    type: "NGO",
+    website: "https://greenearthcollective.in",
+    headquarters: "Karnataka",
+    region: "Southern India",
+    focusAreas: ["Environment", "Livelihood"],
+    mission:
+      "Promoting sustainable livelihoods through environmental conservation.",
+    description:
+      "Green Earth Collective works on reforestation, organic farming, and sustainable tourism in Western Ghats. We engage local communities in conservation efforts.",
+    verificationStatus: "verified",
+    projects: [
+      {
+        title: "Reforestation Program",
+        year: 2024,
+        description: "Planted 100000+ trees and protected 5000 hectares",
+      },
+      {
+        title: "Organic Farming Collective",
+        year: 2023,
+        description: "Supporting 200+ farmers in sustainable agriculture",
+      },
+    ],
+    fundingType: "recipient",
+    targetBeneficiaries: ["Farmers", "Forest Communities"],
+    partnerHistory: ["IUCN", "Rainforest Alliance"],
+    confidence: 85,
+  },
+  {
+    id: "org-004",
+    name: "Tech Skills Academy",
+    type: "Incubator",
+    website: "https://techskillsacademy.com",
+    headquarters: "Bangalore",
+    region: "Southern India",
+    focusAreas: ["Technology", "Livelihood"],
+    mission:
+      "Building tech talent from underrepresented communities through bootcamp and mentorship.",
+    description:
+      "Tech Skills Academy runs intensive coding bootcamps and provides job placement support. We have trained 2000+ developers from low-income backgrounds.",
+    verificationStatus: "verified",
+    projects: [
+      {
+        title: "Full Stack Development Bootcamp",
+        year: 2024,
+        description: "85% job placement rate, 500+ students graduated",
+      },
+      {
+        title: "Women in Tech Initiative",
+        year: 2023,
+        description: "30% female cohort with dedicated mentorship",
+      },
+    ],
+    fundingType: "mixed",
+    targetBeneficiaries: ["Youth 18-30", "Women Developers"],
+    partnerHistory: ["Google", "Microsoft"],
+    confidence: 90,
+  },
+  {
+    id: "org-005",
+    name: "ACIC Innovation Hub",
+    type: "Incubator",
+    website: "https://acicinnovation.org",
+    headquarters: "Delhi",
+    region: "Northern India",
+    focusAreas: ["Technology", "Governance"],
+    mission:
+      "Accelerating social enterprises solving India's critical challenges through innovation.",
+    description:
+      "ACIC Innovation Hub supports 50+ social enterprises annually through mentorship, funding, and network access. We focus on scalable solutions for governance, education, and livelihood.",
+    verificationStatus: "verified",
+    projects: [
+      {
+        title: "Accelerator Program",
+        year: 2024,
+        description: "Supporting 50+ social enterprises with $2M in funding",
+      },
+      {
+        title: "Innovation Fellowship",
+        year: 2023,
+        description: "100+ fellows trained in social enterprise management",
+      },
+    ],
+    fundingType: "provider",
+    targetBeneficiaries: ["Social Entrepreneurs", "Startups"],
+    partnerHistory: ["Omidyar Network", "World Economic Forum"],
+    confidence: 91,
+  },
+  {
+    id: "org-006",
+    name: "Vocational Skills India",
+    type: "NGO",
+    website: "https://vocationalskillsindia.org",
+    headquarters: "Andhra Pradesh",
+    region: "Southern India",
+    focusAreas: ["Livelihood", "Education"],
+    mission:
+      "Providing vocational training to youth for employment and entrepreneurship.",
+    description:
+      "Vocational Skills India runs training centers in rural Andhra Pradesh, offering courses in construction, hospitality, and healthcare. We have trained 10000+ youth.",
+    verificationStatus: "unverified",
+    projects: [
+      {
+        title: "Construction Skills Program",
+        year: 2024,
+        description: "Training 500+ construction workers with certification",
+      },
+      {
+        title: "Healthcare Assistant Course",
+        year: 2023,
+        description: "80% placement rate among healthcare trainees",
+      },
+    ],
+    fundingType: "recipient",
+    targetBeneficiaries: ["Youth 16-30", "Rural Communities"],
+    partnerHistory: ["NITI Aayog"],
+    confidence: 72,
+  },
+  {
+    id: "org-007",
+    name: "Women Empowerment Network",
+    type: "NGO",
+    website: "https://womenempowermentnet.in",
+    headquarters: "Rajasthan",
+    region: "Western India",
+    focusAreas: ["Livelihood", "Governance"],
+    mission:
+      "Empowering rural women through self-help groups and economic opportunities.",
+    description:
+      "WEN facilitates self-help groups across Rajasthan, providing microfinance, business training, and market linkages. We support 5000+ women entrepreneurs.",
+    verificationStatus: "verified",
+    projects: [
+      {
+        title: "Self-Help Group Network",
+        year: 2024,
+        description: "Supporting 500+ SHGs with $5M in microfinance",
+      },
+      {
+        title: "Women Entrepreneur Bootcamp",
+        year: 2023,
+        description: "Trained 1000+ women in business and financial literacy",
+      },
+    ],
+    fundingType: "mixed",
+    targetBeneficiaries: ["Rural Women", "Entrepreneurs"],
+    partnerHistory: ["NABARD", "Acumen Fund"],
+    confidence: 87,
+  },
+  {
+    id: "org-008",
+    name: "Youth Leadership Foundation",
+    type: "Foundation",
+    website: "https://youthleadership.org",
+    headquarters: "Tamil Nadu",
+    region: "Southern India",
+    focusAreas: ["Education", "Governance"],
+    mission:
+      "Developing next-generation leaders through civic engagement and skills training.",
+    description:
+      "YLF runs leadership programs in schools, colleges, and communities across Tamil Nadu. We focus on youth civic engagement and social responsibility.",
+    verificationStatus: "verified",
+    projects: [
+      {
+        title: "School Leadership Program",
+        year: 2024,
+        description: "Engaging 10000+ school students in civic activities",
+      },
+      {
+        title: "College Fellowship",
+        year: 2023,
+        description: "50+ college leaders selected as change agents",
+      },
+    ],
+    fundingType: "provider",
+    targetBeneficiaries: ["Youth 12-25", "Students"],
+    partnerHistory: ["India Together", "Ashoka"],
+    confidence: 84,
+  },
+  {
+    id: "org-009",
+    name: "Clean Water Foundation",
+    type: "Foundation",
+    website: "https://cleanwaterfoundation.org",
+    headquarters: "Bihar",
+    region: "Eastern India",
+    focusAreas: ["Health", "Environment"],
+    mission:
+      "Ensuring access to safe drinking water and sanitation in rural communities.",
+    description:
+      "Clean Water Foundation builds and maintains water systems in rural Bihar, benefiting 50000+ people. We also provide hygiene education and community training.",
+    verificationStatus: "verified",
+    projects: [
+      {
+        title: "Water System Installation",
+        year: 2024,
+        description: "Built 200+ water systems benefiting 50000+ people",
+      },
+      {
+        title: "Hygiene Education Program",
+        year: 2023,
+        description: "Trained 2000+ community health volunteers",
+      },
+    ],
+    fundingType: "recipient",
+    targetBeneficiaries: ["Rural Communities", "Women & Children"],
+    partnerHistory: ["Water Aid", "USAID"],
+    confidence: 89,
+  },
+  {
+    id: "org-010",
+    name: "Digital Innovation Lab",
+    type: "Incubator",
+    website: "https://digitalinnovationlab.in",
+    headquarters: "Hyderabad",
+    region: "Southern India",
+    focusAreas: ["Technology", "Governance"],
+    mission:
+      "Enabling digital solutions for social good through innovation and collaboration.",
+    description:
+      "DIL works with social enterprises to develop tech solutions for governance, healthcare, and education. We provide technical support, funding, and market linkages.",
+    verificationStatus: "pending",
+    projects: [
+      {
+        title: "Social Tech Accelerator",
+        year: 2024,
+        description: "Supporting 30+ tech-based social enterprises",
+      },
+      {
+        title: "Civic Tech Initiative",
+        year: 2023,
+        description: "Developing digital solutions for local governance",
+      },
+    ],
+    fundingType: "provider",
+    targetBeneficiaries: ["Social Entrepreneurs", "Communities"],
+    partnerHistory: ["Google.org", "Facebook Social Impact"],
+    confidence: 79,
+  },
+  // Adding more organizations for comprehensive demo data
+  {
+    id: "org-011",
+    name: "Rural Health Outreach Trust",
+    type: "NGO",
+    website: "https://ruralhealthoutreach.in",
+    headquarters: "Jharkhand",
+    region: "Eastern India",
+    focusAreas: ["Health", "Governance"],
+    mission: "Reducing rural health disparities through mobile clinics and public health awareness.",
+    description: "RHOT operates in tribal districts of Jharkhand, offering preventive healthcare, vaccination drives, and maternal health programs.",
+    verificationStatus: "verified",
+    projects: [
+      { title: "Maternal Health Initiative", year: 2024, description: "Supported 3000+ women with prenatal and postnatal care" },
+      { title: "Vaccination Outreach Drive", year: 2023, description: "Reached 15000+ children across 80 villages" },
+    ],
+    fundingType: "recipient",
+    targetBeneficiaries: ["Tribal Communities", "Women & Children"],
+    partnerHistory: ["Care India", "UNDP"],
+    confidence: 86,
+  },
+  {
+    id: "org-012",
+    name: "SkillUp Youth Foundation",
+    type: "Foundation",
+    website: "https://skillupyouth.org",
+    headquarters: "Haryana",
+    region: "Northern India",
+    focusAreas: ["Livelihood", "Education"],
+    mission: "Improving employability of rural youth through career training and industry partnerships.",
+    description: "SkillUp runs training centers in Haryana, offering job-oriented courses in IT, retail, and logistics.",
+    verificationStatus: "verified",
+    projects: [
+      { title: "Rural Employment Program", year: 2024, description: "Placed 1500+ youth in private sector roles" },
+      { title: "Retail Skills Bootcamp", year: 2023, description: "Trained 800+ participants with 70% placement rate" },
+    ],
+    fundingType: "mixed",
+    targetBeneficiaries: ["Youth 16-28", "First-time Job Seekers"],
+    partnerHistory: ["NSDC", "Amazon Cares"],
+    confidence: 90,
+  },
+  {
+    id: "org-013",
+    name: "Smart Village Innovation Trust",
+    type: "NGO",
+    website: "https://smartvillagetrust.in",
+    headquarters: "Odisha",
+    region: "Eastern India",
+    focusAreas: ["Governance", "Technology"],
+    mission: "Digitizing governance and improving rural service delivery through tech solutions.",
+    description: "SVIT builds digital kiosks, e-governance access points, and citizen service centers in remote blocks of Odisha.",
+    verificationStatus: "pending",
+    projects: [
+      { title: "E-Governance Kiosk Project", year: 2024, description: "Set up 120+ citizen service kiosks across districts" },
+      { title: "Digital Literacy for Farmers", year: 2023, description: "Trained 4000 farmers to use digital services" },
+    ],
+    fundingType: "recipient",
+    targetBeneficiaries: ["Farmers", "Rural Citizens"],
+    partnerHistory: ["NIC", "TCS Foundation"],
+    confidence: 78,
+  },
+  {
+    id: "org-014",
+    name: "Nature Conservation Forum",
+    type: "NGO",
+    website: "https://natureconservationforum.org",
+    headquarters: "Assam",
+    region: "North-East India",
+    focusAreas: ["Environment", "Governance"],
+    mission: "Protecting biodiversity and empowering indigenous communities for environmental stewardship.",
+    description: "NCF operates conservation programs in Assam's forest belts, focusing on anti-poaching education and habitat restoration.",
+    verificationStatus: "verified",
+    projects: [
+      { title: "Habitat Restoration Program", year: 2024, description: "Restored 1200 hectares of degraded forest land" },
+      { title: "Anti-Poaching Awareness Drive", year: 2023, description: "Trained 500+ youth volunteers" },
+    ],
+    fundingType: "recipient",
+    targetBeneficiaries: ["Indigenous Communities", "Forest Villages"],
+    partnerHistory: ["WWF India", "UNEP"],
+    confidence: 83,
+  },
+  {
+    id: "org-015",
+    name: "India Tech for Good Alliance",
+    type: "Foundation",
+    website: "https://techforgoodalliance.in",
+    headquarters: "Mumbai",
+    region: "Western India",
+    focusAreas: ["Technology", "Education"],
+    mission: "Accelerating the use of technology to improve education and public services.",
+    description: "ITGA funds and supports ed-tech and civic-tech startups, providing grants, mentorship, and research support.",
+    verificationStatus: "verified",
+    projects: [
+      { title: "EdTech Innovation Grant", year: 2024, description: "Funded 20+ early-stage education technology startups" },
+      { title: "Digital Civics Research Program", year: 2023, description: "Published 12+ research papers on tech-based governance" },
+    ],
+    fundingType: "provider",
+    targetBeneficiaries: ["Startups", "Students"],
+    partnerHistory: ["Infosys Foundation", "Google.org"],
+    confidence: 92,
+  },
+  {
+    id: "org-016",
+    name: "Community Resilience Network",
+    type: "NGO",
+    website: "https://crnetwork.in",
+    headquarters: "Uttarakhand",
+    region: "Northern India",
+    focusAreas: ["Health", "Environment"],
+    mission: "Building disaster-resilient communities in hilly regions through capacity development.",
+    description: "CRN strengthens disaster preparedness by training communities for landslides, floods, and emergency response.",
+    verificationStatus: "unverified",
+    projects: [
+      { title: "Disaster Preparedness Workshops", year: 2024, description: "Trained 7000+ villagers in emergency response" },
+      { title: "Eco-Safe Housing Initiative", year: 2023, description: "Built 50+ sustainable community shelters" },
+    ],
+    fundingType: "recipient",
+    targetBeneficiaries: ["Hill Communities", "Women"],
+    partnerHistory: ["Red Cross India"],
+    confidence: 71,
+  },
+  {
+    id: "org-017",
+    name: "Women Tech Forward",
+    type: "Foundation",
+    website: "https://womentechforward.org",
+    headquarters: "Pune",
+    region: "Western India",
+    focusAreas: ["Technology", "Livelihood"],
+    mission: "Increasing women's participation in the technology workforce.",
+    description: "The foundation sponsors tech scholarships, coding programs, and mentorship networks for women across India.",
+    verificationStatus: "verified",
+    projects: [
+      { title: "Women Coders Scholarship", year: 2024, description: "Awarded 800+ coding scholarships" },
+      { title: "Tech Mentorship Circles", year: 2023, description: "Connected 2000+ women with industry mentors" },
+    ],
+    fundingType: "provider",
+    targetBeneficiaries: ["Women Developers", "Students"],
+    partnerHistory: ["Adobe", "GitHub"],
+    confidence: 89,
+  },
+  {
+    id: "org-018",
+    name: "Bharat Rural Development Center",
+    type: "NGO",
+    website: "https://brdcenter.in",
+    headquarters: "Madhya Pradesh",
+    region: "Central India",
+    focusAreas: ["Livelihood", "Governance"],
+    mission: "Improving rural income and empowering Panchayats through decentralised development.",
+    description: "BRDC works with Panchayats to improve local governance, run livelihood clusters, and support SHGs in MP.",
+    verificationStatus: "pending",
+    projects: [
+      { title: "Panchayat Leadership Training", year: 2024, description: "Trained 1200+ elected representatives" },
+      { title: "Rural Livelihood Cluster Program", year: 2023, description: "Helped 3000+ artisans scale microenterprises" },
+    ],
+    fundingType: "mixed",
+    targetBeneficiaries: ["Panchayats", "Rural Artisans"],
+    partnerHistory: ["Ministry of Rural Development"],
+    confidence: 76,
+  },
+  {
+    id: "org-019",
+    name: "Future Cities Innovation Lab",
+    type: "Incubator",
+    website: "https://futurecitieslab.in",
+    headquarters: "Bangalore",
+    region: "Southern India",
+    focusAreas: ["Technology", "Environment"],
+    mission: "Driving innovation for sustainable and smart urban development.",
+    description: "FCIL incubates cleantech, mobility, and urban governance startups focused on solving Indian city challenges.",
+    verificationStatus: "verified",
+    projects: [
+      { title: "Urban Innovation Accelerator", year: 2024, description: "Supported 25+ startups in mobility, waste, and energy" },
+      { title: "Smart City Data Lab", year: 2023, description: "Built open datasets for 4 Indian cities" },
+    ],
+    fundingType: "provider",
+    targetBeneficiaries: ["Startups", "Urban Communities"],
+    partnerHistory: ["Smart City Mission", "World Bank"],
+    confidence: 88,
+  },
+  {
+    id: "org-020",
+    name: "Mindful Education Collective",
+    type: "NGO",
+    website: "https://mindfuleducationcollective.in",
+    headquarters: "Kerala",
+    region: "Southern India",
+    focusAreas: ["Education", "Health"],
+    mission: "Enhancing student well-being through mental health programs in schools.",
+    description: "MEC provides school counselors, SEL curriculum, and teacher training on mental health across Kerala.",
+    verificationStatus: "verified",
+    projects: [
+      { title: "School Mental Wellness Program", year: 2024, description: "Reached 300+ schools and 40,000+ students" },
+      { title: "Teacher SEL Certification", year: 2023, description: "Certified 1500+ teachers in emotional literacy" },
+    ],
+    fundingType: "recipient",
+    targetBeneficiaries: ["Students", "Teachers"],
+    partnerHistory: ["Azim Premji Foundation"],
+    confidence: 91,
+  },
+];
+
+/**
+ * Extract all unique focus areas from organizations
+ */
+export function getAllFocusAreas(): string[] {
+  return Array.from(
+    new Set(mockOrganizations.flatMap((org) => org.focusAreas || []))
+  ).sort();
+}
+
+/**
+ * Extract all unique regions from organizations
+ */
+export function getAllRegions(): string[] {
+  return Array.from(
+    new Set(mockOrganizations.map((org) => org.region).filter(Boolean))
+  ).sort();
+}
