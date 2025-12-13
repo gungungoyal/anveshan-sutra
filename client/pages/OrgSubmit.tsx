@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SubmitOrganizationRequest } from "@shared/api";
+import { submitOrganization } from "@/lib/services/organizations";
 
 interface FormData extends SubmitOrganizationRequest {
   confirmation: boolean;
@@ -63,88 +64,88 @@ export default function OrgSubmit() {
   ];
 
   const focusAreaOptions = [
-  "Education & STEM",
-  "School Education",
-  "Digital Education",
-  "STEM / Robotics",
-  "Scholarships",
-  "Teacher Training",
-  "Adult Literacy",
+    "Education & STEM",
+    "School Education",
+    "Digital Education",
+    "STEM / Robotics",
+    "Scholarships",
+    "Teacher Training",
+    "Adult Literacy",
 
-  "Skill Development & Livelihood",
-  "Vocational Training",
-  "Entrepreneurship Support",
-  "Self-Employment",
-  "Rural Livelihood",
-  "Urban Livelihood",
+    "Skill Development & Livelihood",
+    "Vocational Training",
+    "Entrepreneurship Support",
+    "Self-Employment",
+    "Rural Livelihood",
+    "Urban Livelihood",
 
-  "Health & Nutrition",
-  "Preventive Healthcare",
-  "Maternal & Child Health",
-  "Sanitation & Hygiene",
-  "Nutrition Programs",
-  "Medical Camps",
+    "Health & Nutrition",
+    "Preventive Healthcare",
+    "Maternal & Child Health",
+    "Sanitation & Hygiene",
+    "Nutrition Programs",
+    "Medical Camps",
 
-  "Women Empowerment",
-  "Women Skilling",
-  "Women Safety & Rights",
-  "Financial Inclusion (Women)",
-  "Leadership Development (Women)",
+    "Women Empowerment",
+    "Women Skilling",
+    "Women Safety & Rights",
+    "Financial Inclusion (Women)",
+    "Leadership Development (Women)",
 
-  "Environment & Sustainability",
-  "Waste Management",
-  "Water Conservation",
-  "Renewable Energy",
-  "Energy Efficiency",
-  "Climate Action",
-  "Urban Green Spaces",
+    "Environment & Sustainability",
+    "Waste Management",
+    "Water Conservation",
+    "Renewable Energy",
+    "Energy Efficiency",
+    "Climate Action",
+    "Urban Green Spaces",
 
-  "Agriculture & Rural Development",
-  "Farmer Training",
-  "Agri-Tech",
-  "Supply Chain Improvement",
-  "Irrigation Support",
-  "Animal Husbandry",
+    "Agriculture & Rural Development",
+    "Farmer Training",
+    "Agri-Tech",
+    "Supply Chain Improvement",
+    "Irrigation Support",
+    "Animal Husbandry",
 
-  "Community Development",
-  "Village Development",
-  "Infrastructure Support",
-  "Slum Development",
-  "Migrant Support",
-  "Disaster Relief",
-  "Public Utilities",
+    "Community Development",
+    "Village Development",
+    "Infrastructure Support",
+    "Slum Development",
+    "Migrant Support",
+    "Disaster Relief",
+    "Public Utilities",
 
-  "Innovation, Research & Technology",
-  "Innovation Labs",
-  "Incubation Support",
-  "R&D Projects",
-  "Social Innovation",
-  "Startup & Entrepreneurship Programs",
-  "Digital Transformation",
+    "Innovation, Research & Technology",
+    "Innovation Labs",
+    "Incubation Support",
+    "R&D Projects",
+    "Social Innovation",
+    "Startup & Entrepreneurship Programs",
+    "Digital Transformation",
 
-  "Differently-Abled Support",
-  "Assistive Devices",
-  "Special Education",
-  "Accessibility Initiatives",
+    "Differently-Abled Support",
+    "Assistive Devices",
+    "Special Education",
+    "Accessibility Initiatives",
 
-  "Youth Development & Sports",
-  "Sports Training",
-  "Sports Infrastructure",
-  "Youth Leadership Programs",
-  "Volunteering Programs",
+    "Youth Development & Sports",
+    "Sports Training",
+    "Sports Infrastructure",
+    "Youth Leadership Programs",
+    "Volunteering Programs",
 
-  "Arts, Culture & Heritage",
-  "Cultural Preservation",
-  "Museums & Heritage",
-  "Cultural Programs",
+    "Arts, Culture & Heritage",
+    "Cultural Preservation",
+    "Museums & Heritage",
+    "Cultural Programs",
 
-  "Governance, Policy & Civic Engagement",
-  "Good Governance",
-  "Digital Governance",
-  "Transparency Initiatives",
-  "Citizen Engagement Platforms",
-  "RTI Awareness"
-];
+    "Governance, Policy & Civic Engagement",
+    "Good Governance",
+    "Digital Governance",
+    "Transparency Initiatives",
+    "Citizen Engagement Platforms",
+    "RTI Awareness"
+  ];
 
   const regionOptions = [
     "Northern India",
@@ -240,7 +241,7 @@ export default function OrgSubmit() {
 
     setIsSubmitting(true);
     try {
-      const payload: SubmitOrganizationRequest = {
+      const result = await submitOrganization({
         name: formData.name,
         type: formData.type,
         website: formData.website,
@@ -250,25 +251,12 @@ export default function OrgSubmit() {
         mission: formData.mission,
         description: formData.description,
         fundingType: formData.fundingType,
-        targetBeneficiaries: formData.targetBeneficiaries,
-        partnerHistory: formData.partnerHistory,
-        projects: formData.projects,
-      };
-
-      const response = await fetch("/api/organizations/submit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to submit organization");
+      if (!result.success) {
+        throw new Error(result.error || "Failed to submit organization");
       }
 
-      const result = await response.json();
       toast.success(
         `Organization "${formData.name}" submitted successfully! Redirecting to search...`,
       );
@@ -325,13 +313,12 @@ export default function OrgSubmit() {
                 >
                   <div className="flex items-center gap-2">
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
-                        step.number < currentStep
-                          ? "bg-accent text-accent-foreground"
-                          : step.number === currentStep
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground"
-                      }`}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${step.number < currentStep
+                        ? "bg-accent text-accent-foreground"
+                        : step.number === currentStep
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                        }`}
                     >
                       {step.number < currentStep ? (
                         <Check className="w-5 h-5" />
@@ -373,11 +360,10 @@ export default function OrgSubmit() {
                   {/* NGO Option */}
                   <div
                     onClick={() => handleInputChange("userRole", "ngo")}
-                    className={`p-8 rounded-xl border-2 cursor-pointer transition-all ${
-                      formData.userRole === "ngo"
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50"
-                    }`}
+                    className={`p-8 rounded-xl border-2 cursor-pointer transition-all ${formData.userRole === "ngo"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                      }`}
                   >
                     <div className="text-3xl mb-3">🏢</div>
                     <h3 className="text-xl font-bold text-foreground mb-2">
@@ -394,11 +380,10 @@ export default function OrgSubmit() {
                   {/* Funder Option */}
                   <div
                     onClick={() => handleInputChange("userRole", "funder")}
-                    className={`p-8 rounded-xl border-2 cursor-pointer transition-all ${
-                      formData.userRole === "funder"
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50"
-                    }`}
+                    className={`p-8 rounded-xl border-2 cursor-pointer transition-all ${formData.userRole === "funder"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                      }`}
                   >
                     <div className="text-3xl mb-3">💰</div>
                     <h3 className="text-xl font-bold text-foreground mb-2">

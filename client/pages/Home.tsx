@@ -13,7 +13,7 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   const navigate = useNavigate();
-  
+
   const steps = [
     {
       number: 1,
@@ -45,43 +45,21 @@ export default function Home() {
     "✓ Auto-generate presentations",
   ];
 
-  const testimonials = [
-    {
-      name: "Priya Singh",
-      role: "Director, Education NGO",
-      quote:
-        "Drivya.AI cut our partner discovery time from weeks to just hours. The alignment scoring helped us find the perfect CSR partner immediately.",
-      avatar: "PS",
-    },
-    {
-      name: "Rajesh Kumar",
-      role: "Founder, Social Enterprise",
-      quote:
-        "The auto-generated PPT presentations saved us countless hours. We were able to present to potential partners the same day we found them.",
-      avatar: "RK",
-    },
-    {
-      name: "Anjali Patel",
-      role: "Grant Manager",
-      quote:
-        "The verified badge system gives us confidence in the organizations we partner with. Highly recommended for any NGO.",
-      avatar: "AP",
-    },
-  ];
+  // Reviews will be added after structured pilot testing with real users
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       {/* Hero Section - Large and Inviting */}
       <section className="pt-32 pb-20 px-4 sm:px-6 bg-gradient-to-b from-secondary to-background">
         <div className="container mx-auto max-w-6xl">
           {/* Top bar with logo and buttons */}
           <div className="absolute top-3 left-7 z-100">
             <div className="w-39 h-20 rounded-full overflow-hidden">
-              <img 
-                src="/Gemini_Generated_Image_8ghzle8ghzle8ghz.png" 
-                alt="Drivya.AI Logo" 
+              <img
+                src="/logo.svg"
+                alt="Drivya.AI Logo"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -104,7 +82,7 @@ export default function Home() {
               About Us
             </button>
           </div>
-          
+
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
               <div className="inline-block px-4 py-2 rounded-full bg-accent/10 text-accent mb-6">
@@ -180,39 +158,35 @@ export default function Home() {
               Empowering NGOs through research, collaboration, and innovation
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="p-8 bg-card rounded-2xl border-2 border-border">
               <h3 className="text-2xl font-bold text-foreground mb-4">
                 Our Mission
               </h3>
               <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                We are dedicated to strengthening the nonprofit sector through rigorous, independent research that illuminates best practices, challenges, and opportunities. Our mission is to provide NGOs with the insights they need to maximize their impact, optimize their operations, and drive meaningful change in communities worldwide.
+                Our mission is to make organization discovery effortless. We help NGOs, innovation centres, CSR teams, and ecosystem builders instantly find aligned partners using structured data, automated profiling, and intelligent search — reducing hours of manual research into seconds.
               </p>
               <h3 className="text-2xl font-bold text-foreground mb-4">
                 Our Vision
               </h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                We envision a world where every NGO has access to high-quality research that empowers them to make data-driven decisions, scale their impact, and create lasting social change. Through our work, we aim to build a more transparent, effective, and collaborative nonprofit ecosystem.
+                Our vision is to become the intelligence layer for India's development ecosystem — a unified platform where credible NGOs, CSR teams, academic institutions, and innovators can discover each other, build meaningful collaborations, and accelerate social impact efficiently and transparently.
               </p>
             </div>
             <div className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl p-8">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="bg-card p-6 rounded-xl border-2 border-border text-center">
-                  <div className="text-3xl font-bold text-primary mb-2">500+</div>
-                  <div className="text-muted-foreground">NGOs Analyzed</div>
-                </div>
-                <div className="bg-card p-6 rounded-xl border-2 border-border text-center">
-                  <div className="text-3xl font-bold text-primary mb-2">50+</div>
-                  <div className="text-muted-foreground">Research Projects</div>
-                </div>
-                <div className="bg-card p-6 rounded-xl border-2 border-border text-center">
-                  <div className="text-3xl font-bold text-primary mb-2">15+</div>
-                  <div className="text-muted-foreground">Countries Covered</div>
-                </div>
-                <div className="bg-card p-6 rounded-xl border-2 border-border text-center">
-                  <div className="text-3xl font-bold text-primary mb-2">100+</div>
-                  <div className="text-muted-foreground">Impact Reports</div>
+              <div className="text-center space-y-4">
+                <h4 className="text-2xl font-bold text-foreground">Impact (Phase-1 Beta)</h4>
+                <div className="bg-card p-6 rounded-xl border-2 border-border">
+                  <p className="text-muted-foreground leading-relaxed mb-3">
+                    We are currently onboarding verified organizations.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed mb-3">
+                    Impact numbers will be published after pilot testing with ACIC and partner institutions.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    This platform is in active development — early user insights will shape the roadmap.
+                  </p>
                 </div>
               </div>
             </div>
@@ -324,42 +298,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials - Large Cards */}
+      {/* Reviews - Coming Soon */}
       <section className="py-24 px-4 sm:px-6">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-20">
+          <div className="text-center mb-12">
             <h2 className="text-5xl sm:text-6xl font-bold text-foreground mb-4">
-              Trusted by NGO Leaders
+              Reviews (Coming Soon)
             </h2>
-            <p className="text-xl sm:text-2xl text-muted-foreground max-w-2xl mx-auto">
-              See what other organizations are achieving with Drivya.AI
-            </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={index}
-                className="p-8 bg-card rounded-2xl border-2 border-border hover:border-primary transition-colors"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-14 h-14 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-lg">
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <p className="font-bold text-lg text-foreground">
-                      {testimonial.name}
-                    </p>
-                    <p className="text-muted-foreground">
-                      {testimonial.role}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-lg text-foreground italic leading-relaxed">
-                  "{testimonial.quote}"
-                </p>
-              </div>
-            ))}
+          <div className="max-w-2xl mx-auto">
+            <div className="p-8 bg-card rounded-2xl border-2 border-border text-center">
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Real user feedback from NGOs, CSR teams, and innovation centres will appear here once the platform enters structured pilot testing.
+              </p>
+            </div>
           </div>
         </div>
       </section>

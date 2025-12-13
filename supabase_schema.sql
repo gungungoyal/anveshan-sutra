@@ -1,5 +1,5 @@
 -- ============================================
--- ANVESHAN SUTRA - SUPABASE DATABASE SCHEMA
+-- DRIVYA.AI - SUPABASE DATABASE SCHEMA
 -- Complete SQL to run on Supabase
 -- ============================================
 

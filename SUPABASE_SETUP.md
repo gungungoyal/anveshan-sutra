@@ -12,7 +12,7 @@
 ### Step 1: Get Your Supabase Connection String
 
 1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
-2. Click your **Anveshan** project
+2. Click your **Drivya.AI** project
 3. Click **Settings** (bottom-left) → **Database**
 4. Find **"Connection string"** section
 5. Select **"URI"** tab

@@ -55,7 +55,7 @@ export default function Signup() {
       <main className="flex-grow pt-32 pb-24 px-4 z-10 relative">
         <div className="container mx-auto max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            
+
             {/* Left Side - Benefits (Animated) */}
             <motion.div
               variants={containerVariants}
@@ -65,7 +65,7 @@ export default function Signup() {
             >
               <motion.div variants={itemVariants}>
                 <h2 className="text-4xl font-bold tracking-tight text-foreground mb-4">
-                  Why join Anveshan?
+                  Why join Drivya.AI?
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-md">
                   Join the fastest growing network of organizations and streamline your partnership journey.
@@ -107,7 +107,7 @@ export default function Signup() {
                     Create Account
                   </h1>
                   <p className="text-muted-foreground">
-                    Start your journey with Anveshan today
+                    Start your journey with Drivya.AI today
                   </p>
                 </div>
 
@@ -118,16 +118,14 @@ export default function Signup() {
                       Full Name
                     </label>
                     <div
-                      className={`relative transition-all duration-300 ${
-                        focusedField === "name" ? "scale-[1.01]" : ""
-                      }`}
+                      className={`relative transition-all duration-300 ${focusedField === "name" ? "scale-[1.01]" : ""
+                        }`}
                     >
                       <User
-                        className={`absolute left-4 top-3.5 w-5 h-5 transition-colors ${
-                          focusedField === "name"
+                        className={`absolute left-4 top-3.5 w-5 h-5 transition-colors ${focusedField === "name"
                             ? "text-primary"
                             : "text-muted-foreground"
-                        }`}
+                          }`}
                       />
                       <input
                         type="text"
@@ -145,16 +143,14 @@ export default function Signup() {
                       Organization Name
                     </label>
                     <div
-                      className={`relative transition-all duration-300 ${
-                        focusedField === "org" ? "scale-[1.01]" : ""
-                      }`}
+                      className={`relative transition-all duration-300 ${focusedField === "org" ? "scale-[1.01]" : ""
+                        }`}
                     >
                       <Building2
-                        className={`absolute left-4 top-3.5 w-5 h-5 transition-colors ${
-                          focusedField === "org"
+                        className={`absolute left-4 top-3.5 w-5 h-5 transition-colors ${focusedField === "org"
                             ? "text-primary"
                             : "text-muted-foreground"
-                        }`}
+                          }`}
                       />
                       <input
                         type="text"
@@ -172,16 +168,14 @@ export default function Signup() {
                       Email Address
                     </label>
                     <div
-                      className={`relative transition-all duration-300 ${
-                        focusedField === "email" ? "scale-[1.01]" : ""
-                      }`}
+                      className={`relative transition-all duration-300 ${focusedField === "email" ? "scale-[1.01]" : ""
+                        }`}
                     >
                       <Mail
-                        className={`absolute left-4 top-3.5 w-5 h-5 transition-colors ${
-                          focusedField === "email"
+                        className={`absolute left-4 top-3.5 w-5 h-5 transition-colors ${focusedField === "email"
                             ? "text-primary"
                             : "text-muted-foreground"
-                        }`}
+                          }`}
                       />
                       <input
                         type="email"
@@ -199,16 +193,14 @@ export default function Signup() {
                       Password
                     </label>
                     <div
-                      className={`relative transition-all duration-300 ${
-                        focusedField === "password" ? "scale-[1.01]" : ""
-                      }`}
+                      className={`relative transition-all duration-300 ${focusedField === "password" ? "scale-[1.01]" : ""
+                        }`}
                     >
                       <Lock
-                        className={`absolute left-4 top-3.5 w-5 h-5 transition-colors ${
-                          focusedField === "password"
+                        className={`absolute left-4 top-3.5 w-5 h-5 transition-colors ${focusedField === "password"
                             ? "text-primary"
                             : "text-muted-foreground"
-                        }`}
+                          }`}
                       />
                       <input
                         type={showPassword ? "text" : "password"}

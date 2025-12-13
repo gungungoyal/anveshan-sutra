@@ -1,5 +1,5 @@
 -- ============================================
--- ANVESHAN SUTRA - SEED DATA (PART 2)
+-- DRIVYA.AI - SEED DATA (PART 2)
 -- Focus Areas, Projects, Beneficiaries, Partners
 -- Run this AFTER supabase_seed_organizations.sql
 -- ============================================

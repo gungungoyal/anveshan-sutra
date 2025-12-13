@@ -1,5 +1,5 @@
 -- ============================================
--- ANVESHAN SUTRA - SEED DATA FOR SUPABASE
+-- DRIVYA.AI - SEED DATA FOR SUPABASE
 -- Run this AFTER supabase_schema.sql
 -- ============================================
 

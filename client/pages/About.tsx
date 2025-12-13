@@ -16,12 +16,8 @@ export function AboutPlaceholder() {
 export default function About() {
   const [activeTab, setActiveTab] = useState('mission');
 
-  const stats = [
-    { number: '500+', label: 'NGOs Analyzed', icon: Globe },
-    { number: '50+', label: 'Research Projects', icon: BookOpen },
-    { number: '15+', label: 'Countries Covered', icon: TrendingUp },
-    { number: '100+', label: 'Impact Reports', icon: Award }
-  ];
+  // Impact stats - to be updated after pilot testing with ACIC and partner institutions
+  const showImpactPlaceholder = true; // Early-stage indicator
 
   const values = [
     {
@@ -49,11 +45,11 @@ export default function About() {
   const tabContent = {
     mission: {
       title: 'Our Mission',
-      content: 'We are dedicated to strengthening the nonprofit sector through rigorous, independent research that illuminates best practices, challenges, and opportunities. Our mission is to provide NGOs with the insights they need to maximize their impact, optimize their operations, and drive meaningful change in communities worldwide.'
+      content: "Our mission is to make organization discovery effortless. We help NGOs, innovation centres, CSR teams, and ecosystem builders instantly find aligned partners using structured data, automated profiling, and intelligent search \u2014 reducing hours of manual research into seconds."
     },
     vision: {
       title: 'Our Vision',
-      content: 'We envision a world where every NGO has access to high-quality research that empowers them to make data-driven decisions, scale their impact, and create lasting social change. Through our work, we aim to build a more transparent, effective, and collaborative nonprofit ecosystem.'
+      content: "Our vision is to become the intelligence layer for India's development ecosystem \u2014 a unified platform where credible NGOs, CSR teams, academic institutions, and innovators can discover each other, build meaningful collaborations, and accelerate social impact efficiently and transparently."
     },
     approach: {
       title: 'Our Approach',
@@ -64,7 +60,7 @@ export default function About() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
         <div className="relative overflow-hidden bg-gradient-to-r from-primary to-secondary text-primary-foreground">
@@ -81,9 +77,9 @@ export default function About() {
             {/* Top bar with logo and buttons */}
             <div className="absolute top-8 left-8 z-50">
               <div className="w-20 h-20 rounded-full overflow-hidden">
-                <img 
-                  src="/Gemini_Generated_Image_8ghzle8ghzle8ghz.png" 
-                  alt="Drivya.AI Logo" 
+                <img
+                  src="/logo.svg"
+                  alt="Drivya.AI Logo"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -106,23 +102,21 @@ export default function About() {
           <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background"></div>
         </div>
 
-        {/* Stats Section */}
+        {/* Impact - Early Stage Placeholder */}
         <div className="max-w-7xl mx-auto px-6 -mt-12 relative z-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {stats.map((stat, index) => (
-              <div 
-                key={index} 
-                className="bg-card rounded-2xl shadow-lg p-6 text-center border border-border hover:border-primary transition-colors"
-              >
-                <stat.icon className="w-8 h-8 mx-auto mb-3 text-primary" />
-                <div className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-sm sm:text-base text-muted-foreground font-medium">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
+          <div className="bg-card rounded-2xl shadow-lg p-8 text-center border border-border">
+            <h3 className="text-2xl font-bold text-foreground mb-4">Impact (Phase-1 Beta)</h3>
+            <div className="space-y-3 max-w-2xl mx-auto">
+              <p className="text-muted-foreground">
+                We are currently onboarding verified organizations.
+              </p>
+              <p className="text-muted-foreground">
+                Impact numbers will be published after pilot testing with ACIC and partner institutions.
+              </p>
+              <p className="text-muted-foreground">
+                This platform is in active development — early user insights will shape the roadmap.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -134,11 +128,10 @@ export default function About() {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-4 px-6 text-center font-semibold transition-all duration-300 ${
-                    activeTab === tab
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-foreground hover:bg-secondary'
-                  }`}
+                  className={`flex-1 py-4 px-6 text-center font-semibold transition-all duration-300 ${activeTab === tab
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-foreground hover:bg-secondary'
+                    }`}
                 >
                   {tabContent[tab].title}
                 </button>
@@ -165,10 +158,10 @@ export default function About() {
               The principles that guide our research and partnerships
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-8">
             {values.map((value, index) => (
-              <div 
+              <div
                 key={index}
                 className="bg-card rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-border group hover:border-primary"
               >
@@ -208,7 +201,7 @@ export default function About() {
           </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );

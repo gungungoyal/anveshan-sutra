@@ -40,7 +40,7 @@ export default function App() {
           <Routes>
             {/* Drivya.AI New Platform Routes */}
             <Route path="/" element={<Home />} />
-            <Route path="/about" element={<AboutPlaceholder />} />
+            <Route path="/about" element={<About />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={<NGODashboard />} />
             <Route path="/search" element={<Search />} />
