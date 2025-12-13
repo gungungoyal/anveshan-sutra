@@ -204,3 +204,15 @@ CREATE TRIGGER update_organizations_updated_at
 CREATE TRIGGER update_profiles_updated_at
     BEFORE UPDATE ON user_profiles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Allow anyone to insert new organizations (for public submission form)
+CREATE POLICY "Anyone can submit organizations" ON organizations
+    FOR INSERT WITH CHECK (true);
+
+-- Also add INSERT policy for organization_focus_areas
+ALTER TABLE organization_focus_areas ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can add focus areas" ON organization_focus_areas
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Focus areas are viewable by everyone" ON organization_focus_areas
+    FOR SELECT USING (true);
