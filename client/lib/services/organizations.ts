@@ -398,3 +398,179 @@ export async function getRegions(): Promise<string[]> {
 
     return getAllRegions();
 }
+
+/**
+ * Update an existing organization
+ */
+export async function updateOrganization(
+    id: string,
+    data: {
+        name?: string;
+        type?: string;
+        website?: string;
+        headquarters?: string;
+        region?: string;
+        focusAreas?: string[];
+        mission?: string;
+        description?: string;
+        fundingType?: string;
+    }
+): Promise<{ success: boolean; organization?: SearchResult; error?: string }> {
+    try {
+        if (!supabase) {
+            return { success: false, error: 'Supabase not configured' };
+        }
+
+        // Prepare update data
+        const updateData: any = {
+            updated_at: new Date().toISOString(),
+        };
+
+        if (data.name !== undefined) updateData.name = data.name;
+        if (data.type !== undefined) updateData.type = data.type;
+        if (data.website !== undefined) updateData.website = data.website || null;
+        if (data.headquarters !== undefined) updateData.headquarters = data.headquarters;
+        if (data.region !== undefined) updateData.region = data.region;
+        if (data.mission !== undefined) updateData.mission = data.mission;
+        if (data.description !== undefined) updateData.description = data.description;
+        if (data.fundingType !== undefined) updateData.funding_type = data.fundingType;
+
+        // Update organization
+        const { data: orgData, error: orgError } = await supabase
+            .from('organizations')
+            .update(updateData)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (orgError) {
+            console.error('Error updating organization:', orgError);
+            return { success: false, error: orgError.message };
+        }
+
+        // Update focus areas if provided
+        if (data.focusAreas && data.focusAreas.length > 0) {
+            // Delete existing focus areas
+            await supabase
+                .from('organization_focus_areas')
+                .delete()
+                .eq('organization_id', id);
+
+            // Insert new focus areas
+            const focusAreaInserts = data.focusAreas.map((area, index) => ({
+                organization_id: id,
+                focus_area: area,
+                is_primary: index === 0,
+            }));
+
+            await supabase.from('organization_focus_areas').insert(focusAreaInserts);
+        }
+
+        const organization: SearchResult = {
+            id: orgData.id,
+            name: orgData.name,
+            type: orgData.type,
+            website: orgData.website || '',
+            headquarters: orgData.headquarters,
+            region: orgData.region,
+            focusAreas: data.focusAreas || [],
+            mission: orgData.mission,
+            description: orgData.description,
+            verificationStatus: orgData.verification_status || 'pending',
+            projects: [],
+            fundingType: orgData.funding_type || 'recipient',
+            targetBeneficiaries: [],
+            partnerHistory: [],
+            confidence: orgData.confidence || 50,
+            alignmentScore: orgData.confidence || 50,
+        };
+
+        return { success: true, organization };
+    } catch (error: any) {
+        console.error('Update organization error:', error);
+        return { success: false, error: error.message || 'Failed to update organization' };
+    }
+}
+
+/**
+ * Get organizations created by a specific user
+ * Note: This requires a user_id column in organizations table or a separate linking table
+ * For now, we'll return all organizations as the schema doesn't have user ownership
+ */
+export async function getUserOrganizations(userId?: string): Promise<{
+    success: boolean;
+    organizations: SearchResult[];
+    error?: string;
+}> {
+    try {
+        if (!supabase) {
+            return { success: false, organizations: [], error: 'Supabase not configured' };
+        }
+
+        // For now, fetch all organizations
+        // In a real app, you'd filter by user_id
+        const { data, error } = await supabase
+            .from('organizations')
+            .select(`
+                *,
+                organization_focus_areas(focus_area)
+            `)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching user organizations:', error);
+            return { success: false, organizations: [], error: error.message };
+        }
+
+        const organizations: SearchResult[] = (data || []).map((org: any) => ({
+            id: org.id,
+            name: org.name,
+            type: org.type,
+            website: org.website || '',
+            headquarters: org.headquarters,
+            region: org.region,
+            focusAreas: org.organization_focus_areas?.map((fa: any) => fa.focus_area) || [],
+            mission: org.mission,
+            description: org.description,
+            verificationStatus: org.verification_status || 'unverified',
+            projects: [],
+            fundingType: org.funding_type || 'recipient',
+            targetBeneficiaries: [],
+            partnerHistory: [],
+            confidence: org.confidence || 75,
+            alignmentScore: org.alignment_score || org.confidence || 75,
+        }));
+
+        return { success: true, organizations };
+    } catch (error: any) {
+        console.error('Get user organizations error:', error);
+        return { success: false, organizations: [], error: error.message || 'Failed to fetch organizations' };
+    }
+}
+
+/**
+ * Delete an organization
+ */
+export async function deleteOrganization(id: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        if (!supabase) {
+            return { success: false, error: 'Supabase not configured' };
+        }
+
+        const { error } = await supabase
+            .from('organizations')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('Error deleting organization:', error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        console.error('Delete organization error:', error);
+        return { success: false, error: error.message || 'Failed to delete organization' };
+    }
+}
+

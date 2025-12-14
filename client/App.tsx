@@ -22,6 +22,7 @@ import Contact from "./pages/Contact";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import SubmitOrganization from "./pages/SubmitOrganization";
+import ProfileSettings from "./pages/ProfileSettings";
 
 // TextMaker modules
 import TextExtractor from "@/components/textmaker/modules/TextExtractor";
@@ -49,6 +50,8 @@ export default function App() {
             <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
             <Route path="/submit-organization" element={<SubmitOrganization />} />
             <Route path="/shortlist" element={<Shortlist />} />
+            <Route path="/profile" element={<ProfileSettings />} />
+            <Route path="/org-edit/:id" element={<OrgSubmit />} />
             <Route path="/org-profile/:id" element={<OrgProfileDetail />} />
             <Route path="/organization/:id" element={<OrgProfileDetail />} />
             <Route path="/ppt/:id" element={<PPTViewer />} />

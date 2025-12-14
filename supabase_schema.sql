@@ -216,3 +216,8 @@ CREATE POLICY "Anyone can add focus areas" ON organization_focus_areas
 
 CREATE POLICY "Focus areas are viewable by everyone" ON organization_focus_areas
     FOR SELECT USING (true);
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS organization_name TEXT;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS bio TEXT;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS preferences JSONB DEFAULT '{"notifications": true, "theme": "system", "newsletter": false}'::jsonb;

@@ -19,6 +19,12 @@ export interface FocusArea {
 }
 
 // User Types
+export interface UserPreferences {
+  notifications: boolean;
+  theme: 'light' | 'dark' | 'system';
+  newsletter: boolean;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -26,6 +32,11 @@ export interface User {
   role: "ngo" | "funder";
   profile_complete: boolean;
   verified: boolean;
+  phone?: string;
+  avatar_url?: string;
+  organization_name?: string;
+  bio?: string;
+  preferences?: UserPreferences;
   created_at: string;
   updated_at: string;
 }

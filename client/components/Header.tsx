@@ -1,11 +1,18 @@
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Search, Plus, ArrowRight, LayoutGrid } from "lucide-react";
-import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, Search, Plus, LayoutGrid, User, LogOut, Settings, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getCurrentUser, signOut, AuthUser } from "@/lib/services/auth";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Detect scroll to tighten the UI
   useEffect(() => {
@@ -17,10 +24,53 @@ export default function Header() {
   // Close menu when route changes
   useEffect(() => {
     setIsMenuOpen(false);
+    setUserMenuOpen(false);
   }, [location]);
+
+  // Load user on mount
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const { user } = await getCurrentUser();
+        setUser(user);
+      } catch (err) {
+        setUser(null);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+    loadUser();
+  }, []);
+
+  // Close user menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const openTextMaker = () => {
     window.open('http://localhost:8081/', '_blank');
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setUser(null);
+    setUserMenuOpen(false);
+    navigate("/");
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
@@ -29,17 +79,15 @@ export default function Header() {
       <div className="h-24" />
 
       <header
-        className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? "px-4" : "px-4 sm:px-8"
-        }`}
+        className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "px-4" : "px-4 sm:px-8"
+          }`}
       >
         <div
-          className={`mx-auto max-w-7xl bg-background/90 backdrop-blur-xl border border-border/20 shadow-xl shadow-primary/5 rounded-2xl transition-all duration-300 ${
-            scrolled ? "py-2" : "py-3"
-          }`}
+          className={`mx-auto max-w-7xl bg-background/90 backdrop-blur-xl border border-border/20 shadow-xl shadow-primary/5 rounded-2xl transition-all duration-300 ${scrolled ? "py-2" : "py-3"
+            }`}
         >
           <div className="px-4 sm:px-6 flex items-center justify-between">
-            
+
             {/* 1. Brand Identity */}
             <Link
               to="/"
@@ -83,6 +131,85 @@ export default function Header() {
               >
                 <span>Summarizer</span>
               </button>
+
+              {/* User Menu or Login/Signup */}
+              {!loadingUser && (
+                <>
+                  {user ? (
+                    <div className="relative" ref={userMenuRef}>
+                      <button
+                        onClick={() => setUserMenuOpen(!userMenuOpen)}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-secondary/50 transition-colors"
+                      >
+                        <Avatar className="w-8 h-8 border-2 border-primary/20">
+                          <AvatarImage src={user.avatar_url} alt={user.name} />
+                          <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+                            {getInitials(user.name || "U")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      {/* Dropdown Menu */}
+                      {userMenuOpen && (
+                        <div className="absolute right-0 top-full mt-2 w-64 bg-background/95 backdrop-blur-xl border border-border rounded-xl shadow-xl shadow-black/10 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                          {/* User Info */}
+                          <div className="px-4 py-3 border-b border-border bg-secondary/30">
+                            <p className="font-semibold text-foreground truncate">{user.name}</p>
+                            <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                          </div>
+
+                          {/* Menu Items */}
+                          <div className="py-2">
+                            <Link
+                              to="/profile"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-2.5 text-foreground hover:bg-secondary/50 transition-colors"
+                            >
+                              <User className="w-4 h-4 text-muted-foreground" />
+                              <span>Profile</span>
+                            </Link>
+                            <Link
+                              to="/profile"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-2.5 text-foreground hover:bg-secondary/50 transition-colors"
+                            >
+                              <Settings className="w-4 h-4 text-muted-foreground" />
+                              <span>Settings</span>
+                            </Link>
+                          </div>
+
+                          {/* Sign Out */}
+                          <div className="py-2 border-t border-border">
+                            <button
+                              onClick={handleSignOut}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                            >
+                              <LogOut className="w-4 h-4" />
+                              <span>Sign Out</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to="/login"
+                        className="px-4 py-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                      >
+                        Log In
+                      </Link>
+                      <Link
+                        to="/signup"
+                        className="px-4 py-2 bg-foreground text-background text-sm font-semibold rounded-lg hover:bg-foreground/90 transition-all"
+                      >
+                        Sign Up
+                      </Link>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -96,13 +223,28 @@ export default function Header() {
 
           {/* 4. Mobile Navigation (Collapsible) */}
           <div
-            className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-              isMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
-            }`}
+            className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+              }`}
           >
             <div className="px-4 pb-6 pt-2 flex flex-col gap-2">
               <div className="h-px bg-border my-2" />
-              
+
+              {/* User Info (Mobile) */}
+              {user && (
+                <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-xl mb-2">
+                  <Avatar className="w-10 h-10 border-2 border-primary/20">
+                    <AvatarImage src={user.avatar_url} alt={user.name} />
+                    <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                      {getInitials(user.name || "U")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold text-foreground">{user.name}</p>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                  </div>
+                </div>
+              )}
+
               <Link
                 to="/search"
                 onClick={() => setIsMenuOpen(false)}
@@ -121,6 +263,17 @@ export default function Header() {
                 Submit Organization
               </Link>
 
+              {user && (
+                <Link
+                  to="/profile"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-xl text-foreground hover:bg-secondary/10 font-medium transition-colors"
+                >
+                  <User className="w-5 h-5 text-primary" />
+                  Profile Settings
+                </Link>
+              )}
+
               <button
                 onClick={() => {
                   setIsMenuOpen(false);
@@ -133,22 +286,35 @@ export default function Header() {
 
               <div className="h-px bg-border my-2" />
 
-              <div className="grid grid-cols-2 gap-3">
-                <Link
-                  to="/login"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex justify-center items-center py-3 rounded-xl border border-border font-semibold text-foreground"
+              {user ? (
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    handleSignOut();
+                  }}
+                  className="flex items-center gap-3 p-3 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 font-medium transition-colors"
                 >
-                  Log In
-                </Link>
-                <Link
-                  to="/signup"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex justify-center items-center py-3 rounded-xl bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20"
-                >
-                  Sign Up
-                </Link>
-              </div>
+                  <LogOut className="w-5 h-5" />
+                  Sign Out
+                </button>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex justify-center items-center py-3 rounded-xl border border-border font-semibold text-foreground"
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex justify-center items-center py-3 rounded-xl bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
