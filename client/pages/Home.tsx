@@ -1,25 +1,21 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Search,
   Zap,
   Target,
   ArrowRight,
-  Clock,
-  Award,
-  FileText,
-  Upload,
   Sparkles,
   BarChart3,
   Layers,
   MapPin,
   Building2,
 } from "lucide-react";
+
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import OrganizationMatching from "@/components/OrganizationMatching";
 
 export default function Home() {
-  const navigate = useNavigate();
 
   const howItWorksSteps = [
     {
@@ -42,92 +38,43 @@ export default function Home() {
     },
   ];
 
-  const benefits = [
-    "✓ No credit card required",
-    "✓ All organizations verified",
-    "✓ Instant alignment scoring",
-    "✓ Auto-generate presentations",
-  ];
-
   return (
+
     <div className="min-h-screen bg-background">
       <Header />
 
       {/* Hero Section - Clear CTA Focus */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 bg-gradient-to-b from-secondary/10 to-background overflow-hidden">
+      <section className="pt-12 pb-20 px-4 sm:px-6 bg-gradient-to-b from-secondary/10 to-background overflow-hidden">
         <div className="container mx-auto max-w-6xl">
-          {/* Top bar with logo and buttons */}
-          <div className="absolute top-3 left-7 z-100">
-            <div className="w-39 h-20 rounded-full overflow-hidden">
-              <img
-                src="/logo.svg"
-                alt="Drivya.AI Logo"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-          <div className="absolute top-8 right-4 z-50 flex gap-2">
-            <Link
-              to="/login"
-              className="px-5 py-3 bg-white text-foreground rounded-xl hover:bg-secondary/20 transition-colors font-bold text-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-lg border border-border"
-            >
-              JOIN
-            </Link>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate("/about");
-              }}
-              className="px-5 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-bold text-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-lg"
-            >
-              About Us
-            </button>
-          </div>
-
           <div className="grid lg:grid-cols-2 gap-12 items-center">
+
             <div className="order-2 lg:order-1 animate-fade-in">
               <div className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary mb-6 animate-slide-in-up">
                 <span className="text-base font-bold">
-                  🚀 The Partner Discovery Platform for NGOs
+                  🚀 Partner Discovery for NGOs
                 </span>
               </div>
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-4 leading-tight">
                 Find Your Perfect Partner in Minutes
               </h1>
-              <p className="text-lg sm:text-xl text-primary font-semibold mb-6">
-                Intelligent matching powered by AI — align on mission, region & goals instantly
-              </p>
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                Stop spending weeks searching for the right collaborators.
+              <p className="text-xl text-muted-foreground mb-8 leading-relaxed max-w-lg">
+                AI-powered matching on mission, region & goals — stop spending weeks searching.
               </p>
 
-              {/* Primary CTA - Clear and Prominent */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Link
-                  to="/search"
-                  className="group px-10 py-5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 font-bold text-lg sm:text-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl hover:scale-[1.02]"
-                >
-                  Find Matching Organizations
-                  <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <Link
-                  to="/org-submit"
-                  className="px-8 py-5 border-2 border-primary/50 text-primary rounded-xl hover:bg-primary/5 hover:border-primary transition-all duration-300 font-semibold text-lg sm:text-xl text-center"
-                >
-                  Submit Your Organization
-                </Link>
-              </div>
+              {/* Single Primary CTA */}
+              <Link
+                to="/org-submit"
+                className="group inline-flex items-center gap-3 px-10 py-5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 font-bold text-lg sm:text-xl shadow-lg hover:shadow-xl hover:scale-[1.02] mb-6"
+              >
+                Submit Your Organization
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+              </Link>
 
-              {/* Benefits - Compact */}
-              <div className="flex flex-wrap gap-x-6 gap-y-2">
-                {benefits.map((benefit, i) => (
-                  <p
-                    key={i}
-                    className="text-sm text-muted-foreground font-medium"
-                  >
-                    {benefit}
-                  </p>
-                ))}
+              {/* Compact Benefits */}
+              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                <span>✓ Free to join</span>
+                <span>✓ Verified orgs only</span>
+                <span>✓ Instant matching</span>
               </div>
             </div>
 
@@ -160,6 +107,7 @@ export default function Home() {
 
       {/* How It Works - Immediately After Hero */}
       <section className="py-20 px-4 sm:px-6 bg-gradient-to-b from-background to-secondary/5">
+
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-16">
             <span className="inline-block px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-4">
@@ -219,13 +167,13 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Organization Matching Demo */}
-      <OrganizationMatching />
+      < OrganizationMatching />
 
       {/* What You Can Do Here - Feature Cards */}
-      <section className="py-20 px-4 sm:px-6 bg-gradient-to-b from-background to-secondary/5">
+      < section className="py-20 px-4 sm:px-6 bg-gradient-to-b from-background to-secondary/5" >
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <span className="inline-block px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-4">
@@ -298,139 +246,27 @@ export default function Home() {
         </div>
       </section>
 
-      {/* About Us Section */}
-      <section id="about-us-section" className="py-20 px-4 sm:px-6">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-              About Drivya.AI
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Empowering NGOs through research, collaboration, and innovation
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 items-stretch">
-            <div className="p-8 bg-card rounded-2xl border-2 border-border hover:border-primary/50 transition-colors">
-              <h3 className="text-xl font-bold text-foreground mb-3 flex items-center gap-2">
-                <span className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                  🎯
-                </span>
-                Our Mission
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Make organization discovery effortless. We help NGOs, innovation centres, and CSR teams instantly find aligned partners using intelligent search.
-              </p>
-
-              <h3 className="text-xl font-bold text-foreground mb-3 mt-6 flex items-center gap-2">
-                <span className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                  🔭
-                </span>
-                Our Vision
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Become the intelligence layer for India's development ecosystem — connecting NGOs, CSR teams, and innovators to accelerate social impact.
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-8 flex items-center">
-              <div className="text-center w-full">
-                <h4 className="text-xl font-bold text-foreground mb-4">Phase-1 Beta</h4>
-                <div className="bg-card p-6 rounded-xl border border-border">
-                  <p className="text-muted-foreground leading-relaxed text-sm">
-                    Currently onboarding verified organizations. Impact metrics coming after pilot testing.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Drivya.AI - Key Benefits */}
-      <section className="py-20 px-4 sm:px-6 bg-secondary/5">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-              Why NGOs Love Drivya.AI
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Built by NGO leaders, for NGO leaders
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: Clock,
-                title: "Save Time",
-                description: "Reduce discovery from weeks to hours",
-              },
-              {
-                icon: Award,
-                title: "Verified Partners",
-                description: "Every organization is vetted",
-              },
-              {
-                icon: Zap,
-                title: "Instant Scoring",
-                description: "See alignment at a glance",
-              },
-              {
-                icon: FileText,
-                title: "Generate Materials",
-                description: "Create proposals in seconds",
-              },
-            ].map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div
-                  key={index}
-                  className="group p-6 bg-card rounded-2xl border-2 border-border hover:border-primary transition-all duration-300 hover:shadow-lg"
-                >
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                    <Icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {feature.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
+      {/* Final CTA - Single Action */}
       <section className="py-20 px-4 sm:px-6 bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10">
-        <div className="container mx-auto max-w-4xl text-center">
+        <div className="container mx-auto max-w-3xl text-center">
           <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-            Ready to Find Your Partners?
+            Ready to Get Started?
           </h2>
           <p className="text-xl text-muted-foreground mb-10">
-            Join NGOs across India discovering the right collaborators with Drivya.AI
+            Join hundreds of organizations discovering the right partners
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/search"
-              className="group px-10 py-5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 font-bold text-lg sm:text-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl hover:scale-[1.02]"
-            >
-              Find Matching Organizations
-              <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              to="/org-submit"
-              className="px-8 py-5 border-2 border-primary/50 text-primary rounded-xl hover:bg-primary/5 hover:border-primary transition-all duration-300 font-semibold text-lg sm:text-xl"
-            >
-              Submit Your Organization
-            </Link>
-          </div>
+          <Link
+            to="/org-submit"
+            className="group inline-flex items-center gap-3 px-12 py-5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 font-bold text-lg sm:text-xl shadow-lg hover:shadow-xl hover:scale-[1.02]"
+          >
+            Submit Your Organization
+            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
       </section>
 
+
       <Footer />
-    </div>
+    </div >
   );
 }

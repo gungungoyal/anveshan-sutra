@@ -116,24 +116,16 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* 3. Desktop Actions */}
+            {/* 3. Desktop Actions - Simplified */}
             <div className="hidden md:flex items-center gap-3">
-              {/* Primary CTA - Most important action */}
+              {/* Single Primary CTA */}
               <Link
                 to="/org-submit"
-                className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-95"
+                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-95"
               >
-                <Plus className="w-4 h-4" />
-                <span>Add Organization</span>
+                Submit Organization
               </Link>
 
-              {/* Secondary Action - Less prominent */}
-              <button
-                onClick={openTextMaker}
-                className="flex items-center gap-2 px-4 py-2.5 border border-border bg-card text-foreground text-sm font-medium rounded-xl hover:bg-secondary/30 hover:border-primary/30 transition-all active:scale-95"
-              >
-                <span>✨ AI Summarizer</span>
-              </button>
 
               {/* User Menu or Login/Signup */}
               {!loadingUser && (
@@ -260,10 +252,9 @@ export default function Header() {
               <Link
                 to="/org-submit"
                 onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-xl text-foreground hover:bg-secondary/10 font-medium transition-colors"
+                className="flex items-center gap-3 p-3 rounded-xl bg-primary text-primary-foreground font-semibold"
               >
-                <Plus className="w-5 h-5 text-primary" />
-                Add Organization
+                Submit Organization
               </Link>
 
               {user && (
@@ -277,15 +268,7 @@ export default function Header() {
                 </Link>
               )}
 
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  openTextMaker();
-                }}
-                className="flex items-center gap-3 p-3 rounded-xl text-foreground hover:bg-secondary/10 font-medium transition-colors text-left"
-              >
-                <span>✨ AI Summarizer</span>
-              </button>
+
 
               <div className="h-px bg-border my-2" />
 
