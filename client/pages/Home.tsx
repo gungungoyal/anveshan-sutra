@@ -2,36 +2,76 @@ import { Link } from "react-router-dom";
 import { Search, Zap, Target, ArrowRight, Clock, Users, CheckCircle } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import MatchingCarousel from "@/components/MatchingCarousel";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Section 1: Hero (Above the fold) */}
-      <section className="pt-16 pb-16 px-4 sm:px-6">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
-            Find Organizations That Match Your Mission
-          </h1>
-          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Discover aligned partners using intelligent matching — no more endless research.
-          </p>
-          <Link
-            to="/search"
-            className="group inline-flex items-center gap-3 px-10 py-5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 font-bold text-lg sm:text-xl shadow-lg hover:shadow-xl"
-          >
-            Explore Matching Organizations
-            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-          </Link>
+      {/* Section 1: Hero with Matching Preview */}
+      <section className="pt-16 pb-20 px-4 sm:px-6">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Headline + CTA */}
+            <div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
+                Find Organizations That Match Your Mission
+              </h1>
+              <p className="text-lg text-muted-foreground mb-8 max-w-lg">
+                Discover aligned partners using intelligent matching — no more endless research.
+              </p>
+              <Link
+                to="/search"
+                className="group inline-flex items-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-xl"
+              >
+                Explore Matching Organizations
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+
+            {/* Right: Miniature Matching Preview */}
+            <div className="flex flex-col items-center lg:items-end">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+                Sample matching result
+              </p>
+              <div className="w-full max-w-xs bg-muted rounded-2xl p-6 border border-border shadow-lg">
+                {/* Organizations */}
+                <div className="flex items-center justify-between gap-4 mb-6">
+                  <div className="text-center flex-1">
+                    <div className="w-12 h-12 bg-card rounded-xl flex items-center justify-center mx-auto mb-2 border border-border">
+                      <span className="text-primary font-bold">G</span>
+                    </div>
+                    <p className="text-xs font-medium text-foreground">Green Earth Foundation</p>
+                  </div>
+                  <div className="text-muted-foreground">↔</div>
+                  <div className="text-center flex-1">
+                    <div className="w-12 h-12 bg-card rounded-xl flex items-center justify-center mx-auto mb-2 border border-border">
+                      <span className="text-secondary font-bold">C</span>
+                    </div>
+                    <p className="text-xs font-medium text-foreground">Climate Action Network</p>
+                  </div>
+                </div>
+                {/* Alignment Score */}
+                <div className="text-center pt-4 border-t border-border">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Alignment Score</p>
+                  <span className="text-3xl font-bold text-foreground">82%</span>
+                </div>
+              </div>
+              {/* Intelligence Cue */}
+              <div className="flex items-center gap-2 mt-4">
+                <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-pulse" />
+                <p className="text-xs text-muted-foreground">
+                  Matched using focus areas & mission alignment
+                </p>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 
-      {/* Matching Demo Carousel - immediately after hero */}
-      <MatchingCarousel />
-
       {/* Section 2: Primary Feature Explanation */}
+
 
       <section className="py-16 px-4 sm:px-6 bg-secondary/5">
         <div className="container mx-auto max-w-3xl text-center">
