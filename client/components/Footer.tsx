@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import footerLinks from "../data/footerLinks.json";
-import { 
-  LayoutGrid, 
-  Twitter, 
-  Linkedin, 
-  Github, 
-  Send, 
-  Heart, 
-  Globe 
+import {
+  LayoutGrid,
+  Twitter,
+  Linkedin,
+  Github,
+  Send,
+  Heart,
+  Globe
 } from "lucide-react";
 import { Instagram } from "lucide-react";
 import { Youtube } from "lucide-react";
@@ -26,24 +26,24 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-gray-900 text-gray-300 pt-12 pb-6 mt-10">
+    <footer className="bg-foreground text-background pt-12 pb-6 mt-10">
       <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-5 gap-10">
         {/* Logo + About */}
         <div>
           <Link to="/">
-            <h1 className="text-white font-bold text-2xl cursor-pointer">Drivya.ai</h1>
+            <h1 className="text-background font-bold text-2xl cursor-pointer">Drivya.ai</h1>
           </Link>
-          <p className="text-gray-400 mt-3 text-sm">
+          <p className="text-background/70 mt-3 text-sm">
             Your partner in intelligent organization discovery & CSR alignment.
           </p>
         </div>
         {/* Quick Links */}
         <div>
-          <h3 className="text-white font-semibold mb-3">Quick Links</h3>
+          <h3 className="text-background font-semibold mb-3">Quick Links</h3>
           <ul className="space-y-2">
             {footerLinks.company.map(item => (
               <li key={item.name}>
-                <Link to={item.href} className="hover:text-white transition focus:outline-none focus:ring-2 focus:ring-white">
+                <Link to={item.href} className="text-background/70 hover:text-background transition focus:outline-none focus:ring-2 focus:ring-background">
                   {item.name}
                 </Link>
               </li>
@@ -52,11 +52,11 @@ export default function Footer() {
         </div>
         {/* Tools */}
         <div>
-          <h3 className="text-white font-semibold mb-3">Tools</h3>
+          <h3 className="text-background font-semibold mb-3">Tools</h3>
           <ul className="space-y-2">
             {footerLinks.tools.map(item => (
               <li key={item.name}>
-                <Link to={item.href} className="hover:text-white transition focus:outline-none focus:ring-2 focus:ring-white">
+                <Link to={item.href} className="text-background/70 hover:text-background transition focus:outline-none focus:ring-2 focus:ring-background">
                   {item.name}
                 </Link>
               </li>
@@ -65,11 +65,11 @@ export default function Footer() {
         </div>
         {/* Legal */}
         <div>
-          <h3 className="text-white font-semibold mb-3">Legal</h3>
+          <h3 className="text-background font-semibold mb-3">Legal</h3>
           <ul className="space-y-2">
             {footerLinks.legal.map(item => (
               <li key={item.name}>
-                <Link to={item.href} className="hover:text-white transition focus:outline-none focus:ring-2 focus:ring-white">
+                <Link to={item.href} className="text-background/70 hover:text-background transition focus:outline-none focus:ring-2 focus:ring-background">
                   {item.name}
                 </Link>
               </li>
@@ -78,7 +78,7 @@ export default function Footer() {
         </div>
         {/* Social */}
         <div>
-          <h3 className="text-white font-semibold mb-3">Social</h3>
+          <h3 className="text-background font-semibold mb-3">Social</h3>
           <ul className="flex gap-4 mt-1">
             {footerLinks.social.map(item => (
               <li key={item.name}>
@@ -87,7 +87,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={item.name}
-                  className="hover:text-white transition focus:outline-none focus:ring-2 focus:ring-white"
+                  className="text-background/70 hover:text-background transition focus:outline-none focus:ring-2 focus:ring-background"
                 >
                   {socialIcons[item.icon]}
                 </a>
@@ -101,7 +101,7 @@ export default function Footer() {
         {/* Contact */}
         <a
           href="mailto:support@drivya.ai"
-          className="hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+          className="text-background/70 hover:text-background focus:outline-none focus:ring-2 focus:ring-background"
           aria-label="Email support@drivya.ai"
         >
           support@drivya.ai
@@ -109,14 +109,14 @@ export default function Footer() {
         {/* Back to Top */}
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="text-gray-400 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-white"
+          className="text-background/70 hover:text-background transition focus:outline-none focus:ring-2 focus:ring-background"
           aria-label="Back to Top"
         >
           Back to Top ↑
         </button>
       </div>
       {/* Copyright */}
-      <div className="text-center text-gray-500 text-sm mt-6 border-t border-gray-700 pt-4">
+      <div className="text-center text-background/50 text-sm mt-6 border-t border-background/20 pt-4">
         © {new Date().getFullYear()} Drivya.ai — All rights reserved.
       </div>
     </footer>

@@ -8,98 +8,101 @@
 @layer base {
   /**
    * Tailwind CSS theme
-   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
-   * A different format will require also updating the theme in tailwind.config.ts.
+   * New Brand Color Palette:
+   * #3E362E - Deep Brown (headings, navbar text, strong emphasis)
+   * #865D36 - Warm Brown (primary buttons, active states, highlights)
+   * #98785B - Soft Brown (secondary emphasis)
+   * #AC8968 - Light Brown (cards, borders)
+   * #A69080 - Muted Brown (backgrounds, subtle accents)
   */
   :root {
-    /* Drivya.AI Color Palette */
-    /* #1A1A1D - Deep Dark (backgrounds, text) */
-    /* #3B1C32 - Dark Purple (accents, borders) */
-    /* #6A1E55 - Purple (primary buttons, key actions) */
-    /* #A64D79 - Light Purple (secondary actions, hover states) */
+    /* Warm, calm light mode */
+    --background: 30 10% 97%;
+    --foreground: 30 15% 21%;
 
-    --background: 0 0% 98%;
-    --foreground: 240 5% 11%;
+    --card: 30 15% 99%;
+    --card-foreground: 30 15% 21%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 5% 11%;
+    --popover: 30 15% 99%;
+    --popover-foreground: 30 15% 21%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 5% 11%;
+    /* Primary: Warm Brown #865D36 */
+    --primary: 28 42% 37%;
+    --primary-foreground: 30 10% 97%;
 
-    /* Primary: Drivya.AI Purple (#6A1E55) */
-    --primary: 315 56% 27%;
-    --primary-foreground: 0 0% 100%;
+    /* Secondary: Soft Brown #98785B */
+    --secondary: 28 27% 47%;
+    --secondary-foreground: 30 10% 97%;
 
-    /* Secondary: Light purple tint */
-    --secondary: 320 41% 48%;
-    --secondary-foreground: 0 0% 100%;
+    /* Muted: Light muted brown #A69080 */
+    --muted: 26 14% 92%;
+    --muted-foreground: 30 15% 45%;
 
-    /* Muted: Dark purple accents (#3B1C32) */
-    --muted: 320 35% 17%;
-    --muted-foreground: 320 35% 60%;
+    /* Accent: Light Brown #AC8968 */
+    --accent: 28 29% 54%;
+    --accent-foreground: 30 10% 97%;
 
-    /* Accent: Deep Dark (#1A1A1D) for contrast */
-    --accent: 240 5% 11%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 320 35% 17%;
-    --input: 0 0% 95%;
-    --ring: 315 56% 27%;
+    --border: 26 14% 85%;
+    --input: 26 14% 92%;
+    --ring: 28 42% 37%;
 
     --radius: 0.625rem;
 
-    --sidebar-background: 240 5% 11%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 315 56% 27%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 320 41% 48%;
-    --sidebar-accent-foreground: 240 5% 11%;
-    --sidebar-border: 320 35% 17%;
-    --sidebar-ring: 315 56% 27%;
+    --sidebar-background: 30 15% 21%;
+    --sidebar-foreground: 30 10% 97%;
+    --sidebar-primary: 28 42% 37%;
+    --sidebar-primary-foreground: 30 10% 97%;
+    --sidebar-accent: 28 29% 54%;
+    --sidebar-accent-foreground: 30 15% 21%;
+    --sidebar-border: 30 15% 30%;
+    --sidebar-ring: 28 42% 37%;
   }
 
   .dark {
-    /* Drivya.AI Dark Mode - Deep purple theme */
-    --background: 240 5% 11%;
-    --foreground: 0 0% 98%;
+    /* Warm dark mode with earthy tones */
+    --background: 30 15% 10%;
+    --foreground: 30 10% 95%;
 
-    --card: 320 35% 17%;
-    --card-foreground: 0 0% 98%;
+    --card: 30 15% 15%;
+    --card-foreground: 30 10% 95%;
 
-    --popover: 320 35% 17%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 30 15% 15%;
+    --popover-foreground: 30 10% 95%;
 
-    --primary: 315 56% 40%;
-    --primary-foreground: 240 5% 11%;
+    /* Primary: Lighter warm brown for dark mode */
+    --primary: 28 42% 50%;
+    --primary-foreground: 30 15% 10%;
 
-    --secondary: 320 41% 55%;
-    --secondary-foreground: 240 5% 11%;
+    /* Secondary: Soft brown */
+    --secondary: 28 27% 55%;
+    --secondary-foreground: 30 15% 10%;
 
-    --muted: 320 30% 30%;
-    --muted-foreground: 0 0% 75%;
+    /* Muted */
+    --muted: 30 15% 20%;
+    --muted-foreground: 26 14% 65%;
 
-    --accent: 320 41% 48%;
-    --accent-foreground: 240 5% 11%;
+    /* Accent */
+    --accent: 28 29% 45%;
+    --accent-foreground: 30 10% 95%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62% 35%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 320 35% 25%;
-    --input: 320 35% 22%;
-    --ring: 315 56% 40%;
+    --border: 30 15% 25%;
+    --input: 30 15% 20%;
+    --ring: 28 42% 50%;
 
-    --sidebar-background: 240 5% 11%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 315 56% 40%;
-    --sidebar-primary-foreground: 240 5% 11%;
-    --sidebar-accent: 320 41% 48%;
-    --sidebar-accent-foreground: 240 5% 11%;
-    --sidebar-border: 320 35% 25%;
-    --sidebar-ring: 315 56% 40%;
+    --sidebar-background: 30 15% 10%;
+    --sidebar-foreground: 30 10% 95%;
+    --sidebar-primary: 28 42% 50%;
+    --sidebar-primary-foreground: 30 15% 10%;
+    --sidebar-accent: 28 29% 45%;
+    --sidebar-accent-foreground: 30 15% 10%;
+    --sidebar-border: 30 15% 25%;
+    --sidebar-ring: 28 42% 50%;
   }
 }
 

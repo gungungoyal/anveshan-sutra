@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Search, Plus, LayoutGrid, User, LogOut, Settings, ChevronDown } from "lucide-react";
+import { Menu, X, Search, Plus, LayoutGrid, User, LogOut, Settings, ChevronDown, Sun, Moon } from "lucide-react";
 import { useState, useEffect, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getCurrentUser, signOut, AuthUser } from "@/lib/services/auth";
+import { useTheme } from "@/components/ThemeProvider";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -13,6 +14,8 @@ export default function Header() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
+
 
   // Detect scroll to tighten the UI
   useEffect(() => {
@@ -103,7 +106,7 @@ export default function Header() {
             </Link>
 
             {/* 2. Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-4">
               {/* Features Link */}
               <Link
                 to="/features"
@@ -120,9 +123,21 @@ export default function Header() {
                 Explore
               </Link>
 
-
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg bg-secondary/10 hover:bg-secondary/20 transition-colors"
+                aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              >
+                {theme === 'light' ? (
+                  <Moon className="w-5 h-5 text-foreground" />
+                ) : (
+                  <Sun className="w-5 h-5 text-foreground" />
+                )}
+              </button>
 
               {/* User Menu or Login/Signup */}
+
               {!loadingUser && (
                 <>
                   {user ? (
@@ -250,6 +265,19 @@ export default function Header() {
               >
                 Explore Organizations
               </Link>
+
+              {/* Mobile Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="flex items-center gap-3 p-3 rounded-xl text-foreground hover:bg-secondary/10 font-medium transition-colors"
+              >
+                {theme === 'light' ? (
+                  <Moon className="w-5 h-5" />
+                ) : (
+                  <Sun className="w-5 h-5" />
+                )}
+                {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+              </button>
 
               {user && (
                 <Link
