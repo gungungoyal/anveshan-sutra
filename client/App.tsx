@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
+import Features from "./pages/Features";
 import NGODashboard from "./pages/NGODashboard";
 import OrgProfileDetail from "./pages/OrgProfileDetail";
 import PPTViewer from "./pages/PPTViewer";
@@ -41,9 +42,11 @@ export default function App() {
           <Routes>
             {/* Drivya.AI New Platform Routes */}
             <Route path="/" element={<Home />} />
+            <Route path="/features" element={<Features />} />
             <Route path="/about" element={<About />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={<NGODashboard />} />
+
             <Route path="/search" element={<Search />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />

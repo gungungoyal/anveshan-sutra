@@ -102,29 +102,24 @@ export default function Header() {
               </span>
             </Link>
 
-            {/* 2. "Fake" Search Bar - High Conversion Element */}
-            <div className="hidden md:flex flex-1 max-w-md mx-8">
+            {/* 2. Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-6">
+              {/* Features Link */}
+              <Link
+                to="/features"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Features
+              </Link>
+
+              {/* Explore (Primary CTA) */}
               <Link
                 to="/search"
-                className="w-full flex items-center gap-3 px-4 py-2.5 bg-secondary/10 hover:bg-secondary/20 border border-transparent hover:border-border rounded-xl text-muted-foreground hover:text-foreground transition-all cursor-pointer group"
-              >
-                <Search className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                <span className="text-sm font-medium">Search for organizations...</span>
-                <span className="ml-auto text-xs bg-card px-1.5 py-0.5 rounded border border-border text-muted-foreground font-medium">
-                  /
-                </span>
-              </Link>
-            </div>
-
-            {/* 3. Desktop Actions - Simplified */}
-            <div className="hidden md:flex items-center gap-3">
-              {/* Single Primary CTA */}
-              <Link
-                to="/org-submit"
                 className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-95"
               >
-                Submit Organization
+                Explore
               </Link>
+
 
 
               {/* User Menu or Login/Signup */}
@@ -241,20 +236,19 @@ export default function Header() {
               )}
 
               <Link
-                to="/search"
+                to="/features"
                 onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-xl bg-secondary/10 text-foreground font-medium"
+                className="flex items-center gap-3 p-3 rounded-xl text-foreground hover:bg-secondary/10 font-medium transition-colors"
               >
-                <Search className="w-5 h-5 text-primary" />
-                Search Organizations
+                Features
               </Link>
 
               <Link
-                to="/org-submit"
+                to="/search"
                 onClick={() => setIsMenuOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-xl bg-primary text-primary-foreground font-semibold"
               >
-                Submit Organization
+                Explore Organizations
               </Link>
 
               {user && (
