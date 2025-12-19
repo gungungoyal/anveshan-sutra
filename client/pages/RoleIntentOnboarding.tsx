@@ -114,10 +114,10 @@ export default function RoleIntentOnboarding() {
                     {/* Header */}
                     <div className="text-center mb-10">
                         <h1 className="text-3xl font-bold text-foreground mb-3">
-                            Let's set up your account
+                            Start your search
                         </h1>
                         <p className="text-muted-foreground">
-                            This helps us show you the most relevant organizations and features.
+                            Answer a few questions to see matched organizations.
                         </p>
                     </div>
 

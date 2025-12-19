@@ -317,12 +317,12 @@ export default function OrgSubmit() {
 
                     {/* Title */}
                     <h1 className="text-3xl font-bold text-foreground mb-4">
-                      Let's set up your organization
+                      Start your search
                     </h1>
 
                     {/* Explanation */}
                     <p className="text-muted-foreground mb-8">
-                      This helps us find the most relevant partners for you.
+                      Answer a few questions to see matched organizations.
                     </p>
 
                     {/* What we'll ask - bullet points */}

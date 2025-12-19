@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
 import Home from "./pages/Home";
 import Features from "./pages/Features";
 import NGODashboard from "./pages/NGODashboard";
@@ -13,6 +14,7 @@ import Shortlist from "./pages/Shortlist";
 import Admin from "./pages/Admin";
 import OrgSubmit from "./pages/OrgSubmit";
 import AuthPage from "./pages/AuthPage";
+import AuthCallback from "./pages/AuthCallback";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -39,58 +41,67 @@ export default function App() {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
 
-            <Routes>
-              {/* Drivya.AI New Platform Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/features" element={<Features />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/auth" element={<AuthPage />} />
+              <Routes>
+                {/* Drivya.AI New Platform Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/features" element={<Features />} />
+                <Route path="/about" element={<About />} />
 
-              {/* Onboarding - mandatory role + intent selection */}
-              <Route path="/onboarding" element={<RoleIntentOnboarding />} />
+                {/* Auth Routes */}
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
 
-              {/* Protected Routes - require onboarding */}
-              <Route path="/dashboard" element={<RequireOnboarding><NGODashboard /></RequireOnboarding>} />
-              <Route path="/search" element={<RequireOnboarding><Search /></RequireOnboarding>} />
-              <Route path="/shortlist" element={<RequireOnboarding><Shortlist /></RequireOnboarding>} />
-              {/* Org submit routes - require onboarding but NOT org profile */}
-              <Route path="/org-submit" element={<RequireOnboarding requireOrg={false}><OrgSubmit /></RequireOnboarding>} />
-              <Route path="/submit-organization" element={<RequireOnboarding requireOrg={false}><SubmitOrganization /></RequireOnboarding>} />
+                {/* Onboarding - mandatory role + intent selection */}
+                <Route path="/onboarding" element={<RoleIntentOnboarding />} />
 
-              {/* Public Routes */}
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-              <Route path="/profile" element={<ProfileSettings />} />
-              <Route path="/org-edit/:id" element={<OrgSubmit />} />
-              <Route path="/org-profile/:id" element={<OrgProfileDetail />} />
-              <Route path="/organization/:id" element={<OrgProfileDetail />} />
-              <Route path="/ppt/:id" element={<PPTViewer />} />
-              <Route path="/textmaker" element={<TextMaker />} />
+                {/* Public Browse Routes - no login required */}
+                <Route path="/search" element={<Search />} />
+                <Route path="/organization/:id" element={<OrgProfileDetail />} />
+                <Route path="/org-profile/:id" element={<OrgProfileDetail />} />
 
-              {/* TextMaker / AI Tools Routes */}
-              <Route path="/tools" element={<TextMakerDashboard />} />
-              <Route path="/tools/text-extraction" element={<TextExtractor />} />
-              <Route path="/tools/powerpoint" element={<PowerPointGenerator />} />
-              <Route path="/tools/research-paper" element={<ResearchPaperGenerator />} />
-              <Route path="/tools/bi-dashboard" element={<div className="p-6"><h1 className="text-2xl font-bold">Power BI Dashboard - Coming Soon</h1></div>} />
+                {/* Protected Routes - require onboarding/auth */}
+                <Route path="/dashboard" element={<RequireOnboarding><NGODashboard /></RequireOnboarding>} />
+                <Route path="/shortlist" element={<RequireOnboarding><Shortlist /></RequireOnboarding>} />
 
-              {/* Legacy Routes (keeping for backward compatibility) */}
-              <Route path="/home" element={<Home />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+                {/* Org submit routes - require onboarding but NOT org profile */}
+                <Route path="/org-submit" element={<RequireOnboarding requireOrg={false}><OrgSubmit /></RequireOnboarding>} />
+                <Route path="/submit-organization" element={<RequireOnboarding requireOrg={false}><SubmitOrganization /></RequireOnboarding>} />
+
+                {/* Other Public Routes */}
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+                <Route path="/profile" element={<ProfileSettings />} />
+                <Route path="/org-edit/:id" element={<OrgSubmit />} />
+                <Route path="/ppt/:id" element={<PPTViewer />} />
+                <Route path="/textmaker" element={<TextMaker />} />
+
+                {/* TextMaker / AI Tools Routes */}
+                <Route path="/tools" element={<TextMakerDashboard />} />
+                <Route path="/tools/text-extraction" element={<TextExtractor />} />
+                <Route path="/tools/powerpoint" element={<PowerPointGenerator />} />
+                <Route path="/tools/research-paper" element={<ResearchPaperGenerator />} />
+                <Route path="/tools/bi-dashboard" element={<div className="p-6"><h1 className="text-2xl font-bold">Power BI Dashboard - Coming Soon</h1></div>} />
+
+                {/* Legacy Routes (keeping for backward compatibility) */}
+                <Route path="/home" element={<Home />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/login" element={<AuthPage />} />
+                <Route path="/signup" element={<AuthPage />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );
 }
+

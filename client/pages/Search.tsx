@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { searchOrganizations } from "@/lib/services/organizations";
 import { SearchResult } from "@shared/api";
 import AlignmentScoreBreakdown from "@/components/AlignmentScoreBreakdown";
+import { toast } from "sonner";
 
 // Use SearchResult from shared API
 type Organization = SearchResult;
@@ -85,6 +87,8 @@ function generateMatchReasons(
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [results, setResults] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,6 +100,7 @@ export default function Search() {
   const [showGuidedIntro, setShowGuidedIntro] = useState(() => {
     return localStorage.getItem("dismissedGuidedIntro") !== "true";
   });
+
 
   const dismissGuidedIntro = () => {
     setShowGuidedIntro(false);
@@ -158,9 +163,12 @@ export default function Search() {
     return () => clearTimeout(debounceTimer);
   }, [fetchResults]);
 
-  // Update URL params
+  // Update URL params (preserve role param for contextual experience)
   useEffect(() => {
     const params = new URLSearchParams();
+    // Preserve role param if it exists
+    const role = searchParams.get("role");
+    if (role) params.append("role", role);
     if (query) params.append("q", query);
     if (selectedFocusArea) params.append("focus", selectedFocusArea);
     if (selectedRegion) params.append("region", selectedRegion);
@@ -170,6 +178,17 @@ export default function Search() {
   }, [query, selectedFocusArea, selectedRegion, sortBy, setSearchParams]);
 
   const toggleShortlist = (orgId: string) => {
+    // Gate behind auth
+    if (!isAuthenticated) {
+      toast.info("Sign in to save organizations", {
+        action: {
+          label: "Sign In",
+          onClick: () => navigate(`/auth?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`),
+        },
+      });
+      return;
+    }
+
     const newShortlist = new Set(shortlist);
     if (newShortlist.has(orgId)) {
       newShortlist.delete(orgId);
@@ -186,6 +205,26 @@ export default function Search() {
     setSortBy("alignment");
   };
 
+  // Get role context from URL for personalized messaging
+  const userRole = searchParams.get("role");
+  const roleContext = {
+    ngo: {
+      title: "Find CSR & Incubator Partners",
+      subtitle: "Discover funding opportunities and collaborations aligned with your mission",
+    },
+    incubator: {
+      title: "Discover NGOs & CSR Partners",
+      subtitle: "Find organizations to support and corporate partners for scale",
+    },
+    csr: {
+      title: "Explore Verified NGOs",
+      subtitle: "Find credible organizations aligned with your CSR themes",
+    },
+  }[userRole as string] || {
+    title: "Find Your Perfect Partner",
+    subtitle: "Search and filter organizations by focus area, region, and more",
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -194,10 +233,10 @@ export default function Search() {
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            Find Your Perfect Partner
+            {roleContext.title}
           </h1>
           <p className="text-lg text-muted-foreground">
-            Search and filter organizations by focus area, region, and more
+            {roleContext.subtitle}
           </p>
         </div>
 
