@@ -28,6 +28,7 @@ import TermsAndConditions from "./pages/TermsAndConditions";
 import SubmitOrganization from "./pages/SubmitOrganization";
 import ProfileSettings from "./pages/ProfileSettings";
 import RoleIntentOnboarding from "./pages/RoleIntentOnboarding";
+import RoleEntry from "./pages/RoleEntry";
 import RequireOnboarding from "./components/RequireOnboarding";
 
 // TextMaker modules
@@ -57,6 +58,9 @@ export default function App() {
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
 
+                {/* Role-specific entry points */}
+                <Route path="/start/:role" element={<RoleEntry />} />
+
                 {/* Onboarding - mandatory role + intent selection */}
                 <Route path="/onboarding" element={<RoleIntentOnboarding />} />
 
@@ -69,9 +73,9 @@ export default function App() {
                 <Route path="/dashboard" element={<RequireOnboarding><NGODashboard /></RequireOnboarding>} />
                 <Route path="/shortlist" element={<RequireOnboarding><Shortlist /></RequireOnboarding>} />
 
-                {/* Org submit routes - require onboarding but NOT org profile */}
-                <Route path="/org-submit" element={<RequireOnboarding requireOrg={false}><OrgSubmit /></RequireOnboarding>} />
-                <Route path="/submit-organization" element={<RequireOnboarding requireOrg={false}><SubmitOrganization /></RequireOnboarding>} />
+                {/* Org submit routes - auth handled by page or role entry */}
+                <Route path="/org-submit" element={<OrgSubmit />} />
+                <Route path="/submit-organization" element={<SubmitOrganization />} />
 
                 {/* Other Public Routes */}
                 <Route path="/contact" element={<Contact />} />

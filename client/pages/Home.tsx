@@ -141,10 +141,10 @@ export default function Home() {
               </ul>
 
               <Link
-                to="/search?role=ngo"
+                to="/start/ngo"
                 className="inline-flex items-center gap-2 w-full justify-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
               >
-                Find CSR & Incubator Partners
+                Set Up & Find Partners
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -183,10 +183,10 @@ export default function Home() {
               </ul>
 
               <Link
-                to="/search?role=incubator"
+                to="/start/incubator"
                 className="inline-flex items-center gap-2 w-full justify-center px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
               >
-                Discover NGOs & CSR Partners
+                Get Started
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -225,7 +225,7 @@ export default function Home() {
               </ul>
 
               <Link
-                to="/search?role=csr"
+                to="/start/csr"
                 className="inline-flex items-center gap-2 w-full justify-center px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
               >
                 Explore Verified NGOs

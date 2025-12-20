@@ -1,57 +1,62 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { getCurrentUser } from "@/lib/services/auth";
+import { Loader2 } from "lucide-react";
 
 /**
- * OAuth callback handler
- * Handles the redirect after successful Google/LinkedIn sign-in
+ * OAuth Callback Handler
+ * Handles redirect after Google/LinkedIn sign-in
  */
 export default function AuthCallback() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const returnTo = searchParams.get("returnTo") || "/search";
+    const [error, setError] = useState<string | null>(null);
+
+    const returnTo = searchParams.get("returnTo") || "/";
 
     useEffect(() => {
         const handleCallback = async () => {
-            if (!supabase) {
-                navigate("/auth", { replace: true });
-                return;
-            }
-
             try {
-                // Get the session from the URL hash
-                const { data: { session }, error } = await supabase.auth.getSession();
+                // Get session from URL hash (Supabase OAuth)
+                const { data, error } = await supabase.auth.getSession();
 
                 if (error) {
                     console.error("Auth callback error:", error);
-                    navigate("/auth?error=auth_failed", { replace: true });
+                    setError(error.message);
                     return;
                 }
 
-                if (session) {
-                    // Get or create user profile
-                    const { user } = await getCurrentUser();
-
-                    if (user) {
-                        localStorage.setItem("user_role", user.role);
-                    }
-
-                    // Redirect to the intended destination
-                    navigate(returnTo, { replace: true });
+                if (data.session) {
+                    // Successfully authenticated - redirect to intended destination
+                    navigate(decodeURIComponent(returnTo), { replace: true });
                 } else {
-                    // No session, redirect back to auth
+                    // No session - go back to auth
                     navigate("/auth", { replace: true });
                 }
-            } catch (error) {
-                console.error("Callback error:", error);
-                navigate("/auth?error=callback_failed", { replace: true });
+            } catch (err) {
+                console.error("Callback error:", err);
+                setError("Authentication failed. Please try again.");
             }
         };
 
         handleCallback();
     }, [navigate, returnTo]);
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-destructive mb-4">{error}</p>
+                    <button
+                        onClick={() => navigate("/auth")}
+                        className="text-primary underline"
+                    >
+                        Try again
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center">

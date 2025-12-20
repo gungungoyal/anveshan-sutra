@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import AuthPrompt from "@/components/AuthPrompt";
+import { useAuth } from "@/hooks/useAuth";
 import { SearchResult } from "@shared/api";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -25,6 +27,7 @@ interface PPTSlide {
 export default function PPTViewer() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [org, setOrg] = useState<SearchResult | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -32,9 +35,21 @@ export default function PPTViewer() {
   const [slides, setSlides] = useState<PPTSlide[]>([]);
   const [copyStatus, setCopyStatus] = useState<number | null>(null);
 
+  // Redirect unauthenticated users
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      // Don't redirect - show auth prompt instead
+    }
+  }, [authLoading, isAuthenticated, navigate, id]);
+
   useEffect(() => {
     const fetchOrgAndGenerateSlides = async () => {
       if (!id) return;
+      // Only fetch if authenticated
+      if (!isAuthenticated) {
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
@@ -57,7 +72,7 @@ export default function PPTViewer() {
     };
 
     fetchOrgAndGenerateSlides();
-  }, [id]);
+  }, [id, isAuthenticated]);
 
   const generateSlides = (org: SearchResult): PPTSlide[] => {
     return [
@@ -143,7 +158,23 @@ export default function PPTViewer() {
     );
   };
 
-  if (loading) {
+  // Show auth prompt for unauthenticated users
+  if (!isAuthenticated && !authLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-20 max-w-lg">
+          <AuthPrompt
+            feature="presentations and downloads"
+            message="Sign in to generate and download organization presentations."
+          />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -288,8 +319,8 @@ export default function PPTViewer() {
                 key={index}
                 onClick={() => setCurrentSlide(index)}
                 className={`w-3 h-3 rounded-full transition-all ${index === currentSlide
-                    ? "bg-primary w-8"
-                    : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                  ? "bg-primary w-8"
+                  : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
                   }`}
                 aria-label={`Go to slide ${index + 1}`}
               />
@@ -318,8 +349,8 @@ export default function PPTViewer() {
                 key={index}
                 onClick={() => setCurrentSlide(index)}
                 className={`relative aspect-video rounded-lg border-2 transition-all p-3 text-left ${index === currentSlide
-                    ? "border-primary bg-primary/10"
-                    : "border-border hover:border-primary/50"
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-primary/50"
                   }`}
               >
                 <div className="text-xs font-bold text-foreground truncate">

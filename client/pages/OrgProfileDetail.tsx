@@ -4,10 +4,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MatchExplanation from "@/components/MatchExplanation";
 import AlignmentScoreBreakdown from "@/components/AlignmentScoreBreakdown";
+import AuthPrompt from "@/components/AuthPrompt";
+import { useAuth } from "@/hooks/useAuth";
 import { SearchResult } from "@shared/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
   Heart,
   ExternalLink,
@@ -17,12 +20,14 @@ import {
   Briefcase,
   Award,
   Lightbulb,
+  Lock,
 } from "lucide-react";
 import { getOrganizationById } from "@/lib/services/organizations";
 
 export default function OrgProfileDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [org, setOrg] = useState<SearchResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +39,6 @@ export default function OrgProfileDetail() {
     const fetchOrganization = async () => {
       try {
         setLoading(true);
-        // Fetch organization using service layer
         const org = await getOrganizationById(id);
 
         if (!org) {
@@ -55,6 +59,32 @@ export default function OrgProfileDetail() {
 
     fetchOrganization();
   }, [id]);
+
+  // Handle auth-gated actions
+  const handleSaveClick = () => {
+    if (!isAuthenticated) {
+      toast.info("Sign in to save organizations", {
+        action: {
+          label: "Sign In",
+          onClick: () => navigate(`/auth?returnTo=${encodeURIComponent(window.location.pathname)}`),
+        },
+      });
+      return;
+    }
+    setIsShortlisted(!isShortlisted);
+  };
+
+  const handlePPTClick = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      toast.info("Sign in to download PPT", {
+        action: {
+          label: "Sign In",
+          onClick: () => navigate(`/auth?returnTo=${encodeURIComponent(window.location.pathname)}`),
+        },
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -98,7 +128,7 @@ export default function OrgProfileDetail() {
           Back to Results
         </Button>
 
-        {/* Organization Header */}
+        {/* Organization Header - Always Visible (Public Info) */}
         <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-8 mb-8">
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="flex-1">
@@ -135,13 +165,31 @@ export default function OrgProfileDetail() {
                 )}
               </div>
 
-              <p className="text-lg text-foreground font-medium">
-                {org.headquarters}
-              </p>
+              {/* Focus Areas - Public */}
+              <div className="flex flex-wrap gap-2">
+                {org.focusAreas.slice(0, 4).map((area) => (
+                  <Badge key={area} variant="secondary">
+                    {area}
+                  </Badge>
+                ))}
+                {org.focusAreas.length > 4 && (
+                  <Badge variant="outline">+{org.focusAreas.length - 4} more</Badge>
+                )}
+              </div>
             </div>
 
-            {/* Alignment Score Card */}
-            <AlignmentScoreBreakdown organization={org} />
+            {/* Alignment Score - Visible but gated explanation */}
+            {isAuthenticated ? (
+              <AlignmentScoreBreakdown organization={org} />
+            ) : (
+              <div className="text-center bg-card border border-border rounded-xl p-4 min-w-[120px]">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                  Alignment
+                </p>
+                <span className="text-3xl font-bold text-primary">{org.alignmentScore}%</span>
+                <p className="text-xs text-muted-foreground mt-1">Sign in for details</p>
+              </div>
+            )}
           </div>
 
           {/* Actions */}
@@ -152,7 +200,7 @@ export default function OrgProfileDetail() {
             </Button>
             <Button
               variant={isShortlisted ? "default" : "outline"}
-              onClick={() => setIsShortlisted(!isShortlisted)}
+              onClick={handleSaveClick}
               className="flex items-center gap-2"
             >
               <Heart
@@ -160,6 +208,7 @@ export default function OrgProfileDetail() {
                 fill={isShortlisted ? "currentColor" : "none"}
               />
               {isShortlisted ? "Saved" : "Save to Shortlist"}
+              {!isAuthenticated && <Lock className="w-3 h-3 ml-1" />}
             </Button>
 
             {org.website && (
@@ -176,196 +225,207 @@ export default function OrgProfileDetail() {
               </Button>
             )}
 
-            <Button asChild>
-              <Link to={`/ppt/${org.id}`} className="flex items-center gap-2">
+            <Button asChild onClick={handlePPTClick}>
+              <Link to={isAuthenticated ? `/ppt/${org.id}` : "#"} className="flex items-center gap-2">
                 <Award className="w-5 h-5" />
                 Generate PPT
+                {!isAuthenticated && <Lock className="w-3 h-3 ml-1" />}
               </Link>
             </Button>
           </div>
         </div>
 
-        {/* Content Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mb-8">
-          {/* Main Content */}
-          <div className="md:col-span-2 space-y-6">
-            {/* Mission & Vision */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Mission & Vision</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-bold text-foreground mb-2">Mission</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {org.mission}
-                  </p>
-                </div>
-                <div className="border-t pt-4">
-                  <h3 className="font-bold text-foreground mb-2">Vision</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {org.description}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Focus Areas */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Focus Areas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {org.focusAreas.map((area) => (
-                    <Badge key={area} variant="secondary" className="text-base">
-                      {area}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Projects & Impact */}
-            {org.projects && org.projects.length > 0 && (
+        {/* AUTH GATE: Full Profile Details */}
+        {isAuthenticated ? (
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            {/* Main Content */}
+            <div className="md:col-span-2 space-y-6">
+              {/* Mission & Vision */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Key Projects & Impact</CardTitle>
+                  <CardTitle>Mission & Vision</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {org.projects.slice(0, 3).map((project, idx) => (
-                    <div
-                      key={idx}
-                      className="border-l-4 border-primary pl-4 py-2"
-                    >
-                      <h4 className="font-bold text-foreground mb-1">
-                        {project.title}
-                      </h4>
-                      <p className="text-sm text-muted-foreground mb-1">
-                        {project.year}
-                      </p>
-                      <p className="text-foreground">{project.description}</p>
-                    </div>
-                  ))}
+                  <div>
+                    <h3 className="font-bold text-foreground mb-2">Mission</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {org.mission}
+                    </p>
+                  </div>
+                  <div className="border-t pt-4">
+                    <h3 className="font-bold text-foreground mb-2">Vision</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {org.description}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
-            )}
 
-            {/* Partners */}
-            {org.partnerHistory && org.partnerHistory.length > 0 && (
+              {/* Focus Areas */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Known Partners</CardTitle>
+                  <CardTitle>Focus Areas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
-                    {org.partnerHistory.map((partner, idx) => (
-                      <Badge key={idx} variant="outline">
-                        {partner}
+                    {org.focusAreas.map((area) => (
+                      <Badge key={area} variant="secondary" className="text-base">
+                        {area}
                       </Badge>
                     ))}
                   </div>
                 </CardContent>
               </Card>
-            )}
-          </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Key Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Organization Info</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                    Type
-                  </p>
-                  <p className="font-semibold text-foreground">{org.type}</p>
-                </div>
-                <div className="border-t pt-4">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                    Region
-                  </p>
-                  <p className="font-semibold text-foreground">{org.region}</p>
-                </div>
-                <div className="border-t pt-4">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                    Headquarters
-                  </p>
-                  <p className="font-semibold text-foreground">
-                    {org.headquarters}
-                  </p>
-                </div>
-                <div className="border-t pt-4">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                    Funding Type
-                  </p>
-                  <p className="font-semibold text-foreground">
-                    {org.fundingType}
-                  </p>
-                </div>
-                <div className="border-t pt-4">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                    Data Confidence
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-secondary rounded-full h-2">
+              {/* Projects & Impact */}
+              {org.projects && org.projects.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Key Projects & Impact</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {org.projects.slice(0, 3).map((project, idx) => (
                       <div
-                        className="bg-primary h-full rounded-full"
-                        style={{ width: `${org.confidence}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm font-semibold text-foreground">
-                      {org.confidence}%
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                        key={idx}
+                        className="border-l-4 border-primary pl-4 py-2"
+                      >
+                        <h4 className="font-bold text-foreground mb-1">
+                          {project.title}
+                        </h4>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {project.year}
+                        </p>
+                        <p className="text-foreground">{project.description}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* Target Beneficiaries */}
-            {org.targetBeneficiaries && org.targetBeneficiaries.length > 0 && (
+              {/* Partners */}
+              {org.partnerHistory && org.partnerHistory.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Known Partners</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {org.partnerHistory.map((partner, idx) => (
+                        <Badge key={idx} variant="outline">
+                          {partner}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Key Info */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">
-                    Target Beneficiaries
+                  <CardTitle className="text-lg">Organization Info</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                      Type
+                    </p>
+                    <p className="font-semibold text-foreground">{org.type}</p>
+                  </div>
+                  <div className="border-t pt-4">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                      Region
+                    </p>
+                    <p className="font-semibold text-foreground">{org.region}</p>
+                  </div>
+                  <div className="border-t pt-4">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                      Headquarters
+                    </p>
+                    <p className="font-semibold text-foreground">
+                      {org.headquarters}
+                    </p>
+                  </div>
+                  <div className="border-t pt-4">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                      Funding Type
+                    </p>
+                    <p className="font-semibold text-foreground">
+                      {org.fundingType}
+                    </p>
+                  </div>
+                  <div className="border-t pt-4">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                      Data Confidence
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-secondary rounded-full h-2">
+                        <div
+                          className="bg-primary h-full rounded-full"
+                          style={{ width: `${org.confidence}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm font-semibold text-foreground">
+                        {org.confidence}%
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Target Beneficiaries */}
+              {org.targetBeneficiaries && org.targetBeneficiaries.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      Target Beneficiaries
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2">
+                      {org.targetBeneficiaries.map((beneficiary, idx) => (
+                        <li
+                          key={idx}
+                          className="text-sm text-foreground flex items-start gap-2"
+                        >
+                          <span className="text-primary mt-1">•</span>
+                          {beneficiary}
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Why This Match Card */}
+              <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Lightbulb className="w-5 h-5 text-primary" />
+                    Why this organization matches you
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-2">
-                    {org.targetBeneficiaries.map((beneficiary, idx) => (
-                      <li
-                        key={idx}
-                        className="text-sm text-foreground flex items-start gap-2"
-                      >
-                        <span className="text-primary mt-1">•</span>
-                        {beneficiary}
-                      </li>
-                    ))}
-                  </ul>
+                  <MatchExplanation organization={org} />
+                  <p className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border/50">
+                    Based on publicly available organization information
+                  </p>
                 </CardContent>
               </Card>
-            )}
-
-            {/* Why This Match Card */}
-            <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5 text-primary" />
-                  Why this organization matches you
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <MatchExplanation organization={org} />
-                <p className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border/50">
-                  Based on publicly available organization information
-                </p>
-              </CardContent>
-            </Card>
+            </div>
           </div>
-        </div>
+        ) : (
+          /* AUTH PROMPT: For unauthenticated users */
+          <div className="mt-8">
+            <AuthPrompt
+              feature="full organization details"
+              message="Sign in to access full organization details, alignment insights, and collaboration tools."
+            />
+          </div>
+        )}
       </main>
 
       <Footer />
