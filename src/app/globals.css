@@ -1,0 +1,187 @@
+/** @import must precede all other statements */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+    /**
+   * Drivya.AI Color System
+   * 
+   * NEUTRAL BASE:
+   * Background: #F8FAFC (light) / #0F172A (dark)
+   * Primary Text: #0F172A (light) / #F8FAFC (dark)
+   * Secondary Text: #475569 (light) / #94A3B8 (dark)
+   * 
+   * PRIMARY ACTION: #2563EB (blue-600)
+   * Used for: Main CTA buttons, active states, key highlights
+   * 
+   * ROLE ACCENTS (via Tailwind classes):
+   * NGO: #16A34A (green-600)
+   * Incubator: #0EA5E9 (sky-500)
+   * CSR: #F97316 (orange-500)
+   * 
+   * MATCH SCORE COLORS:
+   * <50%: #EF4444 (red-500)
+   * 50-69%: #F59E0B (amber-500)
+   * ≥70%: #16A34A (green-600)
+   */
+    :root {
+        /* Neutral Base - Light Mode */
+        --background: 210 40% 98%;
+        /* #F8FAFC */
+        --foreground: 222 47% 11%;
+        /* #0F172A */
+
+        --card: 0 0% 100%;
+        /* white */
+        --card-foreground: 222 47% 11%;
+        /* #0F172A */
+
+        --popover: 0 0% 100%;
+        --popover-foreground: 222 47% 11%;
+
+        /* Primary: Blue #2563EB */
+        --primary: 217 91% 60%;
+        --primary-foreground: 0 0% 100%;
+
+        /* Secondary: Neutral gray for secondary actions */
+        --secondary: 210 40% 96%;
+        --secondary-foreground: 215 16% 47%;
+        /* #64748B */
+
+        /* Muted: Subtle backgrounds */
+        --muted: 210 40% 96%;
+        --muted-foreground: 215 16% 47%;
+        /* #475569 muted text */
+
+        /* Accent: For highlights (uses primary by default) */
+        --accent: 210 40% 96%;
+        --accent-foreground: 217 91% 60%;
+
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 100%;
+
+        --border: 214 32% 91%;
+        /* #E2E8F0 */
+        --input: 214 32% 91%;
+        --ring: 217 91% 60%;
+
+        --radius: 0.625rem;
+
+        /* Sidebar - Dark sidebar for contrast */
+        --sidebar-background: 222 47% 11%;
+        --sidebar-foreground: 210 40% 98%;
+        --sidebar-primary: 217 91% 60%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 217 91% 60%;
+        --sidebar-accent-foreground: 0 0% 100%;
+        --sidebar-border: 217 33% 17%;
+        --sidebar-ring: 217 91% 60%;
+    }
+
+    .dark {
+        /* Neutral Base - Dark Mode */
+        --background: 222 47% 11%;
+        /* #0F172A */
+        --foreground: 210 40% 98%;
+        /* #F8FAFC */
+
+        --card: 217 33% 17%;
+        /* #1E293B */
+        --card-foreground: 210 40% 98%;
+
+        --popover: 217 33% 17%;
+        --popover-foreground: 210 40% 98%;
+
+        /* Primary: Slightly brighter blue for dark mode */
+        --primary: 217 91% 65%;
+        --primary-foreground: 222 47% 11%;
+
+        /* Secondary */
+        --secondary: 217 33% 17%;
+        --secondary-foreground: 215 20% 65%;
+
+        /* Muted */
+        --muted: 217 33% 17%;
+        --muted-foreground: 215 20% 65%;
+        /* #94A3B8 */
+
+        /* Accent */
+        --accent: 217 33% 22%;
+        --accent-foreground: 217 91% 65%;
+
+        --destructive: 0 62% 50%;
+        --destructive-foreground: 0 0% 100%;
+
+        --border: 217 33% 22%;
+        /* #334155 */
+        --input: 217 33% 22%;
+        --ring: 217 91% 65%;
+
+        /* Sidebar - Dark mode sidebar */
+        --sidebar-background: 222 47% 8%;
+        --sidebar-foreground: 210 40% 98%;
+        --sidebar-primary: 217 91% 65%;
+        --sidebar-primary-foreground: 222 47% 11%;
+        --sidebar-accent: 217 91% 65%;
+        --sidebar-accent-foreground: 222 47% 11%;
+        --sidebar-border: 217 33% 17%;
+        --sidebar-ring: 217 91% 65%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-feature-settings:
+            "rlig" 1,
+            "calt" 1;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-semibold tracking-tight;
+    }
+
+    h1 {
+        @apply text-display-lg;
+    }
+
+    h2 {
+        @apply text-display-md;
+    }
+
+    h3 {
+        @apply text-heading-lg;
+    }
+
+    h4 {
+        @apply text-heading-md;
+    }
+
+    :where(p, span, li, a, button, label, td, th) {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    pre,
+    code {
+        overflow-x: auto;
+        white-space: pre;
+    }
+}
