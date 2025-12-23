@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,7 +17,7 @@ import {
 type AuthMode = "signup" | "login" | "forgot_password";
 type AuthStep = "form" | "otp" | "reset_password" | "success";
 
-export default function AuthPage() {
+function AuthPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { isAuthenticated, isLoading: authLoading, refreshUser, user } = useAuth();
@@ -486,5 +486,17 @@ export default function AuthPage() {
             </main>
             <Footer />
         </div>
+    );
+}
+
+export default function AuthPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        }>
+            <AuthPageContent />
+        </Suspense>
     );
 }
