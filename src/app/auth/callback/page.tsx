@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const returnTo = searchParams?.get("returnTo") || "/onboarding";
@@ -45,5 +45,18 @@ export default function AuthCallbackPage() {
             <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
             <p className="text-muted-foreground">Completing sign in...</p>
         </div>
+    );
+}
+
+export default function AuthCallbackPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+                <p className="text-muted-foreground">Loading...</p>
+            </div>
+        }>
+            <AuthCallbackContent />
+        </Suspense>
     );
 }

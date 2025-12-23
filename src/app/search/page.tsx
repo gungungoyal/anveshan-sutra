@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -90,7 +90,7 @@ function generateMatchReasons(
   return reasons.slice(0, 3);
 }
 
-export default function Search() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { isAuthenticated } = useAuth();
@@ -670,5 +670,17 @@ export default function Search() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function Search() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   );
 }
