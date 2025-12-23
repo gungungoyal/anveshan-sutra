@@ -1,8 +1,10 @@
 "use client";
 
-import { redirect } from "next/navigation";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useUserStore } from "@/lib/stores/userStore";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader2 } from "lucide-react";
 
 interface RequireOnboardingProps {
     children: React.ReactNode;
@@ -11,31 +13,75 @@ interface RequireOnboardingProps {
 
 /**
  * Route guard component (Next.js App Router version)
- * 1. Redirects to /onboarding if role + intent not set
- * 2. Redirects NGO/Incubator to /org-submit if no org profile
- * 3. Allows CSR to access in read-only mode
+ * 1. Redirects to /auth if not authenticated
+ * 2. Redirects to /onboarding if onboarding not complete
+ * 3. Redirects NGO/Incubator to /org-submit if no org profile
+ * 4. Allows CSR to access in read-only mode
  */
 export default function RequireOnboarding({ children, requireOrg = true }: RequireOnboardingProps) {
-    const pathname = usePathname();
-    const { role, intent, onboardingComplete, hasOrganization } = useUserStore();
+    const router = useRouter();
+    const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+    const { role, intent, onboardingComplete, hasOrganization, onboardingStep } = useUserStore();
+    const [isChecking, setIsChecking] = useState(true);
 
-    // Check if onboarding is complete (role + intent selected)
-    const isOnboarded = role && intent && onboardingComplete;
+    useEffect(() => {
+        const checkAccess = async () => {
+            // Wait for auth to load
+            if (authLoading) return;
 
-    if (!isOnboarded) {
-        // Redirect to onboarding page
-        redirect("/onboarding");
-    }
+            // Redirect to auth if not authenticated
+            if (!isAuthenticated) {
+                router.push('/auth');
+                return;
+            }
 
-    // CSR users can always access (read-only exploration mode)
-    if (role === 'csr') {
-        return <>{children}</>;
-    }
+            // Check onboarding status from API for accurate data
+            try {
+                const response = await fetch('/api/onboarding-status');
+                if (response.ok) {
+                    const status = await response.json();
 
-    // NGO and Incubator need org profile for routes that require it
-    if (requireOrg && !hasOrganization) {
-        // Redirect to org-submit to create profile first
-        redirect("/org-submit");
+                    // If onboarding not complete, redirect to onboarding
+                    if (status.step !== 'complete' && status.step !== 'org_form') {
+                        router.push('/onboarding');
+                        return;
+                    }
+
+                    // If at org_form step but no org, redirect to org-submit
+                    if (status.step === 'org_form' && !status.hasOrganization) {
+                        router.push('/org-submit');
+                        return;
+                    }
+
+                    // CSR users can always access (read-only exploration mode)
+                    if (status.role === 'csr') {
+                        setIsChecking(false);
+                        return;
+                    }
+
+                    // NGO and Incubator need org profile for routes that require it
+                    if (requireOrg && !status.hasOrganization) {
+                        router.push('/org-submit');
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking onboarding status:', error);
+            }
+
+            setIsChecking(false);
+        };
+
+        checkAccess();
+    }, [authLoading, isAuthenticated, router, requireOrg, user]);
+
+    // Show loader while checking
+    if (authLoading || isChecking) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
     }
 
     return <>{children}</>;

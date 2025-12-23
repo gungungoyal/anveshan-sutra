@@ -107,7 +107,7 @@ export default function PlatformFeedbackModal({ open, onOpenChange }: PlatformFe
                     <div className="flex justify-end gap-2 mt-4">
                         <Button variant="outline" onClick={handleClose}>Cancel</Button>
                         <Button asChild>
-                            <a href={`/auth?returnTo=${encodeURIComponent(pathname)}`}>Sign In</a>
+                            <a href={`/auth?returnTo=${encodeURIComponent(pathname || '/')}`}>Sign In</a>
                         </Button>
                     </div>
                 </DialogContent>

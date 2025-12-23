@@ -146,7 +146,7 @@ export async function getOrganizations(): Promise<{
           organization_focus_areas(focus_area)
         `);
 
-            if (!error && data && data.length > 0) {
+            if (!error && data) {
                 // Transform Supabase data to our format
                 const organizations: SearchResult[] = data.map((org: any) => ({
                     id: org.id,
@@ -169,18 +169,20 @@ export async function getOrganizations(): Promise<{
 
                 return { organizations, total: organizations.length };
             }
+
+            // If there's an error from Supabase, throw to show error message
+            if (error) {
+                console.error('Supabase error:', error);
+                throw new Error('Unable to load organizations. Please try again later.');
+            }
         }
     } catch (error) {
-        console.warn('Failed to fetch from Supabase, using mock data:', error);
+        console.error('Failed to fetch organizations:', error);
+        throw error;
     }
 
-    // Fallback to mock data
-    const organizations: SearchResult[] = mockOrganizations.map((org) => ({
-        ...org,
-        alignmentScore: org.confidence || 75,
-    }));
-
-    return { organizations, total: organizations.length };
+    // If no supabase configured, return empty with error
+    return { organizations: [], total: 0 };
 }
 
 /**
@@ -332,11 +334,15 @@ export async function submitOrganization(data: {
     mission: string;
     description: string;
     fundingType?: string;
+    contactEmail?: string;
 }): Promise<{ success: boolean; organization?: SearchResult; error?: string }> {
     try {
         if (!supabase) {
             return { success: false, error: 'Supabase not configured' };
         }
+
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
 
         // Generate a unique ID
         const id = `org-${Date.now()}`;
@@ -354,8 +360,11 @@ export async function submitOrganization(data: {
                 mission: data.mission,
                 description: data.description,
                 funding_type: data.fundingType || 'recipient',
-                verification_status: 'pending',
+                verification_status: 'unverified',
+                moderation_status: 'pending',
                 confidence: 50, // New submissions start with lower confidence
+                contact_email: data.contactEmail || user?.email || null,
+                submitted_by: user?.id || null,
             })
             .select()
             .single();
@@ -373,7 +382,30 @@ export async function submitOrganization(data: {
                 is_primary: index === 0,
             }));
 
-            await supabase.from('organization_focus_areas').insert(focusAreaInserts);
+            const { error: focusError } = await supabase
+                .from('organization_focus_areas')
+                .insert(focusAreaInserts);
+
+            if (focusError) {
+                console.error('Error inserting focus areas:', focusError);
+                // Continue anyway - org was created
+            }
+        }
+
+        // Link user to organization if user is logged in
+        if (user) {
+            const { error: linkError } = await supabase
+                .from('user_organizations')
+                .insert({
+                    user_id: user.id,
+                    organization_id: id,
+                    role: 'owner',
+                });
+
+            if (linkError) {
+                console.error('Error linking user to organization:', linkError);
+                // Continue anyway - org was created
+            }
         }
 
         const organization: SearchResult = {
@@ -386,7 +418,7 @@ export async function submitOrganization(data: {
             focusAreas: data.focusAreas,
             mission: orgData.mission,
             description: orgData.description,
-            verificationStatus: 'pending',
+            verificationStatus: 'unverified',
             projects: [],
             fundingType: orgData.funding_type || 'recipient',
             targetBeneficiaries: [],

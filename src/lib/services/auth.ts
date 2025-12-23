@@ -88,12 +88,16 @@ export async function signUpWithPassword(
         }
 
         // Create user in Supabase Auth
+        // Note: We skip email confirmation since we already verified via OTP
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
-                data: { name },
-                emailRedirectTo: `${window.location.origin}/auth/callback`,
+                data: {
+                    name,
+                    email_verified: true // Mark as verified since OTP was verified
+                },
+                // Don't send confirmation email - we already verified via OTP
             },
         });
 

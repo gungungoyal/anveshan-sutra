@@ -20,7 +20,7 @@ type AuthStep = "form" | "otp" | "reset_password" | "success";
 export default function AuthPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
+    const { isAuthenticated, isLoading: authLoading, refreshUser, user } = useAuth();
 
     const [mode, setMode] = useState<AuthMode>("signup");
     const [step, setStep] = useState<AuthStep>("form");
@@ -38,13 +38,38 @@ export default function AuthPage() {
     const [otpExpiresAt, setOtpExpiresAt] = useState<Date | null>(null);
     const [resendCooldown, setResendCooldown] = useState(0);
 
+
     const returnTo = searchParams?.get("returnTo") || "/onboarding";
 
     useEffect(() => {
-        if (!authLoading && isAuthenticated) {
-            router.push(returnTo);
-        }
-    }, [isAuthenticated, authLoading, returnTo, router]);
+        const handleRedirect = async () => {
+            if (!authLoading && isAuthenticated && user?.id) {
+                // Check onboarding status to determine redirect
+                try {
+                    const response = await fetch('/api/onboarding-status');
+                    if (response.ok) {
+                        const status = await response.json();
+
+                        // If user has completed onboarding and has org, go to dashboard
+                        if (status.hasOrganization && status.step === 'complete') {
+                            const dashboardPath = status.role === 'ngo'
+                                ? '/ngo-dashboard'
+                                : '/search';
+                            router.push(dashboardPath);
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking onboarding status:', error);
+                }
+
+                // Default: go to onboarding
+                router.push(returnTo);
+            }
+        };
+
+        handleRedirect();
+    }, [isAuthenticated, authLoading, returnTo, router, user]);
 
     useEffect(() => {
         if (resendCooldown > 0) {
@@ -86,7 +111,7 @@ export default function AuthPage() {
                 if (mode === "signup") {
                     const signupResult = await signUpWithPassword(email, password, name);
                     if (signupResult.error) {
-                        setErrorMessage(signupResult.error.message);
+                        setErrorMessage(signupResult.error);
                     } else {
                         await refreshUser();
                         router.push(returnTo);
@@ -111,7 +136,7 @@ export default function AuthPage() {
         try {
             const result = await signInWithPassword(email, password);
             if (result.error) {
-                setErrorMessage(result.error.message);
+                setErrorMessage(result.error);
             } else {
                 await refreshUser();
                 router.push(returnTo);
@@ -133,7 +158,7 @@ export default function AuthPage() {
         try {
             const result = await resetPassword(email, newPassword);
             if (result.error) {
-                setErrorMessage(result.error.message);
+                setErrorMessage(result.error);
             } else {
                 setStep("success");
             }

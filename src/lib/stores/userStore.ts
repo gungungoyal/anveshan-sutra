@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 
 export type UserRole = 'ngo' | 'incubator' | 'csr' | null;
 export type UserIntent = 'seeker' | 'provider' | 'both' | null;
+export type OnboardingStep = 'personal_info' | 'role_selection' | 'org_form' | 'complete';
 
 interface UserState {
     // Role + Intent
@@ -11,12 +12,19 @@ interface UserState {
     onboardingComplete: boolean;
     hasOrganization: boolean;
 
+    // Onboarding flow
+    onboardingStep: OnboardingStep;
+    userName: string | null;
+    userPhone: string | null;
+
     // Actions
     setRole: (role: UserRole) => void;
     setIntent: (intent: UserIntent) => void;
     completeOnboarding: () => void;
     resetOnboarding: () => void;
     setHasOrganization: (has: boolean) => void;
+    setOnboardingStep: (step: OnboardingStep) => void;
+    setPersonalInfo: (name: string, phone: string) => void;
 
     // Helpers
     isOnboarded: () => boolean;
@@ -49,6 +57,9 @@ export const useUserStore = create<UserState>()(
             intent: null,
             onboardingComplete: false,
             hasOrganization: false,
+            onboardingStep: 'personal_info' as OnboardingStep,
+            userName: null,
+            userPhone: null,
 
             // Actions
             setRole: (role) => set({ role, intent: null }), // Reset intent when role changes
@@ -66,9 +77,14 @@ export const useUserStore = create<UserState>()(
                 intent: null,
                 onboardingComplete: false,
                 hasOrganization: false,
+                onboardingStep: 'personal_info' as OnboardingStep,
+                userName: null,
+                userPhone: null,
             }),
 
             setHasOrganization: (has) => set({ hasOrganization: has }),
+            setOnboardingStep: (step) => set({ onboardingStep: step }),
+            setPersonalInfo: (name, phone) => set({ userName: name, userPhone: phone }),
 
             // Helpers
             isOnboarded: () => {
@@ -109,6 +125,9 @@ export const useUserStore = create<UserState>()(
                 intent: state.intent,
                 onboardingComplete: state.onboardingComplete,
                 hasOrganization: state.hasOrganization,
+                onboardingStep: state.onboardingStep,
+                userName: state.userName,
+                userPhone: state.userPhone,
             }),
         }
     )

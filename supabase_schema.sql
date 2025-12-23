@@ -897,3 +897,39 @@ CREATE POLICY "Users can insert own profile" ON user_profiles
 -- ============================================
 -- OTP AUTHENTICATION MIGRATION COMPLETE
 -- ============================================
+-- Allow authenticated users to insert organizations
+CREATE POLICY "Authenticated users can create organizations" ON organizations
+    FOR INSERT 
+    WITH CHECK (auth.uid() IS NOT NULL);
+
+-- Allow authenticated users to insert focus areas
+CREATE POLICY "Authenticated users can create focus areas" ON organization_focus_areas
+    FOR INSERT 
+    WITH CHECK (auth.uid() IS NOT NULL);
+ALTER TABLE user_profiles 
+ADD COLUMN IF NOT EXISTS onboarding_step TEXT 
+DEFAULT 'personal_info' 
+CHECK (onboarding_step IN ('personal_info', 'role_selection', 'org_form', 'complete'));
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS incubator_type TEXT;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS city TEXT;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS state TEXT;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS stages_accepted TEXT[];
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS org_types_supported TEXT[];
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS support_offered TEXT[];
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS program_intake_type TEXT;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS program_duration TEXT;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS selection_criteria TEXT[];
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS takes_equity BOOLEAN DEFAULT false;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS equity_range TEXT;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS has_program_fee BOOLEAN DEFAULT false;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS platform_expectations TEXT[];
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS contact_person_role TEXT;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS industry TEXT;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS csr_focus_areas TEXT[];
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS geography_preference TEXT;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS preferred_states TEXT[];
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS compliance_requirements TEXT[];
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS engagement_types TEXT[];
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS budget_range TEXT;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS requires_past_experience BOOLEAN DEFAULT false;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS csr_platform_expectations TEXT[];

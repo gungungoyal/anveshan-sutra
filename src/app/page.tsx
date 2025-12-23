@@ -19,7 +19,7 @@ const roleSlides = [
             "Submit your organization for visibility",
         ],
         ctaText: "Set Up & Find Partners",
-        ctaLink: "/start/ngo",
+        ctaLink: "/auth",
         theme: {
             bg: "bg-gradient-to-br from-green-50 via-green-50/80 to-emerald-100/50 dark:from-green-950/40 dark:via-green-900/20 dark:to-emerald-950/30",
             border: "border-green-300 dark:border-green-700",
@@ -43,7 +43,7 @@ const roleSlides = [
             "Evaluate alignment before collaboration",
         ],
         ctaText: "Get Started",
-        ctaLink: "/start/incubator",
+        ctaLink: "/auth",
         theme: {
             bg: "bg-gradient-to-br from-sky-50 via-sky-50/80 to-blue-100/50 dark:from-sky-950/40 dark:via-sky-900/20 dark:to-blue-950/30",
             border: "border-sky-300 dark:border-sky-700",
@@ -66,8 +66,8 @@ const roleSlides = [
             "Review impact data before outreach",
             "Shortlist partners faster",
         ],
-        ctaText: "Explore Verified NGOs",
-        ctaLink: "/start/csr",
+        ctaText: "Get Started",
+        ctaLink: "/auth",
         theme: {
             bg: "bg-gradient-to-br from-orange-50 via-orange-50/80 to-amber-100/50 dark:from-orange-950/40 dark:via-orange-900/20 dark:to-amber-950/30",
             border: "border-orange-300 dark:border-orange-700",
