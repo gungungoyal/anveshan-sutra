@@ -2,41 +2,44 @@ import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { createClient } from '@supabase/supabase-js';
 
+// Force dynamic rendering to prevent build symlink conflicts
+export const dynamic = 'force-dynamic';
+
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 const supabase = supabaseUrl && supabaseServiceKey
-    ? createClient(supabaseUrl, supabaseServiceKey)
-    : null;
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : null;
 
 // Generate 6-digit OTP
 function generateOTP(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 // Create email transporter using Gmail SMTP
 function createTransporter() {
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_APP_PASSWORD,
-        },
-    });
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
 }
 
 // Email template for OTP
 function getEmailTemplate(otp: string, purpose: 'signup' | 'login' | 'password_reset'): { subject: string; html: string } {
-    const purposeText = {
-        signup: 'verify your email address',
-        login: 'sign in to your account',
-        password_reset: 'reset your password',
-    };
+  const purposeText = {
+    signup: 'verify your email address',
+    login: 'sign in to your account',
+    password_reset: 'reset your password',
+  };
 
-    return {
-        subject: `Your Drivya.AI Verification Code: ${otp}`,
-        html: `
+  return {
+    subject: `Your Drivya.AI Verification Code: ${otp}`,
+    html: `
 <!DOCTYPE html>
 <html>
 <head>
@@ -74,83 +77,83 @@ function getEmailTemplate(otp: string, purpose: 'signup' | 'login' | 'password_r
 </body>
 </html>
     `,
-    };
+  };
 }
 
 export async function POST(request: NextRequest) {
-    try {
-        const { email, purpose = 'signup' } = await request.json();
+  try {
+    const { email, purpose = 'signup' } = await request.json();
 
-        // Validate email
-        if (!email || !email.includes('@')) {
-            return NextResponse.json({ success: false, error: 'Valid email is required' }, { status: 400 });
-        }
-
-        // Validate purpose
-        if (!['signup', 'login', 'password_reset'].includes(purpose)) {
-            return NextResponse.json({ success: false, error: 'Invalid purpose' }, { status: 400 });
-        }
-
-        // Check environment variables
-        if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-            console.error('Gmail credentials not configured');
-            return NextResponse.json({ success: false, error: 'Email service not configured' }, { status: 500 });
-        }
-
-        if (!supabase) {
-            console.error('Supabase not configured');
-            return NextResponse.json({ success: false, error: 'Database not configured' }, { status: 500 });
-        }
-
-        // Generate OTP
-        const otp = generateOTP();
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-        // Delete any existing OTPs for this email
-        await supabase
-            .from('otp_codes')
-            .delete()
-            .eq('email', email.toLowerCase());
-
-        // Store OTP in database
-        const { error: insertError } = await supabase
-            .from('otp_codes')
-            .insert({
-                email: email.toLowerCase(),
-                otp_code: otp,
-                purpose,
-                expires_at: expiresAt.toISOString(),
-                verified: false,
-                attempts: 0,
-            });
-
-        if (insertError) {
-            console.error('Failed to store OTP:', insertError);
-            return NextResponse.json({ success: false, error: 'Failed to generate verification code' }, { status: 500 });
-        }
-
-        // Send email
-        const transporter = createTransporter();
-        const { subject, html } = getEmailTemplate(otp, purpose as any);
-
-        await transporter.sendMail({
-            from: `"Drivya.AI" <${process.env.GMAIL_USER}>`,
-            to: email,
-            subject,
-            html,
-        });
-
-        return NextResponse.json({
-            success: true,
-            message: 'Verification code sent to your email',
-            expiresAt: expiresAt.toISOString(),
-        });
-
-    } catch (error: any) {
-        console.error('Send OTP error:', error);
-        return NextResponse.json({
-            success: false,
-            error: error.message || 'Failed to send verification code'
-        }, { status: 500 });
+    // Validate email
+    if (!email || !email.includes('@')) {
+      return NextResponse.json({ success: false, error: 'Valid email is required' }, { status: 400 });
     }
+
+    // Validate purpose
+    if (!['signup', 'login', 'password_reset'].includes(purpose)) {
+      return NextResponse.json({ success: false, error: 'Invalid purpose' }, { status: 400 });
+    }
+
+    // Check environment variables
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+      console.error('Gmail credentials not configured');
+      return NextResponse.json({ success: false, error: 'Email service not configured' }, { status: 500 });
+    }
+
+    if (!supabase) {
+      console.error('Supabase not configured');
+      return NextResponse.json({ success: false, error: 'Database not configured' }, { status: 500 });
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    // Delete any existing OTPs for this email
+    await supabase
+      .from('otp_codes')
+      .delete()
+      .eq('email', email.toLowerCase());
+
+    // Store OTP in database
+    const { error: insertError } = await supabase
+      .from('otp_codes')
+      .insert({
+        email: email.toLowerCase(),
+        otp_code: otp,
+        purpose,
+        expires_at: expiresAt.toISOString(),
+        verified: false,
+        attempts: 0,
+      });
+
+    if (insertError) {
+      console.error('Failed to store OTP:', insertError);
+      return NextResponse.json({ success: false, error: 'Failed to generate verification code' }, { status: 500 });
+    }
+
+    // Send email
+    const transporter = createTransporter();
+    const { subject, html } = getEmailTemplate(otp, purpose as any);
+
+    await transporter.sendMail({
+      from: `"Drivya.AI" <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject,
+      html,
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Verification code sent to your email',
+      expiresAt: expiresAt.toISOString(),
+    });
+
+  } catch (error: any) {
+    console.error('Send OTP error:', error);
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'Failed to send verification code'
+    }, { status: 500 });
+  }
 }
