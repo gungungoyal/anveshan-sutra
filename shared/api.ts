@@ -35,6 +35,8 @@ export interface User {
   phone?: string;
   avatar_url?: string;
   organization_name?: string;
+  organization_id?: string;
+  organization_type?: string;
   bio?: string;
   preferences?: UserPreferences;
   created_at: string;

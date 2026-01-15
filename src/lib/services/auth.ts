@@ -206,24 +206,24 @@ export async function signInWithPassword(
 }
 
 /**
- * Reset password - sends OTP for verification, then allows password update
+ * Reset password - uses server-side API to update password after OTP verification
+ * This works for unauthenticated users during the forgot password flow
  */
 export async function resetPassword(
     email: string,
     newPassword: string
 ): Promise<{ success: boolean; error: string | null }> {
     try {
-        if (!supabase) {
-            return { success: false, error: 'Supabase not configured' };
-        }
-
-        const { error } = await supabase.auth.updateUser({
-            password: newPassword,
+        const response = await fetch(`${API_BASE}/api/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, newPassword }),
         });
 
-        if (error) {
-            console.error('Password reset error:', error);
-            return { success: false, error: error.message };
+        const data = await response.json();
+
+        if (!response.ok) {
+            return { success: false, error: data.error || 'Failed to reset password' };
         }
 
         return { success: true, error: null };
@@ -406,6 +406,24 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
             .eq('id', user.id)
             .single();
 
+        // Get user's organization (if any)
+        let orgData: { id: string; name: string; type: string } | null = null;
+        const { data: userOrgLink } = await supabase
+            .from('user_organizations')
+            .select('organization_id, organizations(id, name, type)')
+            .eq('user_id', user.id)
+            .limit(1)
+            .single();
+
+        if (userOrgLink?.organizations) {
+            const org = userOrgLink.organizations as any;
+            orgData = {
+                id: org.id,
+                name: org.name,
+                type: org.type,
+            };
+        }
+
         const authUser: AuthUser = {
             id: user.id,
             email: user.email || '',
@@ -415,7 +433,9 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
             verified: profileData?.verified || false,
             phone: profileData?.phone || undefined,
             avatar_url: profileData?.avatar_url || undefined,
-            organization_name: profileData?.organization_name || undefined,
+            organization_name: orgData?.name || profileData?.organization_name || undefined,
+            organization_id: orgData?.id || undefined,
+            organization_type: orgData?.type || undefined,
             bio: profileData?.bio || undefined,
             preferences: profileData?.preferences || { notifications: true, theme: 'system', newsletter: false },
             created_at: profileData?.created_at || new Date().toISOString(),

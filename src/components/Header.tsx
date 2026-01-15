@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getCurrentUser, signOut, AuthUser } from "@/lib/services/auth";
 import { useTheme } from "@/components/ThemeProvider";
+import { useUserStore } from "@/lib/stores/userStore";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -65,6 +66,8 @@ export default function Header() {
 
   const handleSignOut = async () => {
     await signOut();
+    // Clear persisted user store state
+    useUserStore.getState().resetOnboarding();
     setUser(null);
     setUserMenuOpen(false);
     router.push("/");
@@ -161,82 +164,114 @@ export default function Header() {
 
               {/* User Menu or Login/Signup */}
 
-              {!loadingUser && (
-                <>
-                  {user ? (
-                    <div className="relative" ref={userMenuRef}>
-                      <button
-                        onClick={() => setUserMenuOpen(!userMenuOpen)}
-                        className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-secondary/50 transition-colors"
-                      >
-                        <Avatar className="w-8 h-8 border-2 border-primary/20">
-                          <AvatarImage src={user.avatar_url} alt={user.name} />
-                          <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
-                            {getInitials(user.name || "U")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
-                      </button>
-
-                      {/* Dropdown Menu */}
-                      {userMenuOpen && (
-                        <div className="absolute right-0 top-full mt-2 w-64 bg-background/95 backdrop-blur-xl border border-border rounded-xl shadow-xl shadow-black/10 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                          {/* User Info */}
-                          <div className="px-4 py-3 border-b border-border bg-secondary/30">
-                            <p className="font-semibold text-foreground truncate">{user.name}</p>
-                            <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-                          </div>
-
-                          {/* Menu Items */}
-                          <div className="py-2">
-                            <Link
-                              href="/profile"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-2.5 text-foreground hover:bg-secondary/50 transition-colors"
-                            >
-                              <User className="w-4 h-4 text-muted-foreground" />
-                              <span>Profile</span>
-                            </Link>
-                            <Link
-                              href="/profile"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-2.5 text-foreground hover:bg-secondary/50 transition-colors"
-                            >
-                              <Settings className="w-4 h-4 text-muted-foreground" />
-                              <span>Settings</span>
-                            </Link>
-                          </div>
-
-                          {/* Sign Out */}
-                          <div className="py-2 border-t border-border">
-                            <button
-                              onClick={handleSignOut}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                            >
-                              <LogOut className="w-4 h-4" />
-                              <span>Sign Out</span>
-                            </button>
-                          </div>
+              {loadingUser ? (
+                /* Skeleton loader to prevent flickering */
+                <div className="flex items-center gap-2 px-2 py-1.5">
+                  <div className="w-8 h-8 rounded-full bg-secondary animate-pulse" />
+                  <div className="hidden lg:block w-20 h-4 bg-secondary animate-pulse rounded" />
+                </div>
+              ) : user ? (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-secondary/50 transition-colors"
+                  >
+                    <Avatar className="w-8 h-8 border-2 border-primary/20">
+                      <AvatarImage src={user.avatar_url} alt={user.name} />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+                        {getInitials(user.name || "U")}
+                      </AvatarFallback>
+                    </Avatar>
+                    {/* Always show name and org on desktop */}
+                    <div className="hidden lg:block text-left">
+                      <p className="text-sm font-medium text-foreground truncate max-w-[140px]">{user.name}</p>
+                      {user.organization_name ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${user.organization_type === 'NGO' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                              user.organization_type === 'Incubator' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                user.organization_type === 'CSR' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                  'bg-secondary text-muted-foreground'
+                            }`}>
+                            {user.organization_type}
+                          </span>
+                          <span className="text-xs text-muted-foreground truncate max-w-[80px]">{user.organization_name}</span>
                         </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground truncate max-w-[140px]">{user.email}</p>
                       )}
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href="/auth"
-                        className="px-4 py-2.5 text-sm font-medium text-foreground hover:text-primary hover:bg-secondary/30 rounded-xl transition-all"
-                      >
-                        Log In
-                      </Link>
-                      <Link
-                        href="/auth"
-                        className="px-4 py-2.5 bg-foreground text-background text-sm font-semibold rounded-xl hover:bg-foreground/90 transition-all active:scale-95"
-                      >
-                        Sign Up Free
-                      </Link>
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-72 bg-background/95 backdrop-blur-xl border border-border rounded-xl shadow-xl shadow-black/10 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                      {/* User Info */}
+                      <div className="px-4 py-3 border-b border-border bg-secondary/30">
+                        <p className="font-semibold text-foreground truncate">{user.name}</p>
+                        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                        {user.organization_name && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded ${user.organization_type === 'NGO' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                user.organization_type === 'Incubator' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                  user.organization_type === 'CSR' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                    'bg-secondary text-muted-foreground'
+                              }`}>
+                              {user.organization_type}
+                            </span>
+                            <span className="text-sm text-foreground truncate">{user.organization_name}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="py-2">
+                        <Link
+                          href="/profile"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-foreground hover:bg-secondary/50 transition-colors"
+                        >
+                          <User className="w-4 h-4 text-muted-foreground" />
+                          <span>Profile</span>
+                        </Link>
+                        <Link
+                          href="/profile"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-foreground hover:bg-secondary/50 transition-colors"
+                        >
+                          <Settings className="w-4 h-4 text-muted-foreground" />
+                          <span>Settings</span>
+                        </Link>
+                      </div>
+
+                      {/* Sign Out */}
+                      <div className="py-2 border-t border-border">
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
                     </div>
                   )}
-                </>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/auth"
+                    className="px-4 py-2.5 text-sm font-medium text-foreground hover:text-primary hover:bg-secondary/30 rounded-xl transition-all"
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    href="/auth"
+                    className="px-4 py-2.5 bg-foreground text-background text-sm font-semibold rounded-xl hover:bg-foreground/90 transition-all active:scale-95"
+                  >
+                    Sign Up Free
+                  </Link>
+                </div>
               )}
             </div>
 
