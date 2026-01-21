@@ -5,20 +5,24 @@ import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, Search, Plus, LayoutGrid, User, LogOut, Settings, ChevronDown, Sun, Moon } from "lucide-react";
 import { useState, useEffect, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getCurrentUser, signOut, AuthUser } from "@/lib/services/auth";
+import { signOut, AuthUser } from "@/lib/services/auth";
 import { useTheme } from "@/components/ThemeProvider";
 import { useUserStore } from "@/lib/stores/userStore";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [user, setUser] = useState<AuthUser | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [loadingUser, setLoadingUser] = useState(true);
+  const [solutionsMenuOpen, setSolutionsMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const solutionsMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+
+  // Use shared auth context instead of separate fetch
+  const { user, isLoading: loadingUser } = useAuth();
 
 
   // Detect scroll to tighten the UI
@@ -32,28 +36,19 @@ export default function Header() {
   useEffect(() => {
     setIsMenuOpen(false);
     setUserMenuOpen(false);
+    setSolutionsMenuOpen(false);
   }, [pathname]);
 
-  // Load user on mount
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const { user } = await getCurrentUser();
-        setUser(user);
-      } catch (err) {
-        setUser(null);
-      } finally {
-        setLoadingUser(false);
-      }
-    };
-    loadUser();
-  }, []);
+
 
   // Close user menu on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false);
+      }
+      if (solutionsMenuRef.current && !solutionsMenuRef.current.contains(event.target as Node)) {
+        setSolutionsMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -68,9 +63,9 @@ export default function Header() {
     await signOut();
     // Clear persisted user store state
     useUserStore.getState().resetOnboarding();
-    setUser(null);
     setUserMenuOpen(false);
     router.push("/");
+    // User state is managed by AuthProvider, will update automatically
   };
 
   const getInitials = (name: string) => {
@@ -100,12 +95,14 @@ export default function Header() {
             {/* 1. Brand Identity */}
             <Link
               href="/"
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-2 group"
               onClick={() => setIsMenuOpen(false)}
             >
-              <div className="relative flex items-center justify-center w-10 h-10">
-                <LayoutGrid className="w-5 h-5 text-foreground" />
-              </div>
+              <img
+                src="/drivya-ai-logo.png"
+                alt="Drivya.AI"
+                className="w-10 h-10 object-contain"
+              />
               <span className="font-bold text-2xl tracking-tight text-foreground">
                 Drivya.AI
               </span>
@@ -113,25 +110,61 @@ export default function Header() {
 
             {/* 2. Desktop Navigation */}
             <div className="hidden md:flex items-center gap-4">
-              {/* Role-Based Navigation Links */}
-              <a
-                href="/#for-ngos"
-                className="text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
-              >
-                For NGOs
-              </a>
-              <a
-                href="/#for-incubators"
-                className="text-sm font-medium text-sky-500 dark:text-sky-400 hover:text-sky-600 dark:hover:text-sky-300 transition-colors"
-              >
-                For Incubators
-              </a>
-              <a
-                href="/#for-csr"
-                className="text-sm font-medium text-orange-500 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 transition-colors"
-              >
-                For CSR
-              </a>
+              {/* Solutions Dropdown */}
+              <div className="relative" ref={solutionsMenuRef}>
+                <button
+                  onClick={() => setSolutionsMenuOpen(!solutionsMenuOpen)}
+                  onMouseEnter={() => setSolutionsMenuOpen(true)}
+                  className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
+                >
+                  Solutions
+                  <ChevronDown className={`w-4 h-4 transition-transform ${solutionsMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Solutions Dropdown Menu */}
+                {solutionsMenuOpen && (
+                  <div
+                    className="absolute left-0 top-full mt-1 w-56 bg-background/95 backdrop-blur-xl border border-border rounded-xl shadow-xl shadow-black/10 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+                    onMouseLeave={() => setSolutionsMenuOpen(false)}
+                  >
+                    <div className="py-2">
+                      <a
+                        href="/#for-ngos"
+                        onClick={() => setSolutionsMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors group"
+                      >
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <div>
+                          <p className="font-medium text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300">For NGOs</p>
+                          <p className="text-xs text-muted-foreground">Find funding & partners</p>
+                        </div>
+                      </a>
+                      <a
+                        href="/#for-incubators"
+                        onClick={() => setSolutionsMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors group"
+                      >
+                        <div className="w-2 h-2 rounded-full bg-sky-500" />
+                        <div>
+                          <p className="font-medium text-sky-500 dark:text-sky-400 group-hover:text-sky-600 dark:group-hover:text-sky-300">For Incubators</p>
+                          <p className="text-xs text-muted-foreground">Discover startups & NGOs</p>
+                        </div>
+                      </a>
+                      <a
+                        href="/#for-csr"
+                        onClick={() => setSolutionsMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-colors group"
+                      >
+                        <div className="w-2 h-2 rounded-full bg-orange-500" />
+                        <div>
+                          <p className="font-medium text-orange-500 dark:text-orange-400 group-hover:text-orange-600 dark:group-hover:text-orange-300">For CSR</p>
+                          <p className="text-xs text-muted-foreground">Impact partnerships</p>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Features Link */}
               <Link
@@ -187,16 +220,26 @@ export default function Header() {
                       <p className="text-sm font-medium text-foreground truncate max-w-[140px]">{user.name}</p>
                       {user.organization_name ? (
                         <div className="flex items-center gap-1.5">
-                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${user.organization_type === 'NGO' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                              user.organization_type === 'Incubator' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                                user.organization_type === 'CSR' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                                  'bg-secondary text-muted-foreground'
-                            }`}>
-                            {user.organization_type}
+                          {user.organization_type && (
+                            <span
+                              className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${user.organization_type === "NGO"
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                : user.organization_type === "Incubator"
+                                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                                  : user.organization_type === "CSR"
+                                    ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                                    : "bg-secondary text-muted-foreground"
+                                }`}
+                            >
+                              {user.organization_type}
+                            </span>
+                          )}
+                          <span className="text-xs text-muted-foreground truncate max-w-[80px]">
+                            {user.organization_name}
                           </span>
-                          <span className="text-xs text-muted-foreground truncate max-w-[80px]">{user.organization_name}</span>
                         </div>
                       ) : (
+
                         <p className="text-xs text-muted-foreground truncate max-w-[140px]">{user.email}</p>
                       )}
                     </div>
@@ -212,13 +255,7 @@ export default function Header() {
                         <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                         {user.organization_name && (
                           <div className="flex items-center gap-2 mt-2">
-                            <span className={`text-xs font-semibold px-2 py-0.5 rounded ${user.organization_type === 'NGO' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                                user.organization_type === 'Incubator' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                                  user.organization_type === 'CSR' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                                    'bg-secondary text-muted-foreground'
-                              }`}>
-                              {user.organization_type}
-                            </span>
+
                             <span className="text-sm text-foreground truncate">{user.organization_name}</span>
                           </div>
                         )}

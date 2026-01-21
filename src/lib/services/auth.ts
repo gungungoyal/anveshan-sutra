@@ -12,7 +12,10 @@
 import { supabase } from '../supabase';
 import { User, AuthResponse } from '@shared/api';
 
-export interface AuthUser extends User { }
+export interface AuthUser extends User {
+    organization_id?: string;
+    organization_type?: string;
+}
 
 // API base URL - auto-detect based on environment
 const API_BASE = typeof window !== 'undefined'

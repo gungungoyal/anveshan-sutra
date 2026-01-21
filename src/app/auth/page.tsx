@@ -41,10 +41,14 @@ function AuthPageContent() {
 
 
     const returnTo = searchParams?.get("returnTo") || "/onboarding";
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
     useEffect(() => {
         const handleRedirect = async () => {
             if (!authLoading && isAuthenticated && user?.id) {
+                // Set redirecting state immediately to prevent flash
+                setIsRedirecting(true);
+
                 // Check onboarding status to determine redirect
                 try {
                     const response = await fetch('/api/onboarding-status');
@@ -198,7 +202,7 @@ function AuthPageContent() {
         await handleSendOtp();
     };
 
-    if (authLoading) {
+    if (authLoading || isRedirecting) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />

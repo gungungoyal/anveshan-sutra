@@ -9,6 +9,11 @@ export const metadata: Metadata = {
     title: "Drivya.AI - Partner Matching Platform",
     description: "Find matching partners for NGOs, Incubators, and CSR teams",
     keywords: ["NGO", "CSR", "Incubator", "Partnership", "Social Impact"],
+    icons: {
+        icon: "/drivya-ai-logo.png",
+        shortcut: "/drivya-ai-logo.png",
+        apple: "/drivya-ai-logo.png",
+    },
 };
 
 export default function RootLayout({
