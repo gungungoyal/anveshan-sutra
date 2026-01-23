@@ -59,13 +59,13 @@ export default function DrivyaHome() {
                         ) : (
                             <>
                                 <Link
-                                    href="/auth"
+                                    href="/login"
                                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                                 >
                                     Log in
                                 </Link>
                                 <Link
-                                    href="/auth?mode=signup"
+                                    href="/signup"
                                     className="text-sm px-4 py-2 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
                                 >
                                     Sign up
@@ -100,7 +100,7 @@ export default function DrivyaHome() {
                         </Link>
                     ) : (
                         <Link
-                            href="/auth"
+                            href="/start"
                             className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background rounded-xl font-semibold text-lg hover:bg-foreground/90 transition-colors"
                         >
                             Get started

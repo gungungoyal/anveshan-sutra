@@ -115,13 +115,7 @@ function SearchContent() {
     setShowGuidedIntro(localStorage.getItem("dismissedGuidedIntro") !== "true");
   }, []);
 
-  // *** AUTHENTICATION REDIRECT ***
-  // Block access for non-authenticated users
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/auth?returnTo=/search');
-    }
-  }, [authLoading, isAuthenticated, router]);
+  // NOTE: Auth redirect removed - middleware.ts handles /explore and /search protection
 
   const dismissGuidedIntro = () => {
     setShowGuidedIntro(false);
@@ -204,7 +198,7 @@ function SearchContent() {
       toast.info("Sign in to save organizations", {
         action: {
           label: "Sign In",
-          onClick: () => router.push(`/auth?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`),
+          onClick: () => router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`),
         },
       });
       return;
@@ -631,7 +625,7 @@ function SearchContent() {
                                 className="w-full"
                                 asChild
                               >
-                                <Link href={`/organization/${org.id}`}>View Details</Link>
+                                <Link href={`/org/${org.id}`}>View Details</Link>
                               </Button>
                               {org.description && (
                                 <p className="text-sm text-muted-foreground mb-3">

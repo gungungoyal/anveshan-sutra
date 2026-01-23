@@ -35,7 +35,7 @@ export default function AuthPrompt({
                     {message || `Sign in to view ${feature} and alignment insights.`}
                 </p>
                 <Link
-                    href={`/auth?returnTo=${returnTo}`}
+                    href={`/login?returnTo=${returnTo}`}
                     className="text-sm font-medium text-primary hover:underline whitespace-nowrap"
                 >
                     Sign in
@@ -64,13 +64,13 @@ export default function AuthPrompt({
             {/* CTAs */}
             <div className="space-y-3">
                 <Link
-                    href={`/auth?returnTo=${returnTo}`}
+                    href={`/login?returnTo=${returnTo}`}
                     className="block w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-colors"
                 >
                     Sign In
                 </Link>
                 <Link
-                    href={`/auth?returnTo=${returnTo}`}
+                    href={`/login?returnTo=${returnTo}`}
                     className="block w-full py-3 border border-border text-foreground rounded-xl font-medium hover:bg-muted/50 transition-colors"
                 >
                     Create Account

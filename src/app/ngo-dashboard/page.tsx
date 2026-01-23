@@ -29,11 +29,7 @@ export default function NGODashboardPage() {
     const [matchedOrgs, setMatchedOrgs] = useState<MatchedOrg[]>([]);
     const [isLoadingMatches, setIsLoadingMatches] = useState(true);
 
-    useEffect(() => {
-        if (!isLoading && !isAuthenticated) {
-            router.push('/auth?returnTo=/ngo-dashboard');
-        }
-    }, [isLoading, isAuthenticated, router]);
+    // NOTE: Auth redirect removed - middleware.ts handles /dashboard protection
 
     // Simulate loading matches (in production, this would fetch from API)
     useEffect(() => {
@@ -156,16 +152,16 @@ export default function NGODashboardPage() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
                                 className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.id
-                                        ? 'text-green-600 border-b-2 border-green-600 bg-green-50 dark:bg-green-950/20'
-                                        : 'text-muted-foreground hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                                    ? 'text-green-600 border-b-2 border-green-600 bg-green-50 dark:bg-green-950/20'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-700/50'
                                     }`}
                             >
                                 <tab.icon className="w-4 h-4" />
                                 {tab.label}
                                 {tab.count > 0 && (
                                     <span className={`px-2 py-0.5 text-xs rounded-full ${activeTab === tab.id
-                                            ? 'bg-green-600 text-white'
-                                            : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300'
+                                        ? 'bg-green-600 text-white'
+                                        : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300'
                                         }`}>
                                         {tab.count}
                                     </span>

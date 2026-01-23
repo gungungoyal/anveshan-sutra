@@ -41,40 +41,9 @@ function AuthPageContent() {
 
 
     const returnTo = searchParams?.get("returnTo") || "/onboarding";
-    const [isRedirecting, setIsRedirecting] = useState(false);
 
-    useEffect(() => {
-        const handleRedirect = async () => {
-            if (!authLoading && isAuthenticated && user?.id) {
-                // Set redirecting state immediately to prevent flash
-                setIsRedirecting(true);
-
-                // Check onboarding status to determine redirect
-                try {
-                    const response = await fetch('/api/onboarding-status');
-                    if (response.ok) {
-                        const status = await response.json();
-
-                        // If user has completed onboarding and has org, go to dashboard
-                        if (status.hasOrganization && status.step === 'complete') {
-                            const dashboardPath = status.role === 'ngo'
-                                ? '/ngo-dashboard'
-                                : '/search';
-                            router.push(dashboardPath);
-                            return;
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error checking onboarding status:', error);
-                }
-
-                // Default: go to onboarding
-                router.push(returnTo);
-            }
-        };
-
-        handleRedirect();
-    }, [isAuthenticated, authLoading, returnTo, router, user]);
+    // NOTE: Client-side redirect removed. Middleware handles auth gating now.
+    // After successful login/signup, we redirect via router.push in the handlers.
 
     useEffect(() => {
         if (resendCooldown > 0) {
@@ -202,7 +171,7 @@ function AuthPageContent() {
         await handleSendOtp();
     };
 
-    if (authLoading || isRedirecting) {
+    if (authLoading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />

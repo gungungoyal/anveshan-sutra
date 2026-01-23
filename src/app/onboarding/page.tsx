@@ -2,119 +2,103 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-    Heart, Rocket, Building2, ArrowRight, ArrowLeft, CheckCircle,
-    User, Phone, Loader2, GraduationCap, Stethoscope, Leaf,
-    Briefcase, Code, Building, Target
+    Heart, Rocket, Building2, Loader2, CheckCircle,
+    Target, Handshake, GraduationCap, Search, Globe
 } from "lucide-react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import AuthLayout from "@/components/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useUserStore, OnboardingStep } from "@/lib/stores/userStore";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { useUserStore } from "@/lib/stores/userStore";
 import { useAuth } from "@/hooks/useAuth";
-import { savePersonalInfo, saveRole, saveInterests, getOnboardingStatus, getDashboardPath } from "@/lib/services/onboarding";
+import { completeOnboarding as completeOnboardingApi } from "@/lib/services/onboarding";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 type Role = "ngo" | "incubator" | "csr";
+type PrimaryGoal = "funding" | "partnerships" | "programs" | "scouting";
 
 const roles = [
     {
         id: "ngo" as Role,
         title: "NGO / Non-Profit",
-        description: "Find CSR partners and incubators aligned with your mission",
         icon: Heart,
         color: "bg-green-500",
-        borderColor: "border-green-500",
-        gradient: "from-green-500 to-emerald-600",
     },
     {
         id: "incubator" as Role,
         title: "Incubator / Accelerator",
-        description: "Connect with NGOs and CSR teams for impact partnerships",
         icon: Rocket,
         color: "bg-sky-500",
-        borderColor: "border-sky-500",
-        gradient: "from-sky-500 to-blue-600",
     },
     {
         id: "csr" as Role,
         title: "CSR / Corporate",
-        description: "Discover verified NGOs for your CSR initiatives",
         icon: Building2,
         color: "bg-orange-500",
-        borderColor: "border-orange-500",
-        gradient: "from-orange-500 to-amber-600",
     },
 ];
 
-const focusAreas = [
+const goals = [
     {
-        id: "Education",
-        title: "Education",
-        description: "Education initiatives and learning programs",
+        id: "funding" as PrimaryGoal,
+        title: "Funding",
+        description: "Looking for grants or CSR funding",
+        icon: Target,
+    },
+    {
+        id: "partnerships" as PrimaryGoal,
+        title: "Partnerships",
+        description: "Seeking collaboration opportunities",
+        icon: Handshake,
+    },
+    {
+        id: "programs" as PrimaryGoal,
+        title: "Programs",
+        description: "Running or joining programs",
         icon: GraduationCap,
-        color: "bg-blue-500",
     },
     {
-        id: "Health",
-        title: "Health",
-        description: "Healthcare and wellness initiatives",
-        icon: Stethoscope,
-        color: "bg-red-500",
+        id: "scouting" as PrimaryGoal,
+        title: "Scouting",
+        description: "Discovering organizations",
+        icon: Search,
     },
-    {
-        id: "Environment",
-        title: "Environment",
-        description: "Environmental conservation and sustainability",
-        icon: Leaf,
-        color: "bg-green-500",
-    },
-    {
-        id: "Livelihood",
-        title: "Livelihood",
-        description: "Skills training and employment",
-        icon: Briefcase,
-        color: "bg-amber-500",
-    },
-    {
-        id: "Technology",
-        title: "Technology",
-        description: "Tech-based solutions and digital literacy",
-        icon: Code,
-        color: "bg-purple-500",
-    },
-    {
-        id: "Governance",
-        title: "Governance",
-        description: "Civic engagement and public services",
-        icon: Building,
-        color: "bg-slate-500",
-    },
+];
+
+const countries = [
+    "India",
+    "United States",
+    "United Kingdom",
+    "Singapore",
+    "UAE",
+    "Other",
 ];
 
 export default function OnboardingPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading: authLoading, user } = useAuth();
-    const {
-        setRole, setIntent, completeOnboarding,
-        setOnboardingStep, setPersonalInfo, setHasOrganization,
-        onboardingStep: storeStep, userName, hasOrganization
-    } = useUserStore();
+    const { setRole, setIntent, completeOnboarding, setOnboardingStep, setHasOrganization } = useUserStore();
 
-    const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
     const [isLoading, setIsLoading] = useState(false);
     const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
-    // Form state
-    const [name, setName] = useState("");
-    const [phone, setPhone] = useState("");
+    // Form state - only 4 fields
+    const [organizationName, setOrganizationName] = useState("");
     const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-    const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+    const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | null>(null);
+    const [country, setCountry] = useState("");
 
-    // Check onboarding status on mount
+    // Check if already onboarded
     useEffect(() => {
         const checkStatus = async () => {
             if (!user?.id) {
@@ -122,211 +106,128 @@ export default function OnboardingPage() {
                 return;
             }
 
-            const status = await getOnboardingStatus(user.id);
-            if (status) {
-                // ONLY redirect to dashboard if user has FULLY completed onboarding
-                // (has organization AND step is 'complete')
-                if (status.hasOrganization && status.step === 'complete') {
-                    setHasOrganization(true);
-                    router.push(getDashboardPath(status.role));
-                    return;
-                }
+            try {
+                const response = await fetch('/api/onboarding-status');
+                if (response.ok) {
+                    const status = await response.json();
 
-                // Set form values from existing data
-                if (status.name) setName(status.name);
-                if (status.phone) setPhone(status.phone);
-                if (status.role) setSelectedRole(status.role as Role);
-                if (status.interestAreas && status.interestAreas.length > 0) {
-                    setSelectedInterests(status.interestAreas);
-                }
+                    // If already completed onboarding, redirect to dashboard
+                    if (status.step === 'complete' || status.hasOrganization) {
+                        const dashboardPath = status.role === 'ngo' ? '/ngo-dashboard' : '/explore';
+                        router.push(dashboardPath);
+                        return;
+                    }
 
-                // Resume from the correct step
-                switch (status.step) {
-                    case 'personal_info':
-                        setCurrentStep(1);
-                        break;
-                    case 'role_selection':
-                        setCurrentStep(2);
-                        break;
-                    case 'interest_selection':
-                        setCurrentStep(3);
-                        break;
-                    case 'org_form':
-                        // Redirect to org form
-                        router.push('/org-submit');
-                        return;
-                    case 'complete':
-                        // Redirect to dashboard
-                        router.push(getDashboardPath(status.role));
-                        return;
+                    // Pre-fill role if already selected
+                    if (status.role) {
+                        setSelectedRole(status.role as Role);
+                    }
                 }
+            } catch (error) {
+                console.error('Error checking onboarding status:', error);
             }
+
             setIsCheckingStatus(false);
         };
 
         if (!authLoading && isAuthenticated) {
             checkStatus();
         } else if (!authLoading && !isAuthenticated) {
-            router.push('/auth');
+            setIsCheckingStatus(false);
         }
-    }, [user, authLoading, isAuthenticated, router, setHasOrganization]);
+    }, [user, authLoading, isAuthenticated, router]);
 
-    // Pre-fill name from auth user
-    useEffect(() => {
-        if (user?.name && !name) {
-            setName(user.name);
-        }
-    }, [user, name]);
-
-    const handleStep1Submit = async () => {
-        if (!name.trim()) {
-            toast.error("Please enter your name");
+    const handleSubmit = async () => {
+        // Validate required fields
+        if (!organizationName.trim()) {
+            toast.error("Please enter your organization name");
             return;
         }
-        if (!phone.trim()) {
-            toast.error("Please enter your phone number");
-            return;
-        }
-
-        // Basic phone validation (Indian format)
-        const phoneRegex = /^[6-9]\d{9}$/;
-        const cleanPhone = phone.replace(/\D/g, '').slice(-10);
-        if (!phoneRegex.test(cleanPhone)) {
-            toast.error("Please enter a valid 10-digit phone number");
-            return;
-        }
-
-        setIsLoading(true);
-        try {
-            if (!user?.id) {
-                toast.error("Please log in to continue");
-                return;
-            }
-
-            const result = await savePersonalInfo(user.id, name, phone, user.email || '');
-            if (result.success) {
-                setPersonalInfo(name, phone);
-                setOnboardingStep('role_selection');
-                setCurrentStep(2);
-            } else {
-                toast.error(result.error || "Failed to save information");
-            }
-        } catch (error: any) {
-            toast.error(error.message || "Something went wrong");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleStep2Submit = async () => {
         if (!selectedRole) {
             toast.error("Please select your role");
             return;
         }
-
-        setIsLoading(true);
-        try {
-            if (!user?.id) {
-                toast.error("Please log in to continue");
-                return;
-            }
-
-            const result = await saveRole(user.id, selectedRole);
-            if (result.success) {
-                // Update local store
-                setRole(selectedRole);
-                const defaultIntent = selectedRole === "ngo" ? "seeker"
-                    : selectedRole === "incubator" ? "both"
-                        : "provider";
-                setIntent(defaultIntent);
-                setOnboardingStep('interest_selection');
-                // Go to step 3 (interest selection)
-                setCurrentStep(3);
-            } else {
-                toast.error(result.error || "Failed to save role");
-            }
-        } catch (error: any) {
-            toast.error(error.message || "Something went wrong");
-        } finally {
-            setIsLoading(false);
+        if (!primaryGoal) {
+            toast.error("Please select your primary goal");
+            return;
         }
-    };
+        if (!country) {
+            toast.error("Please select your country");
+            return;
+        }
 
-    const handleStep3Submit = async () => {
-        if (selectedInterests.length === 0) {
-            toast.error("Please select at least one area of interest");
+        if (!user?.id) {
+            toast.error("Please log in to continue");
             return;
         }
 
         setIsLoading(true);
         try {
-            if (!user?.id) {
-                toast.error("Please log in to continue");
-                return;
+            // Save to user_profiles
+            if (supabase) {
+                const { error: profileError } = await supabase
+                    .from('user_profiles')
+                    .upsert({
+                        id: user.id,
+                        email: user.email,
+                        organization_name: organizationName.trim(),
+                        user_role: selectedRole,
+                        primary_goal: primaryGoal,
+                        country: country,
+                        onboarding_step: 'complete',
+                        onboarding_complete: true,
+                        updated_at: new Date().toISOString(),
+                    }, {
+                        onConflict: 'id'
+                    });
+
+                if (profileError) {
+                    console.error('Profile update error:', profileError);
+                    toast.error("Failed to save profile");
+                    return;
+                }
             }
 
-            const result = await saveInterests(user.id, selectedInterests);
-            if (result.success) {
-                // Update local store
-                setOnboardingStep('org_form');
-                completeOnboarding();
+            // Update local store
+            setRole(selectedRole);
+            const defaultIntent = selectedRole === "ngo" ? "seeker"
+                : selectedRole === "incubator" ? "both"
+                    : "provider";
+            setIntent(defaultIntent);
+            setOnboardingStep('complete');
+            completeOnboarding();
+            setHasOrganization(true);
 
-                // Redirect to org form
-                router.push('/org-submit');
-            } else {
-                toast.error(result.error || "Failed to save interests");
-            }
+            // Mark onboarding complete via API
+            await completeOnboardingApi(user.id);
+
+            toast.success("Welcome to Drivya.AI!");
+
+            // Redirect to dashboard based on role
+            const dashboardPath = selectedRole === 'ngo' ? '/ngo-dashboard' : '/explore';
+            router.push(dashboardPath);
         } catch (error: any) {
+            console.error('Onboarding error:', error);
             toast.error(error.message || "Something went wrong");
         } finally {
             setIsLoading(false);
         }
     };
 
-    const toggleInterest = (interestId: string) => {
-        setSelectedInterests(prev =>
-            prev.includes(interestId)
-                ? prev.filter(id => id !== interestId)
-                : [...prev, interestId]
-        );
-    };
-
-    // Loading states
+    // Loading state
     if (authLoading || isCheckingStatus) {
         return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
+            <AuthLayout>
+                <div className="flex-1 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+            </AuthLayout>
         );
     }
 
-    const stepProgress = (currentStep / 3) * 100;
-
     return (
-        <div className="min-h-screen bg-background">
-            <Header />
-
-            <main className="container mx-auto px-4 py-12 max-w-2xl">
-                {/* Progress Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8"
-                >
-                    <div className="flex justify-between text-sm text-muted-foreground mb-2">
-                        <span>Step {currentStep} of 3</span>
-                        <span>{Math.round(stepProgress)}% Complete</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <motion.div
-                            className="h-full bg-primary rounded-full"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${stepProgress}%` }}
-                            transition={{ duration: 0.3 }}
-                        />
-                    </div>
-                </motion.div>
-
+        <AuthLayout>
+            <div className="flex-1 container mx-auto px-4 py-12 max-w-xl">
                 {/* Welcome Message */}
                 <div className="text-center mb-8">
                     <motion.div
@@ -335,291 +236,145 @@ export default function OnboardingPage() {
                         className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full mb-6"
                     >
                         <CheckCircle className="w-5 h-5" />
-                        <span className="font-medium">Account Created Successfully!</span>
+                        <span className="font-medium">Account Created!</span>
                     </motion.div>
 
                     <h1 className="text-3xl font-bold text-foreground mb-2">
-                        Welcome to Drivya.AI
+                        Quick Setup
                     </h1>
                     <p className="text-muted-foreground">
-                        {currentStep === 1
-                            ? "Let's start with your personal information"
-                            : currentStep === 2
-                                ? "Select your role to personalize your experience"
-                                : "What areas are you interested in?"}
+                        Tell us about yourself to get started (takes 30 seconds)
                     </p>
                 </div>
 
-                {/* Form Card */}
+                {/* Single Form Card */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-card border border-border rounded-2xl p-8 shadow-lg"
                 >
-                    <AnimatePresence mode="wait">
-                        {/* Step 1: Personal Info */}
-                        {currentStep === 1 && (
-                            <motion.div
-                                key="step1"
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                className="space-y-6"
-                            >
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                                        <User className="w-5 h-5 text-primary-foreground" />
-                                    </div>
-                                    <h2 className="text-xl font-bold text-foreground">Personal Information</h2>
-                                </div>
+                    <div className="space-y-6">
+                        {/* Organization Name */}
+                        <div className="space-y-2">
+                            <Label htmlFor="org-name" className="text-sm font-medium">
+                                Organization Name *
+                            </Label>
+                            <Input
+                                id="org-name"
+                                value={organizationName}
+                                onChange={(e) => setOrganizationName(e.target.value)}
+                                placeholder="Enter your organization name"
+                                className="h-12 rounded-xl"
+                            />
+                        </div>
 
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
-                                            <User className="w-4 h-4" />
-                                            Full Name *
-                                        </Label>
-                                        <Input
-                                            id="name"
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                            placeholder="Enter your full name"
-                                            className="h-12 rounded-xl"
-                                        />
-                                    </div>
+                        {/* Role Selection */}
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">
+                                I am a... *
+                            </Label>
+                            <div className="grid grid-cols-3 gap-3">
+                                {roles.map((role) => {
+                                    const Icon = role.icon;
+                                    const isSelected = selectedRole === role.id;
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="phone" className="text-sm font-medium flex items-center gap-2">
-                                            <Phone className="w-4 h-4" />
-                                            Phone Number *
-                                        </Label>
-                                        <Input
-                                            id="phone"
-                                            type="tel"
-                                            value={phone}
-                                            onChange={(e) => setPhone(e.target.value)}
-                                            placeholder="+91 XXXXX XXXXX"
-                                            className="h-12 rounded-xl"
-                                        />
-                                        <p className="text-xs text-muted-foreground">
-                                            We'll use this to contact you about matches
-                                        </p>
-                                    </div>
-                                </div>
+                                    return (
+                                        <button
+                                            key={role.id}
+                                            type="button"
+                                            onClick={() => setSelectedRole(role.id)}
+                                            className={`p-4 rounded-xl border-2 text-center transition-all ${isSelected
+                                                ? "border-primary bg-primary/5 shadow-md"
+                                                : "border-border hover:border-primary/30"
+                                                }`}
+                                        >
+                                            <div className={`w-10 h-10 ${role.color} rounded-lg flex items-center justify-center mx-auto mb-2`}>
+                                                <Icon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <span className="text-xs font-medium text-foreground">
+                                                {role.title.split(' / ')[0]}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
 
-                                <Button
-                                    onClick={handleStep1Submit}
-                                    disabled={isLoading}
-                                    className="w-full h-12 rounded-xl text-base"
-                                >
-                                    {isLoading ? (
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                    ) : (
-                                        <>
-                                            Continue
-                                            <ArrowRight className="w-5 h-5 ml-2" />
-                                        </>
-                                    )}
-                                </Button>
-                            </motion.div>
-                        )}
+                        {/* Primary Goal */}
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">
+                                Primary Goal *
+                            </Label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {goals.map((goal) => {
+                                    const Icon = goal.icon;
+                                    const isSelected = primaryGoal === goal.id;
 
-                        {/* Step 2: Role Selection */}
-                        {currentStep === 2 && (
-                            <motion.div
-                                key="step2"
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                className="space-y-6"
-                            >
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                                        <Building2 className="w-5 h-5 text-primary-foreground" />
-                                    </div>
-                                    <h2 className="text-xl font-bold text-foreground">Select Your Role</h2>
-                                </div>
-
-                                {/* Role Cards */}
-                                <div className="space-y-4">
-                                    {roles.map((role, index) => {
-                                        const Icon = role.icon;
-                                        const isSelected = selectedRole === role.id;
-
-                                        return (
-                                            <motion.button
-                                                key={role.id}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: index * 0.1 }}
-                                                onClick={() => setSelectedRole(role.id)}
-                                                className={`relative w-full p-5 rounded-xl border-2 text-left transition-all ${isSelected
-                                                    ? `${role.borderColor} bg-primary/5 shadow-md`
-                                                    : "border-border hover:border-primary/30 hover:bg-muted/50"
-                                                    }`}
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    {/* Icon */}
-                                                    <div className={`w-12 h-12 ${role.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                                                        <Icon className="w-6 h-6 text-white" />
-                                                    </div>
-
-                                                    {/* Content */}
-                                                    <div className="flex-1">
-                                                        <h3 className="text-lg font-bold text-foreground">
-                                                            {role.title}
-                                                        </h3>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {role.description}
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Selection indicator */}
-                                                    {isSelected && (
-                                                        <div className={`w-6 h-6 ${role.color} rounded-full flex items-center justify-center flex-shrink-0`}>
-                                                            <CheckCircle className="w-4 h-4 text-white" />
-                                                        </div>
-                                                    )}
+                                    return (
+                                        <button
+                                            key={goal.id}
+                                            type="button"
+                                            onClick={() => setPrimaryGoal(goal.id)}
+                                            className={`p-3 rounded-xl border-2 text-left transition-all ${isSelected
+                                                ? "border-primary bg-primary/5"
+                                                : "border-border hover:border-primary/30"
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Icon className="w-5 h-5 text-muted-foreground" />
+                                                <div>
+                                                    <p className="text-sm font-medium text-foreground">{goal.title}</p>
+                                                    <p className="text-xs text-muted-foreground">{goal.description}</p>
                                                 </div>
-                                            </motion.button>
-                                        );
-                                    })}
-                                </div>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
 
-                                {/* Navigation */}
-                                <div className="flex gap-4">
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setCurrentStep(1)}
-                                        className="flex-1 h-12 rounded-xl"
-                                    >
-                                        <ArrowLeft className="w-4 h-4 mr-2" />
-                                        Back
-                                    </Button>
-                                    <Button
-                                        onClick={handleStep2Submit}
-                                        disabled={!selectedRole || isLoading}
-                                        className="flex-1 h-12 rounded-xl"
-                                    >
-                                        {isLoading ? (
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                        ) : (
-                                            <>
-                                                Continue
-                                                <ArrowRight className="w-5 h-5 ml-2" />
-                                            </>
-                                        )}
-                                    </Button>
-                                </div>
+                        {/* Country */}
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium flex items-center gap-2">
+                                <Globe className="w-4 h-4" />
+                                Country *
+                            </Label>
+                            <Select value={country} onValueChange={setCountry}>
+                                <SelectTrigger className="h-12 rounded-xl">
+                                    <SelectValue placeholder="Select your country" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {countries.map((c) => (
+                                        <SelectItem key={c} value={c}>
+                                            {c}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                                <p className="text-xs text-center text-muted-foreground">
-                                    You can change your role anytime from settings
-                                </p>
-                            </motion.div>
-                        )}
+                        {/* Submit Button */}
+                        <Button
+                            onClick={handleSubmit}
+                            disabled={isLoading || !organizationName || !selectedRole || !primaryGoal || !country}
+                            className="w-full h-12 rounded-xl text-base"
+                        >
+                            {isLoading ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <>
+                                    Get Started
+                                    <CheckCircle className="w-5 h-5 ml-2" />
+                                </>
+                            )}
+                        </Button>
 
-                        {/* Step 3: Interest Selection */}
-                        {currentStep === 3 && (
-                            <motion.div
-                                key="step3"
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                className="space-y-6"
-                            >
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                                        <Target className="w-5 h-5 text-primary-foreground" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-xl font-bold text-foreground">Areas of Interest</h2>
-                                        <p className="text-sm text-muted-foreground">Select the areas you want to focus on</p>
-                                    </div>
-                                </div>
-
-                                {/* Focus Area Cards */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    {focusAreas.map((area, index) => {
-                                        const Icon = area.icon;
-                                        const isSelected = selectedInterests.includes(area.id);
-
-                                        return (
-                                            <motion.button
-                                                type="button"
-                                                key={area.id}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: index * 0.05 }}
-                                                onClick={() => toggleInterest(area.id)}
-                                                className={`relative p-4 rounded-xl border-2 text-left transition-all ${isSelected
-                                                    ? "border-primary bg-primary/5 shadow-md"
-                                                    : "border-border hover:border-primary/30 hover:bg-muted/50"
-                                                    }`}
-                                            >
-                                                <div className="flex flex-col gap-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className={`w-10 h-10 ${area.color} rounded-lg flex items-center justify-center`}>
-                                                            <Icon className="w-5 h-5 text-white" />
-                                                        </div>
-                                                        {isSelected && (
-                                                            <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                                                                <CheckCircle className="w-3 h-3 text-white" />
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-semibold text-foreground text-sm">
-                                                            {area.title}
-                                                        </h3>
-                                                        <p className="text-xs text-muted-foreground line-clamp-2">
-                                                            {area.description}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </motion.button>
-                                        );
-                                    })}
-                                </div>
-
-                                {/* Selected count */}
-                                <p className="text-sm text-center text-muted-foreground">
-                                    {selectedInterests.length === 0
-                                        ? "Select at least one area"
-                                        : `${selectedInterests.length} area${selectedInterests.length > 1 ? "s" : ""} selected`}
-                                </p>
-
-                                {/* Navigation */}
-                                <div className="flex gap-4">
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setCurrentStep(2)}
-                                        className="flex-1 h-12 rounded-xl"
-                                    >
-                                        <ArrowLeft className="w-4 h-4 mr-2" />
-                                        Back
-                                    </Button>
-                                    <Button
-                                        onClick={handleStep3Submit}
-                                        disabled={selectedInterests.length === 0 || isLoading}
-                                        className="flex-1 h-12 rounded-xl"
-                                    >
-                                        {isLoading ? (
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                        ) : (
-                                            <>
-                                                Continue
-                                                <ArrowRight className="w-5 h-5 ml-2" />
-                                            </>
-                                        )}
-                                    </Button>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                        <p className="text-xs text-center text-muted-foreground">
+                            You can update these details anytime from settings
+                        </p>
+                    </div>
                 </motion.div>
-            </main>
-
-            <Footer />
-        </div>
+            </div>
+        </AuthLayout>
     );
 }

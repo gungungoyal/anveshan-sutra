@@ -14,7 +14,7 @@ interface ProtectedRouteProps {
  * Wrapper component that protects routes requiring authentication.
  * Redirects unauthenticated users to /auth with return URL.
  */
-export default function ProtectedRoute({ children, redirectTo = "/auth" }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, redirectTo = "/login" }: ProtectedRouteProps) {
     const { isAuthenticated, isLoading } = useAuth();
     const router = useRouter();
 

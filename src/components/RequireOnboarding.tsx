@@ -29,9 +29,9 @@ export default function RequireOnboarding({ children, requireOrg = true }: Requi
             // Wait for auth to load
             if (authLoading) return;
 
-            // Redirect to auth if not authenticated
+            // NOTE: Auth redirect removed - middleware.ts handles auth protection
+            // If not authenticated, middleware will redirect
             if (!isAuthenticated) {
-                router.push('/auth');
                 return;
             }
 

@@ -30,6 +30,9 @@ import {
 } from "lucide-react";
 import { getOrganizationById } from "@/lib/services/organizations";
 
+// TODO: This page was moved from /organization/[id] to /org/[id]
+// TODO: Add server-side auth gating in Phase 2
+
 export default function OrgProfileDetail() {
     const params = useParams();
     const id = params?.id as string;
@@ -77,7 +80,7 @@ export default function OrgProfileDetail() {
             toast.info("Sign in to save organizations", {
                 action: {
                     label: "Sign In",
-                    onClick: () => router.push(`/auth?returnTo=${encodeURIComponent(window.location.pathname)}`),
+                    onClick: () => router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`),
                 },
             });
             return;
@@ -98,7 +101,7 @@ export default function OrgProfileDetail() {
             toast.info("Sign in to download PPT", {
                 action: {
                     label: "Sign In",
-                    onClick: () => router.push(`/auth?returnTo=${encodeURIComponent(window.location.pathname)}`),
+                    onClick: () => router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`),
                 },
             });
         }
@@ -124,7 +127,7 @@ export default function OrgProfileDetail() {
                     <h1 className="text-2xl font-bold text-foreground mb-4">
                         {error || "Organization not found"}
                     </h1>
-                    <Button onClick={() => router.push("/search")}>Back to Search</Button>
+                    <Button onClick={() => router.push("/explore")}>Back to Explore</Button>
                 </div>
                 <Footer />
             </div>
@@ -140,10 +143,10 @@ export default function OrgProfileDetail() {
                 <Button
                     variant="ghost"
                     className="mb-6"
-                    onClick={() => router.push("/search")}
+                    onClick={() => router.push("/explore")}
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Results
+                    Back to Explore
                 </Button>
 
                 {/* Organization Header - Always Visible (Public Info) */}
@@ -258,7 +261,7 @@ export default function OrgProfileDetail() {
                                     toast.info("Sign in to draft emails", {
                                         action: {
                                             label: "Sign In",
-                                            onClick: () => router.push(`/auth?returnTo=${encodeURIComponent(window.location.pathname)}`),
+                                            onClick: () => router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`),
                                         },
                                     });
                                     return;

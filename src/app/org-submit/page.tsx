@@ -66,12 +66,13 @@ export default function OrgSubmitPage() {
     const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
     // Check if user already has an organization
+    // NOTE: Auth redirect removed - middleware.ts handles protection
     useEffect(() => {
         const checkOrgStatus = async () => {
             if (authLoading) return;
 
+            // If not authenticated, middleware will handle redirect
             if (!isAuthenticated || !user?.id) {
-                router.push('/auth?returnTo=/org-submit');
                 return;
             }
 
