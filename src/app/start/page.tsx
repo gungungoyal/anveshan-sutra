@@ -5,7 +5,7 @@ import { getServerSession } from '@/lib/supabase-server';
  * /start - Server-side decision gate
  * 
  * This page has NO visible UI. It only redirects:
- * - Unauthenticated → /login
+ * - Unauthenticated → /auth
  * - Authenticated without role → /onboarding
  * - Authenticated with role → /dashboard (or role-specific dashboard)
  * 
@@ -24,13 +24,13 @@ export default async function StartPage() {
         session = await getServerSession();
     } catch (error) {
         console.error('/start: Error getting session:', error);
-        // If session check fails, redirect to login
-        redirect('/login');
+        // If session check fails, redirect to auth
+        redirect('/auth');
     }
 
-    // Not authenticated → login
+    // Not authenticated → auth
     if (!session) {
-        redirect('/login');
+        redirect('/auth');
     }
 
     // No role or onboarding not complete → onboarding

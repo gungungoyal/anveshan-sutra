@@ -1,78 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowRight, LogOut, User, Loader2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { signOut } from "@/lib/services/auth";
 
 export default function DrivyaHome() {
-    const { user, isAuthenticated, isLoading } = useAuth();
-    const router = useRouter();
-
-    const handleSignOut = async () => {
-        await signOut();
-        router.refresh();
-    };
+    const { isAuthenticated } = useAuth();
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            {/* Header with Auth */}
+            {/* Minimal Header - Logo Only */}
             <header className="border-b border-border">
-                <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+                <div className="container mx-auto px-4 py-4">
                     <Link href="/" className="text-xl font-bold text-foreground">
                         Drivya
                     </Link>
-                    <nav className="flex items-center gap-4">
-                        {isLoading ? (
-                            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                        ) : isAuthenticated && user ? (
-                            <>
-                                <Link
-                                    href="/decide"
-                                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                                >
-                                    Decisions
-                                </Link>
-                                <Link
-                                    href="/log-outcome"
-                                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                                >
-                                    Log Outcome
-                                </Link>
-                                <div className="flex items-center gap-2 pl-4 border-l border-border">
-                                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                                        <User className="w-4 h-4 text-muted-foreground" />
-                                    </div>
-                                    <span className="text-sm text-foreground hidden sm:block">
-                                        {user.name || user.email?.split('@')[0]}
-                                    </span>
-                                    <button
-                                        onClick={handleSignOut}
-                                        className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-                                        title="Sign out"
-                                    >
-                                        <LogOut className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <Link
-                                    href="/login"
-                                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                                >
-                                    Log in
-                                </Link>
-                                <Link
-                                    href="/signup"
-                                    className="text-sm px-4 py-2 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
-                                >
-                                    Sign up
-                                </Link>
-                            </>
-                        )}
-                    </nav>
                 </div>
             </header>
 
