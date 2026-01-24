@@ -176,8 +176,8 @@ export async function completeOnboarding(
         const { error } = await supabase
             .from('user_profiles')
             .update({
-                onboarding_step: 'complete',
                 onboarding_complete: true,
+                profile_complete: true,
                 updated_at: new Date().toISOString(),
             })
             .eq('id', userId);

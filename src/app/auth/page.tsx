@@ -4,8 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import AuthLayout from "@/components/AuthLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { sendOtp, verifyOtp, signUpWithPassword, signInWithPassword, resetPassword } from "@/lib/services/auth";
 import {
@@ -180,10 +179,9 @@ function AuthPageContent() {
     }
 
     return (
-        <div className="min-h-screen bg-background">
-            <Header />
-            <main className="container mx-auto px-4 py-12 max-w-md">
-                <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
+        <AuthLayout>
+            <main className="flex-1 flex items-center justify-center px-4 py-12">
+                <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8 shadow-lg">
                     <AnimatePresence mode="wait">
                         {step === "form" && (
                             <motion.div
@@ -472,8 +470,7 @@ function AuthPageContent() {
                     </AnimatePresence>
                 </div>
             </main>
-            <Footer />
-        </div>
+        </AuthLayout>
     );
 }
 

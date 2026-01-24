@@ -294,22 +294,7 @@ export default function Header() {
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Link
-                    href="/login"
-                    className="px-4 py-2.5 text-sm font-medium text-foreground hover:text-primary hover:bg-secondary/30 rounded-xl transition-all"
-                  >
-                    Log In
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="px-4 py-2.5 bg-foreground text-background text-sm font-semibold rounded-xl hover:bg-foreground/90 transition-all active:scale-95"
-                  >
-                    Sign Up Free
-                  </Link>
-                </div>
-              )}
+              ) : null}
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -425,24 +410,7 @@ export default function Header() {
                   <LogOut className="w-5 h-5" />
                   Sign Out
                 </button>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  <Link
-                    href="/login"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex justify-center items-center py-3 rounded-xl border border-border font-semibold text-foreground"
-                  >
-                    Log In
-                  </Link>
-                  <Link
-                    href="/login"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex justify-center items-center py-3 rounded-xl bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

@@ -163,19 +163,20 @@ export default function OnboardingPage() {
 
         setIsLoading(true);
         try {
-            // Save to user_profiles
+            // Save to user_profiles - only existing columns
             if (supabase) {
                 const { error: profileError } = await supabase
                     .from('user_profiles')
                     .upsert({
                         id: user.id,
                         email: user.email,
+                        name: user.name || organizationName.trim(),
+                        role: selectedRole, // Required NOT NULL column
                         organization_name: organizationName.trim(),
                         user_role: selectedRole,
-                        primary_goal: primaryGoal,
-                        country: country,
-                        onboarding_step: 'complete',
+                        user_intent: selectedRole === "ngo" ? "seeker" : selectedRole === "incubator" ? "both" : "provider",
                         onboarding_complete: true,
+                        profile_complete: true,
                         updated_at: new Date().toISOString(),
                     }, {
                         onConflict: 'id'
@@ -183,7 +184,7 @@ export default function OnboardingPage() {
 
                 if (profileError) {
                     console.error('Profile update error:', profileError);
-                    toast.error("Failed to save profile");
+                    toast.error("Failed to save profile: " + profileError.message);
                     return;
                 }
             }
