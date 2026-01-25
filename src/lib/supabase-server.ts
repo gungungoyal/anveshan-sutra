@@ -3,18 +3,18 @@ import { cookies } from 'next/headers';
 
 /**
  * Create a Supabase client for server-side operations.
- * Uses service role key to bypass RLS for auth checks.
+ * Uses anon key to respect RLS policies.
  */
 export function createServerClient() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    if (!supabaseUrl || !supabaseServiceKey) {
+    if (!supabaseUrl || !supabaseAnonKey) {
         console.warn('Supabase server credentials not configured');
         return null;
     }
 
-    return createClient(supabaseUrl, supabaseServiceKey, {
+    return createClient(supabaseUrl, supabaseAnonKey, {
         auth: {
             autoRefreshToken: false,
             persistSession: false,

@@ -417,7 +417,7 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
             .select('organization_id, organizations(id, name, type)')
             .eq('user_id', user.id)
             .limit(1)
-            .single();
+            .maybeSingle();
 
         if (userOrgLink?.organizations) {
             const org = userOrgLink.organizations as any;

@@ -4,65 +4,81 @@ import { createClient } from '@supabase/supabase-js';
 // Force dynamic rendering since this route uses request.headers
 export const dynamic = 'force-dynamic';
 
-// Initialize Supabase client with SERVICE ROLE KEY (bypasses RLS)
+// Initialize Supabase client with ANON KEY (respects RLS)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseServiceKey) {
-    console.warn('SUPABASE_SERVICE_ROLE_KEY not configured - onboarding status API will not work');
+if (!supabaseAnonKey) {
+    console.warn('NEXT_PUBLIC_SUPABASE_ANON_KEY not configured - onboarding status API will not work');
 }
-
-const supabaseAdmin = supabaseUrl && supabaseServiceKey
-    ? createClient(supabaseUrl, supabaseServiceKey, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false,
-        },
-    })
-    : null;
 
 export async function GET(request: NextRequest) {
     try {
-        if (!supabaseAdmin) {
-            return NextResponse.json({ error: 'Database not configured - missing SUPABASE_SERVICE_ROLE_KEY' }, { status: 500 });
+        if (!supabaseUrl || !supabaseAnonKey) {
+            return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
         }
 
-        // Get session from authorization header
-        const authHeader = request.headers.get('authorization');
-        let userId: string | null = null;
+        // Get auth token from cookies or authorization header
+        let accessToken: string | null = null;
 
+        // Try Authorization header first
+        const authHeader = request.headers.get('authorization');
         if (authHeader?.startsWith('Bearer ')) {
-            const token = authHeader.substring(7);
-            const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
-            if (!error && user) {
-                userId = user.id;
+            accessToken = authHeader.substring(7);
+        }
+
+        // If no auth header, try to get from cookies
+        if (!accessToken) {
+            const cookies = request.cookies.getAll();
+            const authTokenCookie = cookies.find(c => c.name.includes('-auth-token'));
+            if (authTokenCookie) {
+                try {
+                    const parsed = JSON.parse(authTokenCookie.value);
+                    accessToken = parsed.access_token || parsed[0]?.access_token;
+                } catch {
+                    accessToken = authTokenCookie.value;
+                }
             }
         }
 
-        // If no auth header, try to get from session
-        if (!userId) {
-            const { data: { session } } = await supabaseAdmin.auth.getSession();
-            userId = session?.user?.id || null;
-        }
-
-        if (!userId) {
+        if (!accessToken) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Get user profile (with service role, bypasses RLS)
-        const { data: profile, error: profileError } = await supabaseAdmin
+        // Create Supabase client with the user's access token
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+            global: {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            },
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
+            },
+        });
+
+        // Verify token and get user
+        const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+
+        if (authError || !user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Get user profile (RLS will ensure user can only see their own data)
+        const { data: profile, error: profileError } = await supabase
             .from('user_profiles')
             .select('name, phone, user_role, onboarding_step, interest_areas')
-            .eq('id', userId)
+            .eq('id', user.id)
             .single();
 
-        // Check if user has an organization (with service role, bypasses RLS)
-        const { data: orgLink, error: orgError } = await supabaseAdmin
+        // Check if user has an organization
+        const { data: orgLink, error: orgError } = await supabase
             .from('user_organizations')
             .select('organization_id')
-            .eq('user_id', userId)
+            .eq('user_id', user.id)
             .limit(1)
-            .single();
+            .maybeSingle(); // Use maybeSingle() to avoid error when no rows
 
         const hasOrganization = !orgError && !!orgLink;
 
