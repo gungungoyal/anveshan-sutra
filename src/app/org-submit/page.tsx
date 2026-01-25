@@ -28,6 +28,7 @@ import { submitOrganization } from "@/lib/services/organizations";
 import { completeOnboarding as completeOnboardingApi } from "@/lib/services/onboarding";
 import IncubatorForm, { IncubatorFormData } from "@/components/forms/IncubatorForm";
 import CSRForm, { CSRFormData } from "@/components/forms/CSRForm";
+import { fetchWithTimeout } from "@/lib/utils/async";
 
 const focusAreas = [
     "Education", "Healthcare", "Environment", "Women Empowerment",
@@ -77,7 +78,7 @@ export default function OrgSubmitPage() {
             }
 
             try {
-                const response = await fetch('/api/onboarding-status');
+                const response = await fetchWithTimeout('/api/onboarding-status', {}, 10000);
                 if (response.ok) {
                     const status = await response.json();
 

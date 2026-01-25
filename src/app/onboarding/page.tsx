@@ -23,6 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { completeOnboarding as completeOnboardingApi } from "@/lib/services/onboarding";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { fetchWithTimeout } from "@/lib/utils/async";
 
 type Role = "ngo" | "incubator" | "csr";
 type PrimaryGoal = "funding" | "partnerships" | "programs" | "scouting";
@@ -107,7 +108,7 @@ export default function OnboardingPage() {
             }
 
             try {
-                const response = await fetch('/api/onboarding-status');
+                const response = await fetchWithTimeout('/api/onboarding-status', {}, 10000);
                 if (response.ok) {
                     const status = await response.json();
 

@@ -11,6 +11,7 @@
 
 import { supabase } from '../supabase';
 import { User, AuthResponse } from '@shared/api';
+import { fetchWithTimeout } from '../utils/async';
 
 export interface AuthUser extends User {
     organization_id?: string;
@@ -30,7 +31,7 @@ export async function sendOtp(
     purpose: 'signup' | 'login' | 'password_reset' = 'signup'
 ): Promise<{ success: boolean; error: string | null; expiresAt?: string }> {
     try {
-        const response = await fetch(`${API_BASE}/api/send-otp`, {
+        const response = await fetchWithTimeout(`${API_BASE}/api/send-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, purpose }),
@@ -57,7 +58,7 @@ export async function verifyOtp(
     otp: string
 ): Promise<{ success: boolean; verified: boolean; purpose?: string; error: string | null }> {
     try {
-        const response = await fetch(`${API_BASE}/api/verify-otp`, {
+        const response = await fetchWithTimeout(`${API_BASE}/api/verify-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, otp }),
@@ -217,7 +218,7 @@ export async function resetPassword(
     newPassword: string
 ): Promise<{ success: boolean; error: string | null }> {
     try {
-        const response = await fetch(`${API_BASE}/api/reset-password`, {
+        const response = await fetchWithTimeout(`${API_BASE}/api/reset-password`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, newPassword }),
