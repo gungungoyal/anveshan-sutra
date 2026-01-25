@@ -1,12 +1,11 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
 
+/**
+ * Landing page - fully static, no auth checks.
+ * Auth decisions are handled at /start.
+ */
 export default function DrivyaHome() {
-    const { isAuthenticated } = useAuth();
-
     return (
         <div className="min-h-screen bg-background flex flex-col">
             {/* Minimal Header - Logo Only */}
@@ -31,24 +30,14 @@ export default function DrivyaHome() {
                         Know which organizations are worth your team's time — before you reach out.
                     </p>
 
-                    {/* CTA - Different based on auth state */}
-                    {isAuthenticated ? (
-                        <Link
-                            href="/decide"
-                            className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background rounded-xl font-semibold text-lg hover:bg-foreground/90 transition-colors"
-                        >
-                            Check collaboration confidence
-                            <ArrowRight className="w-5 h-5" />
-                        </Link>
-                    ) : (
-                        <Link
-                            href="/start"
-                            className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background rounded-xl font-semibold text-lg hover:bg-foreground/90 transition-colors"
-                        >
-                            Get started
-                            <ArrowRight className="w-5 h-5" />
-                        </Link>
-                    )}
+                    {/* CTA - Always link to /start (the auth decision gate) */}
+                    <Link
+                        href="/start"
+                        className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background rounded-xl font-semibold text-lg hover:bg-foreground/90 transition-colors"
+                    >
+                        Get started
+                        <ArrowRight className="w-5 h-5" />
+                    </Link>
 
                     {/* Supporting Line */}
                     <p className="mt-8 text-sm text-muted-foreground">

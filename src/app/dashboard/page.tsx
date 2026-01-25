@@ -1,5 +1,3 @@
-"use client";
-
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,8 +7,9 @@ import {
     Star, Eye, Heart, ChevronRight,
     Sparkles, Clock, Bookmark, AlertCircle
 } from "lucide-react";
+import Link from "next/link";
 
-// Placeholder organization item
+// Placeholder organization item (server component - no interactivity needed for placeholders)
 function OrgPlaceholder({
     variant = "default"
 }: {
@@ -59,7 +58,16 @@ function OrgPlaceholder({
     );
 }
 
-export default function DashboardPage() {
+/**
+ * Dashboard - Server Component
+ * 
+ * Middleware already verified authentication.
+ * Renders immediately without hydration delay.
+ */
+export default async function DashboardPage() {
+    // NOTE: Middleware verified auth - no need to check again
+    // Future: Fetch real data server-side here
+
     return (
         <div className="min-h-screen bg-background">
             <Header />
@@ -84,10 +92,12 @@ export default function DashboardPage() {
                                     <Sparkles className="w-5 h-5 text-green-500" />
                                     High-Fit Organizations
                                 </CardTitle>
-                                <Button variant="ghost" size="sm" className="text-muted-foreground">
-                                    View all
-                                    <ChevronRight className="w-4 h-4 ml-1" />
-                                </Button>
+                                <Link href="/explore?filter=high-fit">
+                                    <Button variant="ghost" size="sm" className="text-muted-foreground">
+                                        View all
+                                        <ChevronRight className="w-4 h-4 ml-1" />
+                                    </Button>
+                                </Link>
                             </div>
                             <p className="text-sm text-muted-foreground">
                                 Organizations most aligned with your goals
@@ -108,10 +118,12 @@ export default function DashboardPage() {
                                     <Clock className="w-5 h-5 text-blue-500" />
                                     Recently Added
                                 </CardTitle>
-                                <Button variant="ghost" size="sm" className="text-muted-foreground">
-                                    View all
-                                    <ChevronRight className="w-4 h-4 ml-1" />
-                                </Button>
+                                <Link href="/explore?filter=recent">
+                                    <Button variant="ghost" size="sm" className="text-muted-foreground">
+                                        View all
+                                        <ChevronRight className="w-4 h-4 ml-1" />
+                                    </Button>
+                                </Link>
                             </div>
                             <p className="text-sm text-muted-foreground">
                                 New opportunities added this week
@@ -131,10 +143,12 @@ export default function DashboardPage() {
                                     <Bookmark className="w-5 h-5 text-amber-500" />
                                     Saved Organizations
                                 </CardTitle>
-                                <Button variant="ghost" size="sm" className="text-muted-foreground">
-                                    View all
-                                    <ChevronRight className="w-4 h-4 ml-1" />
-                                </Button>
+                                <Link href="/explore?filter=saved">
+                                    <Button variant="ghost" size="sm" className="text-muted-foreground">
+                                        View all
+                                        <ChevronRight className="w-4 h-4 ml-1" />
+                                    </Button>
+                                </Link>
                             </div>
                             <p className="text-sm text-muted-foreground">
                                 Your shortlisted organizations for follow-up
@@ -161,10 +175,12 @@ export default function DashboardPage() {
                                     <AlertCircle className="w-5 h-5 text-slate-400" />
                                     Low Priority
                                 </CardTitle>
-                                <Button variant="ghost" size="sm" className="text-muted-foreground">
-                                    View all
-                                    <ChevronRight className="w-4 h-4 ml-1" />
-                                </Button>
+                                <Link href="/explore?filter=low-priority">
+                                    <Button variant="ghost" size="sm" className="text-muted-foreground">
+                                        View all
+                                        <ChevronRight className="w-4 h-4 ml-1" />
+                                    </Button>
+                                </Link>
                             </div>
                             <p className="text-sm text-muted-foreground">
                                 Organizations with lower alignment scores

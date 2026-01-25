@@ -2,23 +2,17 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Routes that require authentication
-const PROTECTED_ROUTES = ['/dashboard', '/explore', '/org'];
-
-// Routes that require onboarding to be complete
-const ONBOARDED_ROUTES = ['/dashboard', '/explore'];
+// Routes that require authentication (middleware protects these)
+const PROTECTED_ROUTES = ['/dashboard', '/explore', '/org', '/ngo-dashboard'];
 
 /**
- * Middleware for server-side auth gating.
- * Runs before every request to protected routes.
+ * Lightweight middleware for auth gating.
+ * 
+ * ONLY checks for auth session presence - NO database queries.
+ * Role and onboarding checks are handled by /start page (server component).
  */
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
-
-    // Handle /start route - decision gate
-    if (pathname === '/start') {
-        return handleStartRoute(request);
-    }
 
     // Check if route is protected
     const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
@@ -26,63 +20,29 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // Get session from cookies
-    const session = await getSessionFromRequest(request);
+    // Check for auth session (lightweight - only parses JWT, no DB call)
+    const hasSession = await checkAuthSession(request);
 
     // Not authenticated -> redirect to login
-    if (!session) {
+    if (!hasSession) {
         const loginUrl = new URL('/login', request.url);
         loginUrl.searchParams.set('returnTo', pathname);
         return NextResponse.redirect(loginUrl);
-    }
-
-    // Check onboarding for routes that require it
-    const requiresOnboarding = ONBOARDED_ROUTES.some(route => pathname.startsWith(route));
-    if (requiresOnboarding && !session.onboardingComplete) {
-        return NextResponse.redirect(new URL('/onboarding', request.url));
     }
 
     return NextResponse.next();
 }
 
 /**
- * Handle /start route logic:
- * - Unauthenticated -> /login
- * - Authenticated without role -> /onboarding
- * - Authenticated with role -> /dashboard
+ * Lightweight auth check - only verifies JWT token presence and validity.
+ * NO database queries for user profile, role, or onboarding status.
  */
-async function handleStartRoute(request: NextRequest): Promise<NextResponse> {
-    const session = await getSessionFromRequest(request);
-
-    // Not authenticated -> login
-    if (!session) {
-        return NextResponse.redirect(new URL('/login', request.url));
-    }
-
-    // No role set -> onboarding
-    if (!session.role) {
-        return NextResponse.redirect(new URL('/onboarding', request.url));
-    }
-
-    // Onboarding not complete -> onboarding
-    if (!session.onboardingComplete) {
-        return NextResponse.redirect(new URL('/onboarding', request.url));
-    }
-
-    // Fully onboarded -> dashboard based on role
-    const dashboardPath = getDashboardPath(session.role);
-    return NextResponse.redirect(new URL(dashboardPath, request.url));
-}
-
-/**
- * Get session from request cookies.
- */
-async function getSessionFromRequest(request: NextRequest) {
+async function checkAuthSession(request: NextRequest): Promise<boolean> {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseServiceKey) {
-        return null;
+        return false;
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
@@ -98,7 +58,7 @@ async function getSessionFromRequest(request: NextRequest) {
         const authTokenCookie = cookies.find(c => c.name.includes('-auth-token'));
 
         if (!authTokenCookie) {
-            return null;
+            return false;
         }
 
         // Parse the cookie value
@@ -111,56 +71,27 @@ async function getSessionFromRequest(request: NextRequest) {
         }
 
         if (!accessToken) {
-            return null;
+            return false;
         }
 
-        // Verify token
+        // Verify token with Supabase Auth (this is an Auth API call, not a DB query)
         const { data: { user }, error } = await supabase.auth.getUser(accessToken);
-        if (error || !user) {
-            return null;
-        }
 
-        // Get profile
-        const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('user_role, onboarding_step, onboarding_complete')
-            .eq('id', user.id)
-            .single();
-
-        return {
-            userId: user.id,
-            email: user.email,
-            role: profile?.user_role || null,
-            onboardingStep: profile?.onboarding_step || 'personal_info',
-            onboardingComplete: profile?.onboarding_complete || false,
-        };
+        // Return true if user exists and token is valid
+        return !error && !!user;
     } catch (error) {
         console.error('Middleware auth error:', error);
-        return null;
-    }
-}
-
-/**
- * Get dashboard path based on user role.
- */
-function getDashboardPath(role: string | null): string {
-    switch (role) {
-        case 'ngo':
-            return '/ngo-dashboard';
-        case 'incubator':
-        case 'csr':
-            return '/explore';
-        default:
-            return '/dashboard';
+        return false;
     }
 }
 
 // Configure which routes trigger middleware
+// NOTE: /start is NOT included - it's a server component that handles its own routing
 export const config = {
     matcher: [
-        '/start',
         '/dashboard/:path*',
         '/explore/:path*',
         '/org/:path*',
+        '/ngo-dashboard/:path*',
     ],
 };
