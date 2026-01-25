@@ -18,29 +18,43 @@ const AuthContext = createContext<AuthContextType>({
     refreshUser: async () => { },
 });
 
+// Safety timeout (ms) to prevent infinite loading if Supabase hangs
+const AUTH_TIMEOUT_MS = 4000;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AuthUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        let didTimeout = false;
+
+        // Safety timeout: if auth check hangs, force loading to false
+        const timeoutId = setTimeout(() => {
+            didTimeout = true;
+            console.warn('Auth check timed out after', AUTH_TIMEOUT_MS, 'ms');
+            setIsLoading(false);
+        }, AUTH_TIMEOUT_MS);
+
         // Check initial session
         const checkSession = async () => {
             try {
                 if (!supabase) {
-                    setIsLoading(false);
+                    if (!didTimeout) setIsLoading(false);
+                    clearTimeout(timeoutId);
                     return;
                 }
 
                 const { data: { session } } = await supabase.auth.getSession();
 
-                if (session) {
+                if (session && !didTimeout) {
                     const { user: authUser } = await getCurrentUser();
-                    setUser(authUser);
+                    if (!didTimeout) setUser(authUser);
                 }
             } catch (error) {
                 console.error('Auth check error:', error);
             } finally {
-                setIsLoading(false);
+                if (!didTimeout) setIsLoading(false);
+                clearTimeout(timeoutId);
             }
         };
 
