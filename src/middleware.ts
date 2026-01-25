@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 
 // Routes that require authentication (middleware protects these)
 const PROTECTED_ROUTES = ['/dashboard', '/explore', '/org', '/ngo-dashboard'];
@@ -8,8 +7,8 @@ const PROTECTED_ROUTES = ['/dashboard', '/explore', '/org', '/ngo-dashboard'];
 /**
  * Lightweight middleware for auth gating.
  * 
- * ONLY checks for auth session presence - NO database queries.
- * Role and onboarding checks are handled by /start page (server component).
+ * ONLY checks for auth session presence via cookies - NO network calls.
+ * Uses getSession() approach: parses JWT from cookie without Supabase API call.
  */
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -20,12 +19,12 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // Check for auth session (lightweight - only parses JWT, no DB call)
-    const hasSession = await checkAuthSession(request);
+    // Check for auth session in cookies (lightweight - no network call)
+    const hasSession = checkAuthCookie(request);
 
     // Not authenticated -> redirect to login
     if (!hasSession) {
-        const loginUrl = new URL('/login', request.url);
+        const loginUrl = new URL('/auth', request.url);
         loginUrl.searchParams.set('returnTo', pathname);
         return NextResponse.redirect(loginUrl);
     }
@@ -34,26 +33,13 @@ export async function middleware(request: NextRequest) {
 }
 
 /**
- * Lightweight auth check - only verifies JWT token presence and validity.
- * NO database queries for user profile, role, or onboarding status.
+ * Lightweight auth check - only verifies JWT token presence in cookies.
+ * NO network calls to Supabase. Just checks if token exists and is not expired.
  */
-async function checkAuthSession(request: NextRequest): Promise<boolean> {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-        return false;
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false,
-        },
-    });
-
+function checkAuthCookie(request: NextRequest): boolean {
     try {
         // Find auth token in cookies
+        // Supabase stores session in sb-<project-ref>-auth-token cookie
         const cookies = request.cookies.getAll();
         const authTokenCookie = cookies.find(c => c.name.includes('-auth-token'));
 
@@ -63,10 +49,14 @@ async function checkAuthSession(request: NextRequest): Promise<boolean> {
 
         // Parse the cookie value
         let accessToken: string | null = null;
+        let expiresAt: number | null = null;
+
         try {
             const parsed = JSON.parse(authTokenCookie.value);
             accessToken = parsed.access_token || parsed[0]?.access_token;
+            expiresAt = parsed.expires_at || parsed[0]?.expires_at;
         } catch {
+            // Try direct value (fallback)
             accessToken = authTokenCookie.value;
         }
 
@@ -74,19 +64,24 @@ async function checkAuthSession(request: NextRequest): Promise<boolean> {
             return false;
         }
 
-        // Verify token with Supabase Auth (this is an Auth API call, not a DB query)
-        const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+        // Check if token is expired (if we have expiry info)
+        if (expiresAt) {
+            const now = Math.floor(Date.now() / 1000);
+            if (expiresAt < now) {
+                // Token expired
+                return false;
+            }
+        }
 
-        // Return true if user exists and token is valid
-        return !error && !!user;
+        // Token exists and is not expired -> session is valid
+        return true;
     } catch (error) {
-        console.error('Middleware auth error:', error);
+        console.error('Middleware auth cookie check error:', error);
         return false;
     }
 }
 
 // Configure which routes trigger middleware
-// NOTE: /start is NOT included - it's a server component that handles its own routing
 export const config = {
     matcher: [
         '/dashboard/:path*',
