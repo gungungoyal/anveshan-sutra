@@ -138,6 +138,25 @@ export async function signUpWithPassword(
             return { user: null, error: 'Failed to create account' };
         }
 
+        // ✅ CRITICAL: Confirm email in Supabase's system via Admin API
+        // This syncs our custom OTP verification with Supabase's internal email_confirmed_at
+        try {
+            const confirmResponse = await fetchWithTimeout(`${API_BASE}/api/confirm-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: data.user.id }),
+            });
+
+            if (!confirmResponse.ok) {
+                console.warn('Failed to confirm email in Supabase, user may have login issues');
+            } else {
+                console.log('[Auth] Email confirmed in Supabase for user:', data.user.id);
+            }
+        } catch (confirmError) {
+            console.warn('Email confirmation API call failed:', confirmError);
+            // Don't fail signup if confirmation fails - user was still created
+        }
+
         // Create user profile
         const { error: profileError } = await supabase
             .from('user_profiles')
@@ -394,14 +413,19 @@ export async function signOut(): Promise<{ error: string | null }> {
 export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: string | null }> {
     try {
         if (!supabase) {
+            console.log('[Auth] supabase not configured in getCurrentUser');
             return { user: null, error: 'Supabase not configured' };
         }
 
+        console.log('[Auth] Calling supabase.auth.getUser()...');
         const { data: { user }, error } = await supabase.auth.getUser();
 
         if (error || !user) {
+            console.log('[Auth] getUser failed or no user', error);
             return { user: null, error: error?.message || 'Not authenticated' };
         }
+
+        console.log('[Auth] getUser success, fetching profile for', user.id);
 
         // Get user profile from database
         const { data: profileData } = await supabase

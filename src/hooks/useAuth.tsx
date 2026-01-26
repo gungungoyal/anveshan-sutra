@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { getCurrentUser, AuthUser } from '@/lib/services/auth';
 
@@ -18,75 +18,98 @@ const AuthContext = createContext<AuthContextType>({
     refreshUser: async () => { },
 });
 
-// Safety timeout (ms) to prevent infinite loading if Supabase hangs
-const AUTH_TIMEOUT_MS = 4000;
-
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AuthUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        let didTimeout = false;
-
-        // Safety timeout: if auth check hangs, force loading to false
-        const timeoutId = setTimeout(() => {
-            didTimeout = true;
-            console.warn('Auth check timed out after', AUTH_TIMEOUT_MS, 'ms');
-            setIsLoading(false);
-        }, AUTH_TIMEOUT_MS);
-
-        // Check initial session
-        const checkSession = async () => {
-            try {
-                if (!supabase) {
-                    if (!didTimeout) setIsLoading(false);
-                    clearTimeout(timeoutId);
-                    return;
-                }
-
-                const { data: { session } } = await supabase.auth.getSession();
-
-                if (session && !didTimeout) {
-                    const { user: authUser } = await getCurrentUser();
-                    if (!didTimeout) setUser(authUser);
-                }
-            } catch (error) {
-                console.error('Auth check error:', error);
-            } finally {
-                if (!didTimeout) setIsLoading(false);
-                clearTimeout(timeoutId);
-            }
-        };
-
-        checkSession();
-
-        // Listen for auth changes
-        if (supabase) {
-            const { data: { subscription } } = supabase.auth.onAuthStateChange(
-                async (event, session) => {
-                    if (session) {
-                        const { user: authUser } = await getCurrentUser();
-                        setUser(authUser);
-                    } else {
-                        setUser(null);
-                    }
-                }
-            );
-
-            return () => subscription.unsubscribe();
+    // Fetch user profile from database
+    const fetchUser = useCallback(async () => {
+        try {
+            const { user: authUser } = await getCurrentUser();
+            setUser(authUser);
+            return authUser;
+        } catch (error) {
+            console.error('[AuthProvider] fetchUser error:', error);
+            setUser(null);
+            return null;
         }
     }, []);
 
-    // Manual refresh function
-    const refreshUser = async () => {
-        try {
-            if (!supabase) return;
-            const { user: authUser } = await getCurrentUser();
-            setUser(authUser);
-        } catch (error) {
-            console.error('Refresh user error:', error);
+    useEffect(() => {
+        if (!supabase) {
+            console.warn('[AuthProvider] Supabase not configured');
+            setIsLoading(false);
+            return;
         }
-    };
+
+        let mounted = true;
+
+        // We already checked supabase above, so it's safe to use here
+        const sb = supabase!;
+
+        // Initial session check - this is the ONLY place we set isLoading to false initially
+        const initializeAuth = async () => {
+            try {
+                console.log('[AuthProvider] Initializing auth...');
+
+                // First, try to get the current session
+                const { data: { session }, error } = await sb.auth.getSession();
+
+                if (error) {
+                    console.error('[AuthProvider] getSession error:', error);
+                    if (mounted) setIsLoading(false);
+                    return;
+                }
+
+                if (session?.user) {
+                    console.log('[AuthProvider] Session found, fetching user profile...');
+                    if (mounted) {
+                        await fetchUser();
+                    }
+                } else {
+                    console.log('[AuthProvider] No session found');
+                }
+            } catch (error) {
+                console.error('[AuthProvider] initializeAuth error:', error);
+            } finally {
+                // CRITICAL: Only set loading false after we've checked everything
+                if (mounted) {
+                    console.log('[AuthProvider] Initialization complete');
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        initializeAuth();
+
+        // Listen for auth state changes (login, logout, token refresh)
+        const { data: { subscription } } = sb.auth.onAuthStateChange(
+            async (event, session) => {
+                console.log('[AuthProvider] Auth state changed:', event);
+
+                if (!mounted) return;
+
+                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                    if (session?.user) {
+                        await fetchUser();
+                    }
+                } else if (event === 'SIGNED_OUT') {
+                    setUser(null);
+                }
+            }
+        );
+
+        return () => {
+            mounted = false;
+            subscription.unsubscribe();
+        };
+    }, [fetchUser]);
+
+    // Manual refresh function
+    const refreshUser = useCallback(async () => {
+        console.log('[AuthProvider] Manual refresh triggered');
+        await fetchUser();
+    }, [fetchUser]);
 
     return (
         <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, refreshUser }}>

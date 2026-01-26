@@ -176,7 +176,7 @@ export default function Header() {
 
               {/* Explore (Primary CTA) */}
               <Link
-                href="/search"
+                href="/explore"
                 className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-95"
               >
                 Explore
@@ -364,7 +364,7 @@ export default function Header() {
               </Link>
 
               <Link
-                href="/search"
+                href="/explore"
                 onClick={() => setIsMenuOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-xl bg-primary text-primary-foreground font-semibold"
               >

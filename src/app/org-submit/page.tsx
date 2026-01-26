@@ -86,7 +86,7 @@ export default function OrgSubmitPage() {
                     if (status.hasOrganization) {
                         setHasOrganization(true);
                         toast.info("You already have an organization registered");
-                        const dashboardPath = status.role === 'ngo' ? '/ngo-dashboard' : '/search';
+                        const dashboardPath = status.role === 'ngo' ? '/ngo-dashboard' : '/explore';
                         router.push(dashboardPath);
                         return;
                     }
@@ -231,7 +231,7 @@ export default function OrgSubmitPage() {
                 if (currentRole === 'ngo') {
                     router.push("/ngo-dashboard");
                 } else {
-                    router.push("/search");
+                    router.push("/explore");
                 }
             } else {
                 console.error('Submission error:', result.error);
@@ -278,7 +278,7 @@ export default function OrgSubmitPage() {
                     await completeOnboardingApi(user.id);
                 }
                 toast.success("Incubator profile created successfully!");
-                router.push("/search");
+                router.push("/explore");
             } else {
                 toast.error(result.error || "Failed to register. Please try again.");
             }
@@ -322,7 +322,7 @@ export default function OrgSubmitPage() {
                     await completeOnboardingApi(user.id);
                 }
                 toast.success("CSR profile created successfully!");
-                router.push("/search");
+                router.push("/explore");
             } else {
                 toast.error(result.error || "Failed to register. Please try again.");
             }

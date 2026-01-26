@@ -1,0 +1,1 @@
+{"success":false,"error":"Failed to generate verification code","dbError":{"message":"Invalid API key","hint":"Double check your Supabase `anon` or `service_role` API key."},"debug":{"supabaseUrl":"https://fpkijxrlssphftsdldng.supabase.co","hasServiceKey":true,"serviceKeyStart":"eyJhbGciOi..."}}
