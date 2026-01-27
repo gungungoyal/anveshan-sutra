@@ -176,7 +176,6 @@ export async function completeOnboarding(
         const { error } = await supabase
             .from('user_profiles')
             .update({
-                onboarding_complete: true,
                 profile_complete: true,
                 updated_at: new Date().toISOString(),
             })
@@ -223,8 +222,8 @@ export function getDashboardPath(role: string | null): string {
             return '/ngo-dashboard';
         case 'incubator':
         case 'csr':
-            return '/search';
+            return '/explore';
         default:
-            return '/search';
+            return '/explore';
     }
 }

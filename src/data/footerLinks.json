@@ -16,7 +16,7 @@
   "tools": [
     {
       "name": "Search Organizations",
-      "href": "/search"
+      "href": "/explore"
     },
     {
       "name": "Submit Organization",

@@ -976,3 +976,7 @@ CREATE POLICY "Users can update own organization links" ON user_organizations
 -- Users can delete their own organization links
 CREATE POLICY "Users can delete own organization links" ON user_organizations
     FOR DELETE USING (auth.uid() = user_id);
+ALTER TABLE user_profiles 
+ADD COLUMN IF NOT EXISTS user_role TEXT 
+CHECK (user_role IN ('ngo', 'incubator', 'csr'));
+ALTER TABLE user_profiles ALTER COLUMN role DROP NOT NULL;

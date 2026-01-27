@@ -115,15 +115,31 @@ function AuthPageContent() {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log('[AuthPage] handleLogin called');
         setIsLoading(true);
         setErrorMessage("");
         try {
+            console.log('[AuthPage] Calling signInWithPassword...');
             const result = await signInWithPassword(email, password);
+            console.log('[AuthPage] signInWithPassword returned:', result.error ? 'error' : 'success');
             if (result.error) {
                 setErrorMessage(result.error);
             } else {
+                console.log('[AuthPage] Calling refreshUser...');
                 await refreshUser();
-                router.push(returnTo);
+
+                // Check if user has completed onboarding
+                const hasCompletedOnboarding = result.user?.profile_complete === true;
+
+                if (hasCompletedOnboarding) {
+                    // Returning user - go to explore
+                    console.log('[AuthPage] Returning user, redirecting to /explore');
+                    router.push('/explore');
+                } else {
+                    // New user - go to onboarding
+                    console.log('[AuthPage] New user, redirecting to /onboarding');
+                    router.push('/onboarding');
+                }
             }
         } catch (err: any) {
             setErrorMessage(err.message || "Login failed");

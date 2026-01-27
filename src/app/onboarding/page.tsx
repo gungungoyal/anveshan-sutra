@@ -99,7 +99,7 @@ export default function OnboardingPage() {
     const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | null>(null);
     const [country, setCountry] = useState("");
 
-    // Check if already onboarded
+    // Check if already onboarded - redirect to explore if so
     useEffect(() => {
         const checkStatus = async () => {
             if (!user?.id) {
@@ -107,25 +107,26 @@ export default function OnboardingPage() {
                 return;
             }
 
+            // Simple check: if user has profile_complete, redirect to explore
+            // This prevents already-onboarded users from seeing this form again
             try {
-                const response = await fetchWithTimeout('/api/onboarding-status', {}, 10000);
+                const response = await fetchWithTimeout('/api/onboarding-status', {
+                    credentials: 'include',
+                }, 10000);
+
                 if (response.ok) {
                     const status = await response.json();
 
-                    // If already completed onboarding, redirect to dashboard
-                    if (status.step === 'complete' || status.hasOrganization) {
-                        const dashboardPath = status.role === 'ngo' ? '/ngo-dashboard' : '/explore';
-                        router.push(dashboardPath);
+                    // If already completed onboarding, redirect to explore
+                    if (status.profileComplete === true || status.onboardingComplete === true) {
+                        console.log('[Onboarding] User already completed, redirecting to /explore');
+                        router.push('/explore');
                         return;
-                    }
-
-                    // Pre-fill role if already selected
-                    if (status.role) {
-                        setSelectedRole(status.role as Role);
                     }
                 }
             } catch (error) {
-                console.error('Error checking onboarding status:', error);
+                // API failed - that's okay, allow form to show
+                console.warn('Could not check onboarding status:', error);
             }
 
             setIsCheckingStatus(false);
@@ -157,37 +158,62 @@ export default function OnboardingPage() {
             return;
         }
 
-        if (!user?.id) {
+        // Get user ID - fallback to session if useAuth hasn't updated yet (race condition fix)
+        let userId = user?.id;
+        let userEmail = user?.email;
+        let userName = user?.name;
+
+        console.log('[Onboarding] handleSubmit - user from useAuth:', user?.id ? 'present' : 'null');
+        console.log('[Onboarding] supabase client:', supabase ? 'configured' : 'null');
+
+        if (!userId && supabase) {
+            // Try to get user from current session as fallback
+            console.log('[Onboarding] User not in context, checking session...');
+            try {
+                const { data: { user: sessionUser }, error: sessionError } = await supabase.auth.getUser();
+                console.log('[Onboarding] getUser result:', sessionUser?.id ? 'found user' : 'no user', 'error:', sessionError?.message || 'none');
+
+                if (sessionUser) {
+                    userId = sessionUser.id;
+                    userEmail = sessionUser.email || '';
+                    userName = sessionUser.user_metadata?.name || organizationName.trim();
+                }
+            } catch (err) {
+                console.error('[Onboarding] getUser threw exception:', err);
+            }
+        }
+
+        if (!userId) {
+            console.error('[Onboarding] No user ID found, redirecting to auth');
             toast.error("Please log in to continue");
+            router.push('/auth');
             return;
         }
 
+        console.log('[Onboarding] Proceeding with userId:', userId);
+
         setIsLoading(true);
         try {
-            // Save to user_profiles - only existing columns
-            if (supabase) {
-                const { error: profileError } = await supabase
-                    .from('user_profiles')
-                    .upsert({
-                        id: user.id,
-                        email: user.email,
-                        name: user.name || organizationName.trim(),
-                        role: selectedRole, // Required NOT NULL column
-                        organization_name: organizationName.trim(),
-                        user_role: selectedRole,
-                        user_intent: selectedRole === "ngo" ? "seeker" : selectedRole === "incubator" ? "both" : "provider",
-                        onboarding_complete: true,
-                        profile_complete: true,
-                        updated_at: new Date().toISOString(),
-                    }, {
-                        onConflict: 'id'
-                    });
+            // Save to user_profiles via server-side API (bypasses RLS)
+            const profileResponse = await fetchWithTimeout('/api/update-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    email: userEmail,
+                    name: userName || organizationName.trim(),
+                    role: selectedRole,
+                    userIntent: selectedRole === "ngo" ? "seeker" : selectedRole === "incubator" ? "both" : "provider",
+                    organizationName: organizationName.trim(),
+                }),
+            }, 15000);
 
-                if (profileError) {
-                    console.error('Profile update error:', profileError);
-                    toast.error("Failed to save profile: " + profileError.message);
-                    return;
-                }
+            if (!profileResponse.ok) {
+                const errorData = await profileResponse.json();
+                console.error('Profile update error:', errorData);
+                toast.error("Failed to save profile: " + (errorData.error || 'Unknown error'));
+                setIsLoading(false);
+                return;
             }
 
             // Update local store
@@ -200,14 +226,12 @@ export default function OnboardingPage() {
             completeOnboarding();
             setHasOrganization(true);
 
-            // Mark onboarding complete via API
-            await completeOnboardingApi(user.id);
+            // Profile already updated via /api/update-profile - no need for extra call
 
             toast.success("Welcome to Drivya.AI!");
 
-            // Redirect to dashboard based on role
-            const dashboardPath = selectedRole === 'ngo' ? '/ngo-dashboard' : '/explore';
-            router.push(dashboardPath);
+            // Redirect to explore page
+            router.push('/explore');
         } catch (error: any) {
             console.error('Onboarding error:', error);
             toast.error(error.message || "Something went wrong");
@@ -216,8 +240,20 @@ export default function OnboardingPage() {
         }
     };
 
-    // Loading state
+    // Loading state - wait for auth to fully initialize
     if (authLoading || isCheckingStatus) {
+        return (
+            <AuthLayout>
+                <div className="flex-1 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+            </AuthLayout>
+        );
+    }
+
+    // ✅ Critical: Redirect to auth if not authenticated AFTER loading is complete
+    if (!isAuthenticated) {
+        router.push('/auth?returnTo=/onboarding');
         return (
             <AuthLayout>
                 <div className="flex-1 flex items-center justify-center">

@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Routes that require authentication (middleware protects these)
-const PROTECTED_ROUTES = ['/dashboard', '/explore', '/org', '/ngo-dashboard'];
+// NOTE: /explore removed - Supabase uses localStorage, not cookies, so middleware can't detect session
+// The explore page handles auth check client-side instead
+const PROTECTED_ROUTES = ['/dashboard', '/org', '/ngo-dashboard'];
 
 /**
  * Lightweight middleware for auth gating.
@@ -22,10 +24,17 @@ export async function middleware(request: NextRequest) {
     // Check for auth session in cookies (lightweight - no network call)
     const hasSession = checkAuthCookie(request);
 
+    // Debug logging
+    const cookies = request.cookies.getAll();
+    console.log('[Middleware] Protected route:', pathname);
+    console.log('[Middleware] Cookies found:', cookies.map(c => c.name).join(', '));
+    console.log('[Middleware] Has session:', hasSession);
+
     // Not authenticated -> redirect to login
     if (!hasSession) {
         const loginUrl = new URL('/auth', request.url);
         loginUrl.searchParams.set('returnTo', pathname);
+        console.log('[Middleware] Redirecting to:', loginUrl.toString());
         return NextResponse.redirect(loginUrl);
     }
 
@@ -82,10 +91,10 @@ function checkAuthCookie(request: NextRequest): boolean {
 }
 
 // Configure which routes trigger middleware
+// NOTE: /explore removed - uses client-side auth check
 export const config = {
     matcher: [
         '/dashboard/:path*',
-        '/explore/:path*',
         '/org/:path*',
         '/ngo-dashboard/:path*',
     ],
