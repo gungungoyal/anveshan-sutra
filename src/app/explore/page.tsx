@@ -109,6 +109,18 @@ function ExploreContent() {
     // Guided intro state - persisted to localStorage
     const [showGuidedIntro, setShowGuidedIntro] = useState(true);
 
+    // Filter state
+    const [query, setQuery] = useState(searchParams?.get("q") || "");
+    const [selectedFocusArea, setSelectedFocusArea] = useState(
+        searchParams?.get("focus") || ""
+    );
+    const [selectedRegion, setSelectedRegion] = useState(
+        searchParams?.get("region") || ""
+    );
+    const [sortBy, setSortBy] = useState<"alignment" | "name" | "recency">(
+        (searchParams?.get("sort") as "alignment" | "name" | "recency") || "alignment"
+    );
+
     // Hydrate localStorage values after mount
     useEffect(() => {
         setDismissedSetupPrompt(localStorage.getItem("dismissedIncubatorSetup") === "true");
@@ -122,42 +134,6 @@ function ExploreContent() {
             router.push('/auth?returnTo=/explore');
         }
     }, [authLoading, isAuthenticated, router]);
-
-    // Show loading while checking auth
-    if (authLoading) {
-        return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
-    }
-
-    // Don't render content if not authenticated (will redirect)
-    if (!isAuthenticated) {
-        return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
-    }
-    // ===== END AUTH PROTECTION =====
-
-    const dismissGuidedIntro = () => {
-        setShowGuidedIntro(false);
-        localStorage.setItem("dismissedGuidedIntro", "true");
-    };
-
-    // Filter state
-    const [query, setQuery] = useState(searchParams?.get("q") || "");
-    const [selectedFocusArea, setSelectedFocusArea] = useState(
-        searchParams?.get("focus") || ""
-    );
-    const [selectedRegion, setSelectedRegion] = useState(
-        searchParams?.get("region") || ""
-    );
-    const [sortBy, setSortBy] = useState<"alignment" | "name" | "recency">(
-        (searchParams?.get("sort") as "alignment" | "name" | "recency") || "alignment"
-    );
 
     // Search function using service layer
     const fetchResults = useCallback(async () => {
@@ -216,6 +192,29 @@ function ExploreContent() {
 
         window.history.replaceState(null, "", `?${params.toString()}`);
     }, [query, selectedFocusArea, selectedRegion, sortBy, searchParams]);
+
+    // Show loading while checking auth
+    if (authLoading) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    // Don't render content if not authenticated (will redirect)
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    const dismissGuidedIntro = () => {
+        setShowGuidedIntro(false);
+        localStorage.setItem("dismissedGuidedIntro", "true");
+    };
 
     const toggleShortlist = (orgId: string) => {
         // Gate behind auth
@@ -526,6 +525,17 @@ function ExploreContent() {
                                 <Button onClick={handleClearFilters} variant="outline">
                                     Clear All Filters
                                 </Button>
+
+                                {/* DEBUG INFO - Remove in production */}
+                                <div className="mt-8 p-4 bg-gray-100 rounded text-left text-xs font-mono overflow-auto max-w-lg mx-auto">
+                                    <p className="font-bold text-red-500 mb-2">DEBUG INFO:</p>
+                                    <p>Loading: {loading ? 'true' : 'false'}</p>
+                                    <p>Results: {results.length}</p>
+                                    <p>Error: {error || 'None'}</p>
+                                    <p>Supabase Url Configured: {process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Yes ' + process.env.NEXT_PUBLIC_SUPABASE_URL.substring(0, 10) + '...' : 'No'}</p>
+                                    <p>Supabase Key Configured: {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Yes' : 'No'}</p>
+                                    <p>Auth Status: {isAuthenticated ? 'Authenticated' : 'Not Authenticated'}</p>
+                                </div>
                             </div>
                         ) : (
                             <>
