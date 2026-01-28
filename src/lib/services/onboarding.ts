@@ -222,8 +222,8 @@ export function getDashboardPath(role: string | null): string {
             return '/ngo-dashboard';
         case 'incubator':
         case 'csr':
-            return '/explore';
+            return '/dashboard';
         default:
-            return '/explore';
+            return '/dashboard';
     }
 }

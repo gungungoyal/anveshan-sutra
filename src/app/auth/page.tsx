@@ -132,9 +132,9 @@ function AuthPageContent() {
                 const hasCompletedOnboarding = result.user?.profile_complete === true;
 
                 if (hasCompletedOnboarding) {
-                    // Returning user - go to explore
-                    console.log('[AuthPage] Returning user, redirecting to /explore');
-                    router.push('/explore');
+                    // Returning user - go to dashboard
+                    console.log('[AuthPage] Returning user, redirecting to /dashboard');
+                    router.push('/dashboard');
                 } else {
                     // New user - go to onboarding
                     console.log('[AuthPage] New user, redirecting to /onboarding');

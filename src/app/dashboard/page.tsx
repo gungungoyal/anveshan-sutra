@@ -1,196 +1,96 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-    Star, Eye, Heart, ChevronRight,
-    Sparkles, Clock, Bookmark, AlertCircle
-} from "lucide-react";
+import { ArrowRight, Loader2, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
-
-// Placeholder organization item (server component - no interactivity needed for placeholders)
-function OrgPlaceholder({
-    variant = "default"
-}: {
-    variant?: "high-fit" | "new" | "saved" | "low-priority" | "default"
-}) {
-    const variants = {
-        "high-fit": { badge: "92% Match", badgeClass: "bg-green-500 text-white" },
-        "new": { badge: "New", badgeClass: "bg-blue-500 text-white" },
-        "saved": { badge: "Saved", badgeClass: "bg-amber-500 text-white" },
-        "low-priority": { badge: "45% Match", badgeClass: "bg-slate-400 text-white" },
-        "default": { badge: "", badgeClass: "" },
-    };
-
-    const { badge, badgeClass } = variants[variant];
-
-    return (
-        <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:bg-muted/50 transition-colors cursor-pointer group">
-            <div className="flex items-center gap-4">
-                {/* Placeholder avatar */}
-                <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
-                    <div className="w-8 h-8 bg-muted-foreground/20 rounded" />
-                </div>
-
-                <div>
-                    <div className="flex items-center gap-2 mb-1">
-                        <div className="h-4 w-32 bg-muted rounded" />
-                        {badge && (
-                            <Badge className={badgeClass}>{badge}</Badge>
-                        )}
-                    </div>
-                    <div className="h-3 w-48 bg-muted rounded" />
-                </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="ghost" size="sm">
-                    <Eye className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                    <Heart className="w-4 h-4" />
-                </Button>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </div>
-        </div>
-    );
-}
+import { useAuth } from "@/hooks/useAuth";
 
 /**
- * Dashboard - Server Component
+ * Dashboard - Optimized for first-time users
  * 
- * Middleware already verified authentication.
- * Renders immediately without hydration delay.
+ * Simple, calm design that answers: "What should I look at today?"
+ * Primary CTA leads to Explore page.
  */
-export default async function DashboardPage() {
-    // NOTE: Middleware verified auth - no need to check again
-    // Future: Fetch real data server-side here
+export default function DashboardPage() {
+    const router = useRouter();
+    const { isAuthenticated, isLoading, user } = useAuth();
+
+    // Redirect to auth if not authenticated
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            router.push('/auth?returnTo=/dashboard');
+        }
+    }, [isLoading, isAuthenticated, router]);
+
+    // Loading state
+    if (isLoading || !isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    const userName = user?.name?.split(' ')[0] || 'there';
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background flex flex-col">
             <Header />
 
-            <main className="container mx-auto px-4 py-8 max-w-6xl">
-                {/* Page Title - Decision Focused */}
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-foreground mb-1">
-                        What should I look at today?
+            <main className="flex-1 flex items-center justify-center px-4 py-12">
+                <div className="max-w-xl w-full text-center">
+                    {/* Welcome */}
+                    <h1 className="text-3xl font-bold text-foreground mb-3">
+                        Welcome, {userName}!
                     </h1>
-                    <p className="text-muted-foreground">
-                        Your decision workspace
+                    <p className="text-lg text-muted-foreground mb-10">
+                        What would you like to do today?
                     </p>
-                </div>
 
-                <div className="grid gap-8">
-                    {/* Section 1: High-Fit Organizations */}
-                    <Card>
-                        <CardHeader className="pb-4">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <Sparkles className="w-5 h-5 text-green-500" />
-                                    High-Fit Organizations
-                                </CardTitle>
-                                <Link href="/explore?filter=high-fit">
-                                    <Button variant="ghost" size="sm" className="text-muted-foreground">
-                                        View all
-                                        <ChevronRight className="w-4 h-4 ml-1" />
-                                    </Button>
-                                </Link>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                Organizations most aligned with your goals
-                            </p>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            <OrgPlaceholder variant="high-fit" />
-                            <OrgPlaceholder variant="high-fit" />
-                            <OrgPlaceholder variant="high-fit" />
-                        </CardContent>
-                    </Card>
-
-                    {/* Section 2: Recently Added */}
-                    <Card>
-                        <CardHeader className="pb-4">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <Clock className="w-5 h-5 text-blue-500" />
-                                    Recently Added
-                                </CardTitle>
-                                <Link href="/explore?filter=recent">
-                                    <Button variant="ghost" size="sm" className="text-muted-foreground">
-                                        View all
-                                        <ChevronRight className="w-4 h-4 ml-1" />
-                                    </Button>
-                                </Link>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                New opportunities added this week
-                            </p>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            <OrgPlaceholder variant="new" />
-                            <OrgPlaceholder variant="new" />
-                        </CardContent>
-                    </Card>
-
-                    {/* Section 3: Saved / Shortlisted */}
-                    <Card>
-                        <CardHeader className="pb-4">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <Bookmark className="w-5 h-5 text-amber-500" />
-                                    Saved Organizations
-                                </CardTitle>
-                                <Link href="/explore?filter=saved">
-                                    <Button variant="ghost" size="sm" className="text-muted-foreground">
-                                        View all
-                                        <ChevronRight className="w-4 h-4 ml-1" />
-                                    </Button>
-                                </Link>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                Your shortlisted organizations for follow-up
-                            </p>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <Bookmark className="w-10 h-10 text-muted-foreground/30 mb-3" />
-                                <p className="text-sm text-muted-foreground">
-                                    No saved organizations yet
+                    {/* Primary CTA - Explore */}
+                    <div className="space-y-4">
+                        <Link href="/explore" className="block">
+                            <div className="p-6 rounded-2xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all cursor-pointer group">
+                                <div className="flex items-center justify-center gap-3 mb-3">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                                        <Search className="w-6 h-6 text-primary" />
+                                    </div>
+                                </div>
+                                <h2 className="text-xl font-semibold text-foreground mb-1">
+                                    Explore Organizations
+                                </h2>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    Discover partners aligned with your goals
                                 </p>
-                                <p className="text-xs text-muted-foreground/70">
-                                    Click the heart icon on any organization to save it here
-                                </p>
+                                <Button className="gap-2">
+                                    Start exploring
+                                    <ArrowRight className="w-4 h-4" />
+                                </Button>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </Link>
 
-                    {/* Section 4: Low-Priority */}
-                    <Card className="border-dashed">
-                        <CardHeader className="pb-4">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2 text-lg text-muted-foreground">
-                                    <AlertCircle className="w-5 h-5 text-slate-400" />
-                                    Low Priority
-                                </CardTitle>
-                                <Link href="/explore?filter=low-priority">
-                                    <Button variant="ghost" size="sm" className="text-muted-foreground">
-                                        View all
-                                        <ChevronRight className="w-4 h-4 ml-1" />
-                                    </Button>
-                                </Link>
+                        {/* Secondary CTA - AI Suggestions (subtle) */}
+                        <Link href="/explore?filter=high-fit" className="block">
+                            <div className="p-4 rounded-xl border border-border hover:bg-muted/50 transition-colors cursor-pointer">
+                                <div className="flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                                    <Sparkles className="w-4 h-4 text-green-500" />
+                                    <span className="text-sm font-medium">
+                                        View AI-matched organizations
+                                    </span>
+                                    <ArrowRight className="w-4 h-4" />
+                                </div>
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                                Organizations with lower alignment scores
-                            </p>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            <OrgPlaceholder variant="low-priority" />
-                            <OrgPlaceholder variant="low-priority" />
-                        </CardContent>
-                    </Card>
+                        </Link>
+                    </div>
+
+                    {/* Subtle tip */}
+                    <p className="text-xs text-muted-foreground/70 mt-8">
+                        Tip: Save organizations you like to review them later
+                    </p>
                 </div>
             </main>
 

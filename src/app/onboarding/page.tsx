@@ -117,10 +117,10 @@ export default function OnboardingPage() {
                 if (response.ok) {
                     const status = await response.json();
 
-                    // If already completed onboarding, redirect to explore
+                    // If already completed onboarding, redirect to dashboard
                     if (status.profileComplete === true || status.onboardingComplete === true) {
-                        console.log('[Onboarding] User already completed, redirecting to /explore');
-                        router.push('/explore');
+                        console.log('[Onboarding] User already completed, redirecting to /dashboard');
+                        router.push('/dashboard');
                         return;
                     }
                 }
@@ -230,8 +230,8 @@ export default function OnboardingPage() {
 
             toast.success("Welcome to Drivya.AI!");
 
-            // Redirect to explore page
-            router.push('/explore');
+            // Redirect to dashboard
+            router.push('/dashboard');
         } catch (error: any) {
             console.error('Onboarding error:', error);
             toast.error(error.message || "Something went wrong");

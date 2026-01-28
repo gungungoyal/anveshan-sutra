@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, Search, Plus, LayoutGrid, User, LogOut, Settings, ChevronDown, Sun, Moon } from "lucide-react";
+import { Menu, X, Search, User, LogOut, Settings, ChevronDown, Sun, Moon, LayoutDashboard, Bookmark } from "lucide-react";
 import { useState, useEffect, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { signOut, AuthUser } from "@/lib/services/auth";
+import { signOut } from "@/lib/services/auth";
 import { useTheme } from "@/components/ThemeProvider";
 import { useUserStore } from "@/lib/stores/userStore";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,9 +21,8 @@ export default function Header() {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
 
-  // Use shared auth context instead of separate fetch
+  // Use shared auth context
   const { user, isLoading: loadingUser } = useAuth();
-
 
   // Detect scroll to tighten the UI
   useEffect(() => {
@@ -39,8 +38,6 @@ export default function Header() {
     setSolutionsMenuOpen(false);
   }, [pathname]);
 
-
-
   // Close user menu on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -55,17 +52,11 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const openTextMaker = () => {
-    window.open('http://localhost:8081/', '_blank');
-  };
-
   const handleSignOut = async () => {
     await signOut();
-    // Clear persisted user store state
     useUserStore.getState().resetOnboarding();
     setUserMenuOpen(false);
     router.push("/");
-    // User state is managed by AuthProvider, will update automatically
   };
 
   const getInitials = (name: string) => {
@@ -76,6 +67,8 @@ export default function Header() {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  const isActiveLink = (href: string) => pathname === href;
 
   return (
     <>
@@ -92,9 +85,9 @@ export default function Header() {
         >
           <div className="px-4 sm:px-6 flex items-center justify-between">
 
-            {/* 1. Brand Identity */}
+            {/* 1. Brand Identity - Links to dashboard for logged-in users */}
             <Link
-              href="/"
+              href={user ? "/dashboard" : "/"}
               className="flex items-center gap-2 group"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -110,77 +103,119 @@ export default function Header() {
 
             {/* 2. Desktop Navigation */}
             <div className="hidden md:flex items-center gap-4">
-              {/* Solutions Dropdown */}
-              <div className="relative" ref={solutionsMenuRef}>
-                <button
-                  onClick={() => setSolutionsMenuOpen(!solutionsMenuOpen)}
-                  onMouseEnter={() => setSolutionsMenuOpen(true)}
-                  className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
-                >
-                  Solutions
-                  <ChevronDown className={`w-4 h-4 transition-transform ${solutionsMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
 
-                {/* Solutions Dropdown Menu */}
-                {solutionsMenuOpen && (
-                  <div
-                    className="absolute left-0 top-full mt-1 w-56 bg-background/95 backdrop-blur-xl border border-border rounded-xl shadow-xl shadow-black/10 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
-                    onMouseLeave={() => setSolutionsMenuOpen(false)}
+              {/* AUTHENTICATED USER NAVIGATION */}
+              {user ? (
+                <>
+                  {/* Dashboard */}
+                  <Link
+                    href="/dashboard"
+                    className={`text-sm font-medium transition-colors ${isActiveLink('/dashboard')
+                        ? 'text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                      }`}
                   >
-                    <div className="py-2">
-                      <a
-                        href="/#for-ngos"
-                        onClick={() => setSolutionsMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors group"
+                    Dashboard
+                  </Link>
+
+                  {/* Explore */}
+                  <Link
+                    href="/explore"
+                    className={`text-sm font-medium transition-colors ${isActiveLink('/explore')
+                        ? 'text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                  >
+                    Explore
+                  </Link>
+
+                  {/* Saved */}
+                  <Link
+                    href="/shortlist"
+                    className={`text-sm font-medium transition-colors ${isActiveLink('/shortlist')
+                        ? 'text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                  >
+                    Saved
+                  </Link>
+                </>
+              ) : (
+                /* PUBLIC NAVIGATION (Marketing) */
+                <>
+                  {/* Solutions Dropdown */}
+                  <div className="relative" ref={solutionsMenuRef}>
+                    <button
+                      onClick={() => setSolutionsMenuOpen(!solutionsMenuOpen)}
+                      onMouseEnter={() => setSolutionsMenuOpen(true)}
+                      className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
+                    >
+                      Solutions
+                      <ChevronDown className={`w-4 h-4 transition-transform ${solutionsMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* Solutions Dropdown Menu */}
+                    {solutionsMenuOpen && (
+                      <div
+                        className="absolute left-0 top-full mt-1 w-56 bg-background/95 backdrop-blur-xl border border-border rounded-xl shadow-xl shadow-black/10 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+                        onMouseLeave={() => setSolutionsMenuOpen(false)}
                       >
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                        <div>
-                          <p className="font-medium text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300">For NGOs</p>
-                          <p className="text-xs text-muted-foreground">Find funding & partners</p>
+                        <div className="py-2">
+                          <a
+                            href="/#for-ngos"
+                            onClick={() => setSolutionsMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors group"
+                          >
+                            <div className="w-2 h-2 rounded-full bg-green-500" />
+                            <div>
+                              <p className="font-medium text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300">For NGOs</p>
+                              <p className="text-xs text-muted-foreground">Find funding & partners</p>
+                            </div>
+                          </a>
+                          <a
+                            href="/#for-incubators"
+                            onClick={() => setSolutionsMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors group"
+                          >
+                            <div className="w-2 h-2 rounded-full bg-sky-500" />
+                            <div>
+                              <p className="font-medium text-sky-500 dark:text-sky-400 group-hover:text-sky-600 dark:group-hover:text-sky-300">For Incubators</p>
+                              <p className="text-xs text-muted-foreground">Discover startups & NGOs</p>
+                            </div>
+                          </a>
+                          <a
+                            href="/#for-csr"
+                            onClick={() => setSolutionsMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-colors group"
+                          >
+                            <div className="w-2 h-2 rounded-full bg-orange-500" />
+                            <div>
+                              <p className="font-medium text-orange-500 dark:text-orange-400 group-hover:text-orange-600 dark:group-hover:text-orange-300">For CSR</p>
+                              <p className="text-xs text-muted-foreground">Impact partnerships</p>
+                            </div>
+                          </a>
                         </div>
-                      </a>
-                      <a
-                        href="/#for-incubators"
-                        onClick={() => setSolutionsMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors group"
-                      >
-                        <div className="w-2 h-2 rounded-full bg-sky-500" />
-                        <div>
-                          <p className="font-medium text-sky-500 dark:text-sky-400 group-hover:text-sky-600 dark:group-hover:text-sky-300">For Incubators</p>
-                          <p className="text-xs text-muted-foreground">Discover startups & NGOs</p>
-                        </div>
-                      </a>
-                      <a
-                        href="/#for-csr"
-                        onClick={() => setSolutionsMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-colors group"
-                      >
-                        <div className="w-2 h-2 rounded-full bg-orange-500" />
-                        <div>
-                          <p className="font-medium text-orange-500 dark:text-orange-400 group-hover:text-orange-600 dark:group-hover:text-orange-300">For CSR</p>
-                          <p className="text-xs text-muted-foreground">Impact partnerships</p>
-                        </div>
-                      </a>
-                    </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* Features Link */}
-              <Link
-                href="/features"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Features
-              </Link>
+                  {/* Features Link */}
+                  <Link
+                    href="/features"
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Features
+                  </Link>
 
-              {/* Explore (Primary CTA) */}
-              <Link
-                href="/explore"
-                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-95"
-              >
-                Explore
-              </Link>
+                  {/* Get Started CTA */}
+                  <Link
+                    href="/auth"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/20 active:scale-95"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
 
               {/* Theme Toggle */}
               <button
@@ -195,10 +230,8 @@ export default function Header() {
                 )}
               </button>
 
-              {/* User Menu or Login/Signup */}
-
+              {/* User Menu (only for authenticated users) */}
               {loadingUser ? (
-                /* Skeleton loader to prevent flickering */
                 <div className="flex items-center gap-2 px-2 py-1.5">
                   <div className="w-8 h-8 rounded-full bg-secondary animate-pulse" />
                   <div className="hidden lg:block w-20 h-4 bg-secondary animate-pulse rounded" />
@@ -215,34 +248,6 @@ export default function Header() {
                         {getInitials(user.name || "U")}
                       </AvatarFallback>
                     </Avatar>
-                    {/* Always show name and org on desktop */}
-                    <div className="hidden lg:block text-left">
-                      <p className="text-sm font-medium text-foreground truncate max-w-[140px]">{user.name}</p>
-                      {user.organization_name ? (
-                        <div className="flex items-center gap-1.5">
-                          {user.organization_type && (
-                            <span
-                              className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${user.organization_type === "NGO"
-                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                : user.organization_type === "Incubator"
-                                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                                  : user.organization_type === "CSR"
-                                    ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-                                    : "bg-secondary text-muted-foreground"
-                                }`}
-                            >
-                              {user.organization_type}
-                            </span>
-                          )}
-                          <span className="text-xs text-muted-foreground truncate max-w-[80px]">
-                            {user.organization_name}
-                          </span>
-                        </div>
-                      ) : (
-
-                        <p className="text-xs text-muted-foreground truncate max-w-[140px]">{user.email}</p>
-                      )}
-                    </div>
                     <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
 
@@ -255,7 +260,6 @@ export default function Header() {
                         <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                         {user.organization_name && (
                           <div className="flex items-center gap-2 mt-2">
-
                             <span className="text-sm text-foreground truncate">{user.organization_name}</span>
                           </div>
                         )}
@@ -330,46 +334,83 @@ export default function Header() {
                 </div>
               )}
 
-              {/* Mobile Role-Based Navigation Links */}
-              <a
-                href="/#for-ngos"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-xl text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 font-medium transition-colors"
-              >
-                For NGOs
-              </a>
-              <a
-                href="/#for-incubators"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-xl text-sky-500 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30 font-medium transition-colors"
-              >
-                For Incubators
-              </a>
-              <a
-                href="/#for-csr"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-xl text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/30 font-medium transition-colors"
-              >
-                For CSR Teams
-              </a>
-
-              <div className="h-px bg-border my-1" />
-
-              <Link
-                href="/features"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-xl text-foreground hover:bg-secondary/10 font-medium transition-colors"
-              >
-                Features
-              </Link>
-
-              <Link
-                href="/explore"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-xl bg-primary text-primary-foreground font-semibold"
-              >
-                Explore Organizations
-              </Link>
+              {/* AUTHENTICATED MOBILE NAVIGATION */}
+              {user ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl text-foreground hover:bg-secondary/10 font-medium transition-colors"
+                  >
+                    <LayoutDashboard className="w-5 h-5 text-primary" />
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/explore"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl text-foreground hover:bg-secondary/10 font-medium transition-colors"
+                  >
+                    <Search className="w-5 h-5 text-primary" />
+                    Explore
+                  </Link>
+                  <Link
+                    href="/shortlist"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl text-foreground hover:bg-secondary/10 font-medium transition-colors"
+                  >
+                    <Bookmark className="w-5 h-5 text-primary" />
+                    Saved
+                  </Link>
+                  <Link
+                    href="/profile"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl text-foreground hover:bg-secondary/10 font-medium transition-colors"
+                  >
+                    <User className="w-5 h-5 text-primary" />
+                    Profile
+                  </Link>
+                </>
+              ) : (
+                /* PUBLIC MOBILE NAVIGATION */
+                <>
+                  <a
+                    href="/#for-ngos"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 font-medium transition-colors"
+                  >
+                    For NGOs
+                  </a>
+                  <a
+                    href="/#for-incubators"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl text-sky-500 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30 font-medium transition-colors"
+                  >
+                    For Incubators
+                  </a>
+                  <a
+                    href="/#for-csr"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/30 font-medium transition-colors"
+                  >
+                    For CSR Teams
+                  </a>
+                  <div className="h-px bg-border my-1" />
+                  <Link
+                    href="/features"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl text-foreground hover:bg-secondary/10 font-medium transition-colors"
+                  >
+                    Features
+                  </Link>
+                  <Link
+                    href="/auth"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-primary text-primary-foreground font-semibold"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
 
               {/* Mobile Theme Toggle */}
               <button
@@ -383,19 +424,6 @@ export default function Header() {
                 )}
                 {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
               </button>
-
-              {user && (
-                <Link
-                  href="/profile"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl text-foreground hover:bg-secondary/10 font-medium transition-colors"
-                >
-                  <User className="w-5 h-5 text-primary" />
-                  Profile Settings
-                </Link>
-              )}
-
-
 
               <div className="h-px bg-border my-2" />
 
