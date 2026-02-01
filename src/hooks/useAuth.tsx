@@ -52,22 +52,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             try {
                 console.log('[AuthProvider] Initializing auth...');
 
-                // First, try to get the current session
-                const { data: { session }, error } = await sb.auth.getSession();
+                // Add timeout protection to prevent infinite loading
+                const timeoutMs = 10000; // 10 seconds max
+                const timeoutPromise = new Promise<null>((_, reject) => {
+                    setTimeout(() => reject(new Error('Auth initialization timed out')), timeoutMs);
+                });
 
-                if (error) {
-                    console.error('[AuthProvider] getSession error:', error);
-                    if (mounted) setIsLoading(false);
-                    return;
-                }
+                const authPromise = (async () => {
+                    // First, try to get the current session
+                    const { data: { session }, error } = await sb.auth.getSession();
 
-                if (session?.user) {
-                    console.log('[AuthProvider] Session found, fetching user profile...');
-                    if (mounted) {
-                        await fetchUser();
+                    if (error) {
+                        console.error('[AuthProvider] getSession error:', error);
+                        return null;
                     }
-                } else {
-                    console.log('[AuthProvider] No session found');
+
+                    if (session?.user) {
+                        console.log('[AuthProvider] Session found, fetching user profile...');
+                        return await fetchUser();
+                    } else {
+                        console.log('[AuthProvider] No session found');
+                        return null;
+                    }
+                })();
+
+                // Race between auth and timeout
+                try {
+                    await Promise.race([authPromise, timeoutPromise]);
+                } catch (timeoutError) {
+                    console.warn('[AuthProvider] Auth timed out, proceeding without user');
                 }
             } catch (error) {
                 console.error('[AuthProvider] initializeAuth error:', error);
@@ -79,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             }
         };
+
 
         initializeAuth();
 

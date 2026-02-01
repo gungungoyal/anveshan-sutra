@@ -110,15 +110,14 @@ export default function OnboardingPage() {
             // Simple check: if user has profile_complete, redirect to explore
             // This prevents already-onboarded users from seeing this form again
             try {
-                const response = await fetchWithTimeout('/api/onboarding-status', {
-                    credentials: 'include',
-                }, 10000);
+                // Use client-side function instead of API to avoid cookie sync issues
+                const { getOnboardingStatus } = await import('@/lib/services/onboarding');
+                const status = await getOnboardingStatus(user.id);
 
-                if (response.ok) {
-                    const status = await response.json();
 
+                if (status) {
                     // If already completed onboarding, redirect to dashboard
-                    if (status.profileComplete === true || status.onboardingComplete === true) {
+                    if (status.step === 'complete') {
                         console.log('[Onboarding] User already completed, redirecting to /dashboard');
                         router.push('/dashboard');
                         return;
@@ -135,7 +134,8 @@ export default function OnboardingPage() {
         if (!authLoading && isAuthenticated) {
             checkStatus();
         } else if (!authLoading && !isAuthenticated) {
-            setIsCheckingStatus(false);
+            // User is not authenticated - redirect to login
+            router.push('/auth?returnTo=/onboarding');
         }
     }, [user, authLoading, isAuthenticated, router]);
 

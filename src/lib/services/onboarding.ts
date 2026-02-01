@@ -38,7 +38,7 @@ export async function getOnboardingStatus(userId: string): Promise<OnboardingSta
             .select('organization_id')
             .eq('user_id', userId)
             .limit(1)
-            .single();
+            .maybeSingle();
 
         const hasOrganization = !orgError && !!orgLink;
 
@@ -205,7 +205,7 @@ export async function checkUserHasOrganization(userId: string): Promise<boolean>
             .select('id')
             .eq('user_id', userId)
             .limit(1)
-            .single();
+            .maybeSingle();
 
         return !error && !!data;
     } catch {
