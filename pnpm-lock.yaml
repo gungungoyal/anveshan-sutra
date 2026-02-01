@@ -93,7 +93,7 @@ dependencies:
     specifier: ^2.50.3
     version: 2.86.0
   '@tanstack/react-query':
-    specifier: ^5.56.2
+    specifier: ^5.90.11
     version: 5.90.11(react@19.2.1)
   '@types/prismjs':
     specifier: ^1.26.5

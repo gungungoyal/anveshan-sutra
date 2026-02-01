@@ -12,9 +12,13 @@ const nextConfig = {
             },
         ],
     },
-    // module.exports = {
-    //     allowedDevOrigins: ['local-origin.dev', '*.local-origin.dev', "192.168.1.35"],
-    // }
+
+    // Performance optimizations
+    experimental: {
+        // Optimize package imports to reduce bundle size
+        optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+    },
+
     // Environment variables exposed to the browser
     env: {
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,

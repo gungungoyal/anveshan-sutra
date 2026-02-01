@@ -110,10 +110,15 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     // Delete any existing OTPs for this email
-    await supabase
+    const { error: deleteError } = await supabase
       .from('otp_codes')
       .delete()
       .eq('email', email.toLowerCase());
+
+    if (deleteError) {
+      console.error('Failed to delete existing OTP:', deleteError);
+      // Continue anyway - not critical, we'll overwrite with new OTP
+    }
 
     // Store OTP in database
     const { error: insertError } = await supabase

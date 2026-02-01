@@ -413,36 +413,35 @@ export async function signOut(): Promise<{ error: string | null }> {
 export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: string | null }> {
     try {
         if (!supabase) {
-            console.log('[Auth] supabase not configured in getCurrentUser');
             return { user: null, error: 'Supabase not configured' };
         }
 
-        console.log('[Auth] Calling supabase.auth.getUser()...');
         const { data: { user }, error } = await supabase.auth.getUser();
 
         if (error || !user) {
-            console.log('[Auth] getUser failed or no user', error);
             return { user: null, error: error?.message || 'Not authenticated' };
         }
 
-        console.log('[Auth] getUser success, fetching profile for', user.id);
+        // ✅ PERFORMANCE FIX: Run profile and org queries in parallel
+        const [profileResult, userOrgResult] = await Promise.all([
+            supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single(),
+            supabase
+                .from('user_organizations')
+                .select('organization_id, organizations(id, name, type)')
+                .eq('user_id', user.id)
+                .limit(1)
+                .maybeSingle()
+        ]);
 
-        // Get user profile from database
-        const { data: profileData } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
+        const profileData = profileResult.data;
+        const userOrgLink = userOrgResult.data;
 
         // Get user's organization (if any)
         let orgData: { id: string; name: string; type: string } | null = null;
-        const { data: userOrgLink } = await supabase
-            .from('user_organizations')
-            .select('organization_id, organizations(id, name, type)')
-            .eq('user_id', user.id)
-            .limit(1)
-            .maybeSingle();
-
         if (userOrgLink?.organizations) {
             const org = userOrgLink.organizations as any;
             orgData = {

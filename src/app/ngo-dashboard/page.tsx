@@ -6,6 +6,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { getServerSession } from "@/lib/supabase-server";
+import { createServerClient } from "@/lib/supabase-server";
+import { getSavedOrganizations } from "@/lib/services/shortlist";
 
 interface Organization {
     id: string;
@@ -18,12 +20,92 @@ interface Organization {
     isSaved?: boolean;
 }
 
-// Server-side data fetching (placeholder for now)
+/**
+ * Fetch organizations with alignment scoring based on user's interest areas
+ */
 async function fetchOrganizations(userId: string | undefined): Promise<Organization[]> {
-    // TODO: Implement actual data fetching from Supabase
-    // For now, return empty array - real data will be fetched here
-    return [];
+    if (!userId) {
+        return [];
+    }
+
+    const supabase = createServerClient();
+    if (!supabase) {
+        console.error('Supabase server client not available');
+        return [];
+    }
+
+    try {
+        // 1. Get user's interest areas from user_profiles
+        const { data: profileData } = await supabase
+            .from('user_profiles')
+            .select('preferences')
+            .eq('id', userId)
+            .maybeSingle();
+
+        const userInterestAreas = (profileData?.preferences as any)?.interestAreas || [];
+
+        // 2. Fetch all organizations with their focus areas
+        const { data: organizations, error: orgError } = await supabase
+            .from('organizations')
+            .select(`
+                id,
+                name,
+                type,
+                region,
+                created_at,
+                alignment_score,
+                organization_focus_areas (
+                    focus_area
+                )
+            `)
+            .limit(100); // Limit for performance
+
+        if (orgError) {
+            console.error('Error fetching organizations:', orgError);
+            return [];
+        }
+
+        if (!organizations) {
+            return [];
+        }
+
+        // 3. Calculate match scores based on focus area overlap
+        const orgsWithScores = organizations.map(org => {
+            const orgFocusAreas = org.organization_focus_areas?.map(fa => fa.focus_area) || [];
+
+            // Calculate match score: base alignment + interest area boost
+            let matchScore = org.alignment_score || 0;
+
+            // Boost score if org's focus areas match user's interests
+            if (userInterestAreas.length > 0 && orgFocusAreas.length > 0) {
+                const matchingAreas = orgFocusAreas.filter(area =>
+                    userInterestAreas.some((interest: string) =>
+                        interest.toLowerCase() === area.toLowerCase()
+                    )
+                );
+                const overlapPercentage = (matchingAreas.length / userInterestAreas.length) * 100;
+                matchScore = Math.min(100, matchScore + overlapPercentage * 0.2); // Add up to 20 points
+            }
+
+            return {
+                id: org.id,
+                name: org.name,
+                type: org.type,
+                matchScore: Math.round(matchScore),
+                focusAreas: orgFocusAreas,
+                region: org.region,
+                addedAt: org.created_at,
+                isSaved: false, // Will be updated with saved orgs
+            };
+        });
+
+        return orgsWithScores;
+    } catch (error) {
+        console.error('Unexpected error in fetchOrganizations:', error);
+        return [];
+    }
 }
+
 
 function getScoreColor(score: number): string {
     if (score >= 70) return 'text-green-600 bg-green-100 dark:bg-green-900/30';
@@ -126,16 +208,50 @@ export default async function NGODashboardPage() {
     // Fetch organizations server-side
     const organizations = await fetchOrganizations(session?.user?.id);
 
+    // Fetch saved organizations separately (to mark isSaved)
+    const savedResult = session?.user?.id
+        ? await getSavedOrganizations(session.user.id)
+        : { success: true, organizations: [] };
+
+    const savedOrgIds = new Set(
+        savedResult.organizations.map(org => org.id)
+    );
+
+    // Mark saved organizations
+    const allOrgsWithSavedStatus = organizations.map(org => ({
+        ...org,
+        isSaved: savedOrgIds.has(org.id),
+    }));
+
     // Filter organizations by category
-    const highFitOrgs = organizations.filter(o => o.matchScore >= 70);
-    const recentOrgs = organizations.filter(o => {
+    // High-fit: Top 5 with score >= 70
+    const highFitOrgs = allOrgsWithSavedStatus
+        .filter(o => o.matchScore >= 70)
+        .sort((a, b) => b.matchScore - a.matchScore)
+        .slice(0, 5);
+
+    // Recently Added: Last 7 days
+    const recentOrgs = allOrgsWithSavedStatus.filter(o => {
         if (!o.addedAt) return false;
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         return new Date(o.addedAt) >= sevenDaysAgo;
     });
-    const savedOrgs = organizations.filter(o => o.isSaved);
-    const lowPriorityOrgs = organizations.filter(o => o.matchScore < 50);
+
+    // Saved Organizations: Convert from SearchResult to Organization
+    const savedOrgs: Organization[] = savedResult.organizations.map(org => ({
+        id: org.id,
+        name: org.name,
+        type: org.type,
+        matchScore: org.alignmentScore,
+        focusAreas: org.focusAreas,
+        region: org.region,
+        isSaved: true,
+    }));
+
+    // Low Priority (organizations with score < 50)
+    const lowPriorityOrgs = allOrgsWithSavedStatus.filter(o => o.matchScore < 50);
+
 
     return (
         <div className="min-h-screen bg-background">

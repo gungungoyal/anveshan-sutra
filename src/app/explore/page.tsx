@@ -23,6 +23,7 @@ import { Heart, ExternalLink, CheckCircle2, Search as SearchIcon, HelpCircle, Al
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { searchOrganizations } from "@/lib/services/organizations";
 import { SearchResult } from "@shared/api";
+import { useQuery } from "@tanstack/react-query";
 import AlignmentScoreBreakdown from "@/components/AlignmentScoreBreakdown";
 import { toast } from "sonner";
 
@@ -93,15 +94,11 @@ function generateMatchReasons(
 function ExploreContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const { isAuthenticated, isLoading: authLoading } = useAuth();
+    const { isAuthenticated, isLoading: authLoading, user } = useAuth();
     const { role, hasOrganization, interestAreas } = useUserStore();
     const { needsSetup, showSetupPrompt } = useAccessCheck();
-    const [results, setResults] = useState<Organization[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [focusAreas, setFocusAreas] = useState<string[]>([]);
-    const [regions, setRegions] = useState<string[]>([]);
     const [shortlist, setShortlist] = useState<Set<string>>(new Set());
+    const [savingOrgs, setSavingOrgs] = useState<Set<string>>(new Set()); // Track in-progress saves
 
     // Incubator setup prompt - dismissible (defer localStorage to useEffect)
     const [dismissedSetupPrompt, setDismissedSetupPrompt] = useState(false);
@@ -127,6 +124,22 @@ function ExploreContent() {
         setShowGuidedIntro(localStorage.getItem("dismissedGuidedIntro") !== "true");
     }, []);
 
+    // Load saved organizations on mount
+    useEffect(() => {
+        const loadSavedOrgs = async () => {
+            if (!isAuthenticated || !user) return;
+
+            const { getSavedOrganizationIds } = await import('@/lib/services/shortlist');
+            const result = await getSavedOrganizationIds(user.id);
+
+            if (result.success) {
+                setShortlist(new Set(result.organizationIds));
+            }
+        };
+
+        loadSavedOrgs();
+    }, [isAuthenticated, user]);
+
     // ===== STRICT AUTH PROTECTION =====
     // Redirect unauthenticated users to login
     useEffect(() => {
@@ -135,50 +148,29 @@ function ExploreContent() {
         }
     }, [authLoading, isAuthenticated, router]);
 
-    // Search function using service layer
-    const fetchResults = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            // Pass user interests for personalized alignment scoring
-            const data = await searchOrganizations({
+    // ✅ PERFORMANCE FIX: Use React Query for automatic caching
+    const { data: searchData, isLoading, error: queryError } = useQuery({
+        queryKey: ['organizations', query, selectedFocusArea, selectedRegion, sortBy, interestAreas],
+        queryFn: async () => {
+            // Debounce is handled by React Query's staleTime
+            return searchOrganizations({
                 query: query.trim() || undefined,
                 focusArea: selectedFocusArea || undefined,
                 region: selectedRegion || undefined,
                 sortBy: sortBy,
+                limit: 20,
             }, interestAreas);
+        },
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        enabled: isAuthenticated, // Only fetch when authenticated
+    });
 
-            if (!data.success) {
-                throw new Error("Search failed");
-            }
-
-            setResults(data.results || []);
-
-            // Update filter options from the response
-            if (data.focusAreas && data.focusAreas.length > 0) {
-                setFocusAreas(data.focusAreas);
-            }
-            if (data.regions && data.regions.length > 0) {
-                setRegions(data.regions);
-            }
-        } catch (err) {
-            console.error("Search error:", err);
-            setError(err instanceof Error ? err.message : "Search failed");
-            setResults([]);
-        } finally {
-            setLoading(false);
-        }
-    }, [query, selectedFocusArea, selectedRegion, sortBy, interestAreas]);
-
-    // Debounced search effect
-    useEffect(() => {
-        const debounceTimer = setTimeout(() => {
-            fetchResults();
-        }, 300);
-
-        return () => clearTimeout(debounceTimer);
-    }, [fetchResults]);
+    // Extract data from React Query result
+    const results = searchData?.results || [];
+    const focusAreas = searchData?.focusAreas || [];
+    const regions = searchData?.regions || [];
+    const loading = isLoading;
+    const error = queryError ? (queryError instanceof Error ? queryError.message : "Search failed") : null;
 
     // Update URL params (preserve role param for contextual experience)
     useEffect(() => {
@@ -216,9 +208,9 @@ function ExploreContent() {
         localStorage.setItem("dismissedGuidedIntro", "true");
     };
 
-    const toggleShortlist = (orgId: string) => {
+    const toggleShortlist = async (orgId: string) => {
         // Gate behind auth
-        if (!isAuthenticated) {
+        if (!isAuthenticated || !user) {
             toast.info("Sign in to save organizations", {
                 action: {
                     label: "Sign In",
@@ -228,13 +220,58 @@ function ExploreContent() {
             return;
         }
 
+        // Prevent double-clicking
+        if (savingOrgs.has(orgId)) return;
+
+        // Optimistic update
         const newShortlist = new Set(shortlist);
-        if (newShortlist.has(orgId)) {
-            newShortlist.delete(orgId);
-        } else {
+        const isSaving = !newShortlist.has(orgId);
+
+        if (isSaving) {
             newShortlist.add(orgId);
+        } else {
+            newShortlist.delete(orgId);
         }
         setShortlist(newShortlist);
+        setSavingOrgs(prev => new Set(prev).add(orgId));
+
+        try {
+            const { saveOrganization, removeSavedOrganization } = await import('@/lib/services/shortlist');
+
+            const result = isSaving
+                ? await saveOrganization(user.id, orgId)
+                : await removeSavedOrganization(user.id, orgId);
+
+            if (!result.success) {
+                // Revert on error
+                const revertedShortlist = new Set(shortlist);
+                if (isSaving) {
+                    revertedShortlist.delete(orgId);
+                } else {
+                    revertedShortlist.add(orgId);
+                }
+                setShortlist(revertedShortlist);
+                toast.error(result.error || "Failed to update saved organizations");
+            } else {
+                toast.success(isSaving ? "Organization saved!" : "Organization removed from saved");
+            }
+        } catch (err) {
+            // Revert on error
+            const revertedShortlist = new Set(shortlist);
+            if (isSaving) {
+                revertedShortlist.delete(orgId);
+            } else {
+                revertedShortlist.add(orgId);
+            }
+            setShortlist(revertedShortlist);
+            toast.error("An error occurred");
+        } finally {
+            setSavingOrgs(prev => {
+                const updated = new Set(prev);
+                updated.delete(orgId);
+                return updated;
+            });
+        }
     };
 
     const handleClearFilters = () => {
@@ -525,17 +562,6 @@ function ExploreContent() {
                                 <Button onClick={handleClearFilters} variant="outline">
                                     Clear All Filters
                                 </Button>
-
-                                {/* DEBUG INFO - Remove in production */}
-                                <div className="mt-8 p-4 bg-gray-100 rounded text-left text-xs font-mono overflow-auto max-w-lg mx-auto">
-                                    <p className="font-bold text-red-500 mb-2">DEBUG INFO:</p>
-                                    <p>Loading: {loading ? 'true' : 'false'}</p>
-                                    <p>Results: {results.length}</p>
-                                    <p>Error: {error || 'None'}</p>
-                                    <p>Supabase Url Configured: {process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Yes ' + process.env.NEXT_PUBLIC_SUPABASE_URL.substring(0, 10) + '...' : 'No'}</p>
-                                    <p>Supabase Key Configured: {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Yes' : 'No'}</p>
-                                    <p>Auth Status: {isAuthenticated ? 'Authenticated' : 'Not Authenticated'}</p>
-                                </div>
                             </div>
                         ) : (
                             <>

@@ -24,17 +24,10 @@ export async function middleware(request: NextRequest) {
     // Check for auth session in cookies (lightweight - no network call)
     const hasSession = checkAuthCookie(request);
 
-    // Debug logging
-    const cookies = request.cookies.getAll();
-    console.log('[Middleware] Protected route:', pathname);
-    console.log('[Middleware] Cookies found:', cookies.map(c => c.name).join(', '));
-    console.log('[Middleware] Has session:', hasSession);
-
     // Not authenticated -> redirect to login
     if (!hasSession) {
         const loginUrl = new URL('/auth', request.url);
         loginUrl.searchParams.set('returnTo', pathname);
-        console.log('[Middleware] Redirecting to:', loginUrl.toString());
         return NextResponse.redirect(loginUrl);
     }
 

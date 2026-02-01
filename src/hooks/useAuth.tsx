@@ -8,36 +8,42 @@ interface AuthContextType {
     user: AuthUser | null;
     isLoading: boolean;
     isAuthenticated: boolean;
+    error: string | null;
     refreshUser: () => Promise<void>;
+    clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
     isLoading: true,
     isAuthenticated: false,
+    error: null,
     refreshUser: async () => { },
+    clearError: () => { },
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AuthUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     // Fetch user profile from database
     const fetchUser = useCallback(async () => {
         try {
+            setError(null);
             const { user: authUser } = await getCurrentUser();
             setUser(authUser);
             return authUser;
         } catch (error) {
             console.error('[AuthProvider] fetchUser error:', error);
             setUser(null);
+            setError('Unable to load user profile');
             return null;
         }
     }, []);
 
     useEffect(() => {
         if (!supabase) {
-            console.warn('[AuthProvider] Supabase not configured');
             setIsLoading(false);
             return;
         }
@@ -50,10 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Initial session check - this is the ONLY place we set isLoading to false initially
         const initializeAuth = async () => {
             try {
-                console.log('[AuthProvider] Initializing auth...');
-
-                // Add timeout protection to prevent infinite loading
-                const timeoutMs = 10000; // 10 seconds max
+                // ✅ PERFORMANCE FIX: Reduced timeout from 10s to 4s for faster fallback
+                const timeoutMs = 4000;
                 const timeoutPromise = new Promise<null>((_, reject) => {
                     setTimeout(() => reject(new Error('Auth initialization timed out')), timeoutMs);
                 });
@@ -63,15 +67,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     const { data: { session }, error } = await sb.auth.getSession();
 
                     if (error) {
-                        console.error('[AuthProvider] getSession error:', error);
                         return null;
                     }
 
                     if (session?.user) {
-                        console.log('[AuthProvider] Session found, fetching user profile...');
                         return await fetchUser();
                     } else {
-                        console.log('[AuthProvider] No session found');
                         return null;
                     }
                 })();
@@ -80,14 +81,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 try {
                     await Promise.race([authPromise, timeoutPromise]);
                 } catch (timeoutError) {
-                    console.warn('[AuthProvider] Auth timed out, proceeding without user');
+                    // Timeout - set error and proceed without user
+                    setError('Connection is slow. Some features may be limited.');
                 }
-            } catch (error) {
-                console.error('[AuthProvider] initializeAuth error:', error);
+            } catch {
+                // Auth error - proceed without user
             } finally {
                 // CRITICAL: Only set loading false after we've checked everything
                 if (mounted) {
-                    console.log('[AuthProvider] Initialization complete');
                     setIsLoading(false);
                 }
             }
@@ -99,8 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Listen for auth state changes (login, logout, token refresh)
         const { data: { subscription } } = sb.auth.onAuthStateChange(
             async (event, session) => {
-                console.log('[AuthProvider] Auth state changed:', event);
-
                 if (!mounted) return;
 
                 if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
@@ -121,12 +120,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Manual refresh function
     const refreshUser = useCallback(async () => {
-        console.log('[AuthProvider] Manual refresh triggered');
         await fetchUser();
     }, [fetchUser]);
 
+    // Clear error state
+    const clearError = useCallback(() => {
+        setError(null);
+    }, []);
+
     return (
-        <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, refreshUser }}>
+        <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, error, refreshUser, clearError }}>
             {children}
         </AuthContext.Provider>
     );

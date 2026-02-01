@@ -190,6 +190,8 @@ export interface SearchParams {
   fundingType?: string;
   verificationStatus?: string;
   sortBy?: "alignment" | "recency" | "confidence" | "name";
+  limit?: number;
+  offset?: number;
 }
 
 export interface SearchResult extends Organization {

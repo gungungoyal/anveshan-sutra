@@ -300,7 +300,8 @@ export async function getOrganizationById(id: string): Promise<SearchResult | nu
 }
 
 /**
- * Search organizations with filters
+ * Search organizations with filters - SERVER-SIDE FILTERING
+ * ✅ PERFORMANCE FIX: Filters applied in Supabase, not client-side
  */
 export async function searchOrganizations(params: SearchParams, userInterests?: string[]): Promise<{
     success: boolean;
@@ -310,31 +311,116 @@ export async function searchOrganizations(params: SearchParams, userInterests?: 
     regions: string[];
 }> {
     try {
-        const { organizations } = await getOrganizations();
+        if (!supabase) {
+            return {
+                success: false,
+                results: [],
+                total: 0,
+                focusAreas: getAllFocusAreas(),
+                regions: getAllRegions(),
+            };
+        }
 
-        // Convert SearchResult back to Organization for filtering
-        const orgsForFilter: Organization[] = organizations.map(org => ({
+        // ✅ Build query with server-side filters
+        // CRITICAL FIX: Include count: 'exact' to get total count for pagination
+        let query = supabase
+            .from('organizations')
+            .select(`
+                *,
+                organization_focus_areas(focus_area)
+            `, { count: 'exact' });
+
+        // Apply text search filter (name, mission, description)
+        if (params.query) {
+            const searchTerm = params.query.trim();
+            query = query.or(`name.ilike.%${searchTerm}%,mission.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+        }
+
+        // Apply region filter
+        if (params.region) {
+            query = query.ilike('region', `%${params.region}%`);
+        }
+
+        // Apply funding type filter
+        if (params.fundingType) {
+            query = query.eq('funding_type', params.fundingType);
+        }
+
+        // Apply verification status filter
+        if (params.verificationStatus) {
+            query = query.eq('verification_status', params.verificationStatus);
+        }
+
+        // Apply sorting
+        switch (params.sortBy) {
+            case "alignment":
+                query = query.order('alignment_score', { ascending: false });
+                break;
+            case "confidence":
+                query = query.order('confidence', { ascending: false });
+                break;
+            case "name":
+                query = query.order('name', { ascending: true });
+                break;
+            case "recency":
+                query = query.order('created_at', { ascending: false });
+                break;
+            default:
+                query = query.order('created_at', { ascending: false });
+        }
+
+        // Apply pagination
+        const limit = params.limit || 20;
+        const offset = params.offset || 0;
+        query = query.range(offset, offset + limit - 1);
+
+        const { data, error, count } = await query;
+
+        if (error) {
+            console.error('Supabase search error:', error);
+            throw new Error(error.message);
+        }
+
+        if (!data) {
+            return {
+                success: true,
+                results: [],
+                total: 0,
+                focusAreas: getAllFocusAreas(),
+                regions: getAllRegions(),
+            };
+        }
+
+        // Transform Supabase data to SearchResult format
+        const organizations: Organization[] = data.map((org: any) => ({
             id: org.id,
             name: org.name,
             type: org.type,
-            website: org.website,
+            website: org.website || '',
             headquarters: org.headquarters,
             region: org.region,
-            focusAreas: org.focusAreas,
+            focusAreas: org.organization_focus_areas?.map((fa: any) => fa.focus_area) || [],
             mission: org.mission,
             description: org.description,
-            verificationStatus: org.verificationStatus,
-            projects: org.projects,
-            fundingType: org.fundingType,
-            targetBeneficiaries: org.targetBeneficiaries,
-            partnerHistory: org.partnerHistory,
-            confidence: org.confidence,
+            verificationStatus: org.verification_status || 'unverified',
+            projects: [],
+            fundingType: org.funding_type || 'recipient',
+            targetBeneficiaries: [],
+            partnerHistory: [],
+            confidence: org.confidence || 75,
         }));
 
-        // Filter organizations
-        const filtered = filterOrganizations(orgsForFilter, params);
+        // Apply focus area filter client-side (complex array matching)
+        let filtered = organizations;
+        if (params.focusArea) {
+            filtered = organizations.filter(org =>
+                org.focusAreas.some(area =>
+                    area.toLowerCase() === params.focusArea?.toLowerCase()
+                )
+            );
+        }
 
-        // Map to search results with personalized alignment scores
+        // Calculate alignment scores with personalization
         const results: SearchResult[] = filtered.map((org) => ({
             ...org,
             alignmentScore: userInterests && userInterests.length > 0
@@ -342,27 +428,15 @@ export async function searchOrganizations(params: SearchParams, userInterests?: 
                 : calculateAlignmentScore(org, params),
         }));
 
-        // Sort results
-        switch (params.sortBy) {
-            case "alignment":
-                results.sort((a, b) => b.alignmentScore - a.alignmentScore);
-                break;
-            case "confidence":
-                results.sort((a, b) => b.confidence - a.confidence);
-                break;
-            case "name":
-                results.sort((a, b) => a.name.localeCompare(b.name));
-                break;
-            case "recency":
-            default:
-                // Keep original order
-                break;
+        // Re-sort by alignment if that's the sort option (since we calculated scores client-side)
+        if (params.sortBy === "alignment") {
+            results.sort((a, b) => b.alignmentScore - a.alignmentScore);
         }
 
         return {
             success: true,
             results,
-            total: results.length,
+            total: count || results.length,
             focusAreas: getAllFocusAreas(),
             regions: getAllRegions(),
         };
@@ -401,8 +475,8 @@ export async function submitOrganization(data: {
         // Get current user
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Generate a unique ID
-        const id = `org-${Date.now()}`;
+        // Generate a unique ID using crypto.randomUUID() to prevent collisions
+        const id = crypto.randomUUID();
 
         // Insert organization
         const { data: orgData, error: orgError } = await supabase
@@ -587,11 +661,22 @@ export async function updateOrganization(
 
         // Update focus areas if provided
         if (data.focusAreas && data.focusAreas.length > 0) {
+            // First, fetch existing focus areas for rollback if needed
+            const { data: existingFocusAreas } = await supabase
+                .from('organization_focus_areas')
+                .select('focus_area, is_primary')
+                .eq('organization_id', id);
+
             // Delete existing focus areas
-            await supabase
+            const { error: deleteError } = await supabase
                 .from('organization_focus_areas')
                 .delete()
                 .eq('organization_id', id);
+
+            if (deleteError) {
+                console.error('Failed to delete existing focus areas:', deleteError);
+                return { success: false, error: 'Failed to update focus areas' };
+            }
 
             // Insert new focus areas
             const focusAreaInserts = data.focusAreas.map((area, index) => ({
@@ -600,7 +685,26 @@ export async function updateOrganization(
                 is_primary: index === 0,
             }));
 
-            await supabase.from('organization_focus_areas').insert(focusAreaInserts);
+            const { error: insertError } = await supabase
+                .from('organization_focus_areas')
+                .insert(focusAreaInserts);
+
+            if (insertError) {
+                console.error('Failed to insert new focus areas:', insertError);
+
+                // Attempt rollback by reinserting old focus areas
+                if (existingFocusAreas && existingFocusAreas.length > 0) {
+                    await supabase
+                        .from('organization_focus_areas')
+                        .insert(existingFocusAreas.map(fa => ({
+                            organization_id: id,
+                            focus_area: fa.focus_area,
+                            is_primary: fa.is_primary,
+                        })));
+                }
+
+                return { success: false, error: 'Failed to update focus areas' };
+            }
         }
 
         const organization: SearchResult = {

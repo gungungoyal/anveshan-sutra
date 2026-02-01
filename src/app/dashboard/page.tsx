@@ -219,6 +219,7 @@ export default function DashboardPage() {
 
     const [organizations, setOrganizations] = useState<DashboardOrg[]>([]);
     const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     // Redirect to auth if not authenticated
     useEffect(() => {
@@ -228,25 +229,30 @@ export default function DashboardPage() {
     }, [authLoading, isAuthenticated, router]);
 
     // Fetch organizations when authenticated
-    useEffect(() => {
-        async function fetchOrgs() {
-            if (!isAuthenticated) return;
+    const fetchOrgs = async () => {
+        if (!isAuthenticated) return;
 
-            try {
-                setIsLoadingOrgs(true);
-                const result = await searchOrganizations({});
+        try {
+            setIsLoadingOrgs(true);
+            setError(null);
+            const result = await searchOrganizations({});
 
-                if (result.success && result.results) {
-                    const mapped = result.results.map(mapToDisplayOrg);
-                    setOrganizations(mapped);
-                }
-            } catch (error) {
-                console.error("Failed to fetch organizations:", error);
-            } finally {
-                setIsLoadingOrgs(false);
+            if (result.success && result.results) {
+                const mapped = result.results.map(mapToDisplayOrg);
+                setOrganizations(mapped);
+            } else {
+                // Handle API error
+                setError('Unable to load organizations. Please try again.');
             }
+        } catch (error) {
+            console.error("Failed to fetch organizations:", error);
+            setError('An unexpected error occurred. Please check your connection and try again.');
+        } finally {
+            setIsLoadingOrgs(false);
         }
+    };
 
+    useEffect(() => {
         if (isAuthenticated) {
             fetchOrgs();
         }
@@ -299,13 +305,34 @@ export default function DashboardPage() {
                     </p>
                 </div>
 
+                {/* Error state */}
+                {error && !isLoadingOrgs && (
+                    <div className="mb-6 p-4 rounded-lg border border-destructive/50 bg-destructive/10">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                            <div className="flex-1">
+                                <p className="font-medium text-destructive mb-1">Failed to load organizations</p>
+                                <p className="text-sm text-destructive/80">{error}</p>
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={fetchOrgs}
+                                className="flex-shrink-0"
+                            >
+                                Try Again
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Loading state for organizations */}
                 {isLoadingOrgs ? (
                     <div className="flex items-center justify-center py-16">
                         <Loader2 className="w-6 h-6 animate-spin text-primary" />
                         <span className="ml-3 text-muted-foreground">Loading organizations...</span>
                     </div>
-                ) : (
+                ) : !error && (
                     <>
                         {/* Dashboard Grid */}
                         <div className="grid gap-6 lg:grid-cols-2">
