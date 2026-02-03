@@ -384,7 +384,7 @@ export default function DashboardPage() {
                                         icon={Star}
                                         title="Nothing saved yet"
                                         subtitle="Save organizations you want to revisit"
-                                        action={{ label: "Find Organizations", href: "/explore" }}
+                                        action={{ label: "Your Saved Organizations", href: "/explore" }}
                                     />
                                 )}
                             </Section>

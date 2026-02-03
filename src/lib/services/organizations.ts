@@ -10,28 +10,36 @@ import { mockOrganizations, getAllFocusAreas, getAllRegions } from '@/data/organ
 /**
  * Calculate base alignment score based on organization attributes
  * This is the consistent score shown across all pages
+ * 
+ * Primary factor is the organization's confidence value (data quality/reliability)
+ * with smaller bonuses for other attributes to create meaningful variation.
  */
 function calculateBaseAlignmentScore(org: Organization): number {
-    let score = 50; // Base score
+    // Use confidence as the primary base (60% weight)
+    const confidence = org.confidence || 75;
+    let score = Math.round(confidence * 0.6);
 
-    // Focus area breadth bonus (more focus areas = more alignment potential)
+    // Focus area breadth bonus (max +12)
     if (org.focusAreas && org.focusAreas.length > 0) {
-        score += Math.min(20, org.focusAreas.length * 5);
+        score += Math.min(12, org.focusAreas.length * 4);
     }
 
-    // Region presence bonus
+    // Region presence bonus (+8)
     if (org.region) {
-        score += 10;
+        score += 8;
     }
 
-    // Verification boost
+    // Verification boost (+10 for verified, +5 for pending)
     if (org.verificationStatus === "verified") {
         score += 10;
+    } else if (org.verificationStatus === "pending") {
+        score += 5;
     }
 
-    // Confidence factor bonus (scaled)
-    const confidenceFactor = (org.confidence || 75) / 100;
-    score += Math.round(10 * confidenceFactor);
+    // Small random-ish variance based on org ID hash to prevent identical scores
+    // This creates 0-6 points of deterministic variation
+    const idHash = org.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    score += idHash % 7;
 
     return Math.min(100, Math.max(0, Math.round(score)));
 }

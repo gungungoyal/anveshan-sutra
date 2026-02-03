@@ -4,10 +4,12 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserStore } from "@/lib/stores/userStore";
+import { useUserStore, MAX_DAILY_ORG_VIEWS } from "@/lib/stores/userStore";
 import { useAccessCheck } from "@/components/RequireAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { UpgradeRequired } from "@/components/UpgradeRequired";
+import { trackUpgradePromptShown, trackUpgradeClicked } from "@/lib/analytics/paymentAnalytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, ExternalLink, CheckCircle2, Search as SearchIcon, HelpCircle, AlertTriangle, X, Loader2 } from "lucide-react";
+import { Heart, ExternalLink, CheckCircle2, Search as SearchIcon, HelpCircle, AlertTriangle, X, Loader2, Eye, Sparkles } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { searchOrganizations } from "@/lib/services/organizations";
 import { SearchResult } from "@shared/api";
@@ -96,9 +98,16 @@ function ExploreContent() {
     const router = useRouter();
     const { isAuthenticated, isLoading: authLoading, user } = useAuth();
     const { role, hasOrganization, interestAreas } = useUserStore();
+    const incrementViewCount = useUserStore((s) => s.incrementViewCount);
+    const hasReachedViewLimit = useUserStore((s) => s.hasReachedViewLimit());
+    const isNGO = useUserStore((s) => s.isNGO());
+    const dailyOrgViewCount = useUserStore((s) => s.dailyOrgViewCount);
     const { needsSetup, showSetupPrompt } = useAccessCheck();
     const [shortlist, setShortlist] = useState<Set<string>>(new Set());
     const [savingOrgs, setSavingOrgs] = useState<Set<string>>(new Set()); // Track in-progress saves
+
+    // Upgrade modal state
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     // Incubator setup prompt - dismissible (defer localStorage to useEffect)
     const [dismissedSetupPrompt, setDismissedSetupPrompt] = useState(false);
@@ -279,6 +288,33 @@ function ExploreContent() {
         setSelectedFocusArea("");
         setSelectedRegion("");
         setSortBy("alignment");
+    };
+
+    // ==========================================================================
+    // PAYMENT TRIGGER: View Details click with limit check
+    // ==========================================================================
+    const handleViewDetails = (orgId: string) => {
+        // NGO users bypass all limits
+        if (isNGO) {
+            router.push(`/org/${orgId}`);
+            return;
+        }
+
+        // Check if limit reached BEFORE navigating
+        if (hasReachedViewLimit) {
+            trackUpgradePromptShown('explore_limit');
+            setShowUpgradeModal(true);
+            return;
+        }
+
+        // Increment view count and navigate
+        incrementViewCount();
+        router.push(`/org/${orgId}`);
+    };
+
+    const handleUpgradeClick = () => {
+        trackUpgradeClicked('explore_limit');
+        toast.info("Upgrade flow coming soon!");
     };
 
     // Get role context from URL for personalized messaging
@@ -565,7 +601,30 @@ function ExploreContent() {
                             </div>
                         ) : (
                             <>
+                                {/* View Counter for non-NGO users */}
+                                {!isNGO && (
+                                    <div className="mb-4 p-3 rounded-lg border border-border bg-card">
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <Eye className="w-4 h-4 text-primary" />
+                                            <span className="font-medium text-foreground">
+                                                {MAX_DAILY_ORG_VIEWS - dailyOrgViewCount} views remaining today
+                                            </span>
+                                            {dailyOrgViewCount >= MAX_DAILY_ORG_VIEWS - 2 && dailyOrgViewCount < MAX_DAILY_ORG_VIEWS && (
+                                                <Badge variant="outline" className="ml-auto text-xs">
+                                                    Almost at limit
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        {dailyOrgViewCount > 0 && (
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                You've viewed {dailyOrgViewCount} organization{dailyOrgViewCount !== 1 ? 's' : ''} today
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div className="mb-4">
+
                                     <p className="text-sm text-muted-foreground">
                                         Showing {results.length} relevant organization{results.length !== 1 ? "s" : ""}
                                     </p>
@@ -633,6 +692,13 @@ function ExploreContent() {
                                                                     {org.verificationStatus}
                                                                 </Badge>
                                                             )}
+                                                            {/* Premium badge for non-NGO users */}
+                                                            {!isNGO && (
+                                                                <Badge variant="outline" className="gap-1 border-primary/50 text-primary">
+                                                                    <Sparkles className="w-3 h-3" />
+                                                                    Premium
+                                                                </Badge>
+                                                            )}
                                                         </div>
 
                                                         <p className="text-sm text-muted-foreground mb-3">
@@ -678,15 +744,14 @@ function ExploreContent() {
                                                             );
                                                         })()}
 
-                                                        {/* Actions */}
                                                         <div className="flex gap-2 flex-col">
                                                             <Button
                                                                 variant="default"
                                                                 size="sm"
                                                                 className="w-full"
-                                                                asChild
+                                                                onClick={() => handleViewDetails(org.id)}
                                                             >
-                                                                <Link href={`/org/${org.id}`}>View Details</Link>
+                                                                View Details
                                                             </Button>
                                                             {org.description && (
                                                                 <p className="text-sm text-muted-foreground mb-3">
@@ -739,7 +804,16 @@ function ExploreContent() {
             </div>
 
             <Footer />
-        </div>
+
+            {/* Upgrade Required Modal - View Limit */}
+            <UpgradeRequired
+                open={showUpgradeModal}
+                onOpenChange={setShowUpgradeModal}
+                title="You've reached today's analysis limit"
+                description={`Free accounts can view ${MAX_DAILY_ORG_VIEWS} organization analyses per day. Upgrade to continue exploring.`}
+                onUpgradeClick={handleUpgradeClick}
+            />
+        </div >
     );
 }
 
