@@ -9,7 +9,10 @@ import MatchExplanation from "@/components/MatchExplanation";
 import AlignmentScoreBreakdown from "@/components/AlignmentScoreBreakdown";
 import AuthPrompt from "@/components/AuthPrompt";
 import { CollaborationOutcomeFeedback, CommunitySignals } from "@/components/feedback";
+import PaymentModal from "@/components/PaymentModal";
+import LockedContentOverlay from "@/components/LockedContentOverlay";
 import { useAuth } from "@/hooks/useAuth";
+import { usePurchaseCheck } from "@/hooks/usePurchase";
 import { SearchResult } from "@shared/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,6 +49,10 @@ export default function OrgProfileDetail() {
     const [feedbackTrigger, setFeedbackTrigger] = useState<"view_profile" | "download_ppt" | "shortlist">("view_profile");
     const [privateNotes, setPrivateNotes] = useState("");
     const [notesLoading, setNotesLoading] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+    // Check if user has purchased this organization
+    const { isPurchased, isLoading: isPurchaseLoading } = usePurchaseCheck(id || "");
 
     useEffect(() => {
         if (!id) return;
@@ -107,7 +114,7 @@ export default function OrgProfileDetail() {
         }
     };
 
-    if (loading) {
+    if (loading || isPurchaseLoading) {
         return (
             <div className="min-h-screen bg-background">
                 <Header />
@@ -277,8 +284,8 @@ export default function OrgProfileDetail() {
                     </div>
                 </div>
 
-                {/* AUTH GATE: Full Profile Details */}
-                {isAuthenticated ? (
+                {/* PURCHASE GATE: Full Profile Details */}
+                {isAuthenticated && isPurchased ? (
                     <div className="grid md:grid-cols-3 gap-8 mb-8">
                         {/* Main Content */}
                         <div className="md:col-span-2 space-y-6">
@@ -497,6 +504,15 @@ export default function OrgProfileDetail() {
                             <CommunitySignals organizationId={org.id} />
                         </div>
                     </div>
+                ) : isAuthenticated && !isPurchased ? (
+                    /* LOCKED CONTENT: For authenticated users who haven't purchased */
+                    <div className="mt-8">
+                        <LockedContentOverlay
+                            organizationName={org.name}
+                            price={99}
+                            onUnlock={() => setShowPaymentModal(true)}
+                        />
+                    </div>
                 ) : (
                     /* AUTH PROMPT: For unauthenticated users */
                     <div className="mt-8">
@@ -518,6 +534,19 @@ export default function OrgProfileDetail() {
                     organizationId={org.id}
                     organizationName={org.name}
                     triggerAction={feedbackTrigger}
+                />
+            )}
+
+            {/* Payment Modal */}
+            {org && (
+                <PaymentModal
+                    open={showPaymentModal}
+                    onOpenChange={setShowPaymentModal}
+                    organization={org}
+                    onSuccess={() => {
+                        // Reload page to show unlocked content
+                        window.location.reload();
+                    }}
                 />
             )}
         </div>

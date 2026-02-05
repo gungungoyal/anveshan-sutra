@@ -19,13 +19,14 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, ExternalLink, CheckCircle2, Search as SearchIcon, HelpCircle, AlertTriangle, X, Loader2 } from "lucide-react";
+import { Heart, ExternalLink, CheckCircle2, Search as SearchIcon, HelpCircle, AlertTriangle, X, Loader2, Lock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { searchOrganizations } from "@/lib/services/organizations";
 import { SearchResult } from "@shared/api";
 import { useQuery } from "@tanstack/react-query";
 import AlignmentScoreBreakdown from "@/components/AlignmentScoreBreakdown";
 import { toast } from "sonner";
+import { usePurchasedOrgs } from "@/hooks/usePurchase";
 
 // Use SearchResult from shared API
 type Organization = SearchResult;
@@ -99,6 +100,9 @@ function ExploreContent() {
     const { needsSetup, showSetupPrompt } = useAccessCheck();
     const [shortlist, setShortlist] = useState<Set<string>>(new Set());
     const [savingOrgs, setSavingOrgs] = useState<Set<string>>(new Set()); // Track in-progress saves
+
+    // Track purchased organizations
+    const { purchasedIds, isLoading: purchasedLoading } = usePurchasedOrgs();
 
     // Incubator setup prompt - dismissible (defer localStorage to useEffect)
     const [dismissedSetupPrompt, setDismissedSetupPrompt] = useState(false);
@@ -622,6 +626,12 @@ function ExploreContent() {
                                                                     ✨ Best Match
                                                                 </Badge>
                                                             )}
+                                                            {!purchasedIds.has(org.id) && (
+                                                                <Badge variant="secondary" className="bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-100 border-amber-200 dark:border-amber-800">
+                                                                    <Lock className="w-3 h-3 mr-1" />
+                                                                    Locked
+                                                                </Badge>
+                                                            )}
                                                             {org.verificationStatus && (
                                                                 <Badge
                                                                     variant={
@@ -686,7 +696,10 @@ function ExploreContent() {
                                                                 className="w-full"
                                                                 asChild
                                                             >
-                                                                <Link href={`/org/${org.id}`}>View Details</Link>
+                                                                <Link href={`/org/${org.id}`} className="flex items-center gap-2">
+                                                                    View Details
+                                                                    {!purchasedIds.has(org.id) && <Lock className="w-3 h-3" />}
+                                                                </Link>
                                                             </Button>
                                                             {org.description && (
                                                                 <p className="text-sm text-muted-foreground mb-3">
