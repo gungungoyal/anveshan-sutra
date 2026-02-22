@@ -34,6 +34,7 @@ function AuthPageContent() {
     const [showPassword, setShowPassword] = useState(false);
     const [otp, setOtp] = useState("");
     const [newPassword, setNewPassword] = useState("");
+    const [role, setRole] = useState<'csr' | 'ngo' | 'incubator' | null>(null);
 
     const [otpExpiresAt, setOtpExpiresAt] = useState<Date | null>(null);
     const [resendCooldown, setResendCooldown] = useState(0);
@@ -41,8 +42,12 @@ function AuthPageContent() {
 
     const returnTo = searchParams?.get("returnTo") || "/onboarding";
 
-    // NOTE: Client-side redirect removed. Middleware handles auth gating now.
-    // After successful login/signup, we redirect via router.push in the handlers.
+    // 🔒 Guard: redirect already-authenticated users away from the auth page
+    useEffect(() => {
+        if (!authLoading && isAuthenticated) {
+            router.replace(returnTo !== "/onboarding" ? returnTo : "/dashboard");
+        }
+    }, [isAuthenticated, authLoading, router, returnTo]);
 
     useEffect(() => {
         if (resendCooldown > 0) {
@@ -55,7 +60,7 @@ function AuthPageContent() {
         setIsLoading(true);
         setErrorMessage("");
         try {
-            const purpose = mode === "forgot_password" ? "password_reset" : "signup";
+            const purpose = mode === "forgot_password" ? "password_reset" : mode === "login" ? "login" : "signup";
             const result = await sendOtp(email, purpose);
             if (result.success) {
                 setStep("otp");
@@ -83,7 +88,7 @@ function AuthPageContent() {
             const result = await verifyOtp(email, otp);
             if (result.success) {
                 if (mode === "signup") {
-                    const signupResult = await signUpWithPassword(email, password, name);
+                    const signupResult = await signUpWithPassword(email, password, name, role || 'ngo');
                     if (signupResult.error) {
                         // Check if user already exists - switch to login mode with a helpful message
                         if (signupResult.errorCode === 'USER_EXISTS') {
@@ -102,6 +107,16 @@ function AuthPageContent() {
                     }
                 } else if (mode === "forgot_password") {
                     setStep("reset_password");
+                } else if (mode === "login") {
+                    // OTP verified for login — proceed to sign in with password
+                    const loginResult = await signInWithPassword(email, password);
+                    if (loginResult.error) {
+                        setErrorMessage(loginResult.error);
+                    } else {
+                        await refreshUser();
+                        const hasCompleted = loginResult.user?.profile_complete === true;
+                        router.push(hasCompleted ? "/dashboard" : "/onboarding");
+                    }
                 }
             } else {
                 setErrorMessage(result.error || "Invalid OTP");
@@ -115,13 +130,15 @@ function AuthPageContent() {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('[AuthPage] handleLogin called');
+        console.log('[AuthPage] handleLogin called with email:', email);
         setIsLoading(true);
         setErrorMessage("");
         try {
             console.log('[AuthPage] Calling signInWithPassword...');
+            const startTime = Date.now();
             const result = await signInWithPassword(email, password);
-            console.log('[AuthPage] signInWithPassword returned:', result.error ? 'error' : 'success');
+            console.log('[AuthPage] signInWithPassword took:', Date.now() - startTime, 'ms');
+            console.log('[AuthPage] signInWithPassword returned:', result.error ? 'error: ' + result.error : 'success');
             if (result.error) {
                 setErrorMessage(result.error);
             } else {
@@ -142,8 +159,10 @@ function AuthPageContent() {
                 }
             }
         } catch (err: any) {
+            console.error('[AuthPage] handleLogin catch error:', err);
             setErrorMessage(err.message || "Login failed");
         } finally {
+            console.log('[AuthPage] handleLogin finally - setting isLoading to false');
             setIsLoading(false);
         }
     };

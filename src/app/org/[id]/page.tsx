@@ -12,12 +12,14 @@ import { CollaborationOutcomeFeedback, CommunitySignals } from "@/components/fee
 import PaymentModal from "@/components/PaymentModal";
 import LockedContentOverlay from "@/components/LockedContentOverlay";
 import { useAuth } from "@/hooks/useAuth";
+import { useCsrProjectSetupGuard } from "@/hooks/useCsrProjectSetupGuard";
 import { usePurchaseCheck } from "@/hooks/usePurchase";
 import { SearchResult } from "@shared/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { getFitScoreDisplay } from "@/lib/utils/fitScore";
 import {
     Heart,
     ExternalLink,
@@ -40,7 +42,13 @@ export default function OrgProfileDetail() {
     const params = useParams();
     const id = params?.id as string;
     const router = useRouter();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+    const isCSR = user?.role === 'csr';
+
+    // ===== CSR PROJECT SETUP GUARD =====
+    // Redirect CSR users to /project/setup if they haven't defined project expectations
+    const { isCheckingSetup, needsProjectSetup } = useCsrProjectSetupGuard();
+
     const [org, setOrg] = useState<SearchResult | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -114,7 +122,21 @@ export default function OrgProfileDetail() {
         }
     };
 
-    if (loading || isPurchaseLoading) {
+    // Show loading while checking auth or CSR project setup
+    if (loading || isPurchaseLoading || authLoading || isCheckingSetup) {
+        return (
+            <div className="min-h-screen bg-background">
+                <Header />
+                <div className="flex justify-center items-center h-screen">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
+
+    // Block CSR users who haven't completed project setup (hook handles redirect)
+    if (needsProjectSetup) {
         return (
             <div className="min-h-screen bg-background">
                 <Header />
@@ -214,7 +236,13 @@ export default function OrgProfileDetail() {
                                 <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
                                     Alignment
                                 </p>
-                                <span className="text-3xl font-bold text-primary">{org.alignmentScore}%</span>
+                                {isCSR ? (
+                                    <span className={`text-3xl font-bold ${getFitScoreDisplay(org.alignmentScore).color}`}>
+                                        {getFitScoreDisplay(org.alignmentScore).label}
+                                    </span>
+                                ) : (
+                                    <span className="text-3xl font-bold text-primary">{org.alignmentScore}%</span>
+                                )}
                                 <p className="text-xs text-muted-foreground mt-1">Sign in for details</p>
                             </div>
                         )}

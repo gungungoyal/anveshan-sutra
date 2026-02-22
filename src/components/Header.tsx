@@ -53,10 +53,32 @@ export default function Header() {
   }, []);
 
   const handleSignOut = async () => {
-    await signOut();
-    useUserStore.getState().resetOnboarding();
-    setUserMenuOpen(false);
-    router.push("/");
+    try {
+      // Sign out from Supabase
+      await signOut();
+
+      // Clear user store state
+      useUserStore.getState().resetOnboarding();
+
+      // Close dropdown
+      setUserMenuOpen(false);
+
+      // Clear any CSR project setup data
+      if (user?.id) {
+        localStorage.removeItem(`csr_project_setup_${user.id}`);
+      }
+
+      // Redirect to home
+      router.push("/");
+
+      // Force page reload to clear all auth state
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      // Still close menu and redirect even if signout had issues
+      setUserMenuOpen(false);
+      window.location.href = "/";
+    }
   };
 
   const getInitials = (name: string) => {
@@ -111,8 +133,8 @@ export default function Header() {
                   <Link
                     href="/dashboard"
                     className={`text-sm font-medium transition-colors ${isActiveLink('/dashboard')
-                        ? 'text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
+                      ? 'text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                       }`}
                   >
                     Dashboard
@@ -122,8 +144,8 @@ export default function Header() {
                   <Link
                     href="/explore"
                     className={`text-sm font-medium transition-colors ${isActiveLink('/explore')
-                        ? 'text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
+                      ? 'text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                       }`}
                   >
                     Explore
@@ -133,8 +155,8 @@ export default function Header() {
                   <Link
                     href="/shortlist"
                     className={`text-sm font-medium transition-colors ${isActiveLink('/shortlist')
-                        ? 'text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
+                      ? 'text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                       }`}
                   >
                     Saved

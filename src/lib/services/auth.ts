@@ -35,7 +35,7 @@ export async function sendOtp(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, purpose }),
-        });
+        }, 30000); // 30 second timeout for OTP sending
 
         const data = await response.json();
 
@@ -62,7 +62,7 @@ export async function verifyOtp(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, otp }),
-        });
+        }, 30000); // 30 second timeout for OTP verification
 
         const data = await response.json();
 
@@ -84,7 +84,8 @@ export async function verifyOtp(
 export async function signUpWithPassword(
     email: string,
     password: string,
-    name: string
+    name: string,
+    role: 'csr' | 'ngo' | 'incubator'
 ): Promise<{ user: AuthUser | null; error: string | null; errorCode?: string }> {
     try {
         if (!supabase) {
@@ -164,7 +165,7 @@ export async function signUpWithPassword(
                 id: data.user.id,
                 email: data.user.email,
                 name,
-                role: 'ngo', // Default role, will be updated during onboarding
+                role, // User-selected role during signup
                 email_verified: true, // OTP was verified before signup
                 profile_complete: false,
                 verified: false,
@@ -179,7 +180,7 @@ export async function signUpWithPassword(
             id: data.user.id,
             email: data.user.email || '',
             name,
-            role: 'ngo',
+            role,
             profile_complete: false,
             verified: false,
             created_at: new Date().toISOString(),
@@ -205,13 +206,33 @@ export async function signInWithPassword(
             return { user: null, error: 'Supabase not configured' };
         }
 
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+        console.log('[Auth] Starting login for:', email);
+        const startTime = Date.now();
+
+        // Add timeout to prevent infinite loading
+        const { withTimeout } = await import('../utils/async');
+
+        const { data, error } = await withTimeout(
+            supabase.auth.signInWithPassword({
+                email,
+                password,
+            }),
+            60000, // 60 second timeout (increased from 30s)
+            'Login request timed out. Please check your connection and try again.'
+        );
+
+        const loginDuration = Date.now() - startTime;
+        console.log(`[Auth] Login attempt took ${loginDuration}ms`);
 
         if (error) {
-            console.error('Signin error:', error);
+            console.error('[Auth] Signin error:', error);
+            // Provide more helpful error messages
+            if (error.message.includes('Invalid login credentials')) {
+                return { user: null, error: 'Invalid email or password. Please check your credentials.' };
+            }
+            if (error.message.includes('Email not confirmed')) {
+                return { user: null, error: 'Please verify your email before signing in.' };
+            }
             return { user: null, error: error.message };
         }
 
@@ -219,11 +240,25 @@ export async function signInWithPassword(
             return { user: null, error: 'Invalid credentials' };
         }
 
-        // Get the full user profile
-        const { user } = await getCurrentUser();
+        console.log('[Auth] Login successful, fetching profile...');
+        // Get the full user profile with timeout
+        const { user } = await withTimeout(
+            getCurrentUser(),
+            20000, // 20 second timeout for profile fetch
+            'Failed to load profile. Please try again.'
+        );
+
+        console.log('[Auth] Profile loaded successfully');
         return { user, error: null };
     } catch (error: any) {
-        console.error('signInWithPassword error:', error);
+        console.error('[Auth] signInWithPassword error:', error);
+        // Check if it's a timeout error
+        if (error.message && error.message.includes('timed out')) {
+            return {
+                user: null,
+                error: 'Connection is taking longer than expected. Please check your internet connection or try again in a few moments.'
+            };
+        }
         return { user: null, error: error.message || 'Failed to sign in' };
     }
 }

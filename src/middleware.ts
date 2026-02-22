@@ -15,14 +15,22 @@ const PROTECTED_ROUTES = ['/ngo-dashboard'];
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
+    // Check auth cookie once (lightweight - no network call)
+    const hasSession = checkAuthCookie(request);
+
+    // 🔒 Inverse guard: block authenticated users from visiting the auth page
+    if (pathname.startsWith('/auth')) {
+        if (hasSession) {
+            return NextResponse.redirect(new URL('/dashboard', request.url));
+        }
+        return NextResponse.next();
+    }
+
     // Check if route is protected
     const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
     if (!isProtected) {
         return NextResponse.next();
     }
-
-    // Check for auth session in cookies (lightweight - no network call)
-    const hasSession = checkAuthCookie(request);
 
     // Not authenticated -> redirect to login
     if (!hasSession) {
@@ -88,5 +96,6 @@ function checkAuthCookie(request: NextRequest): boolean {
 export const config = {
     matcher: [
         '/ngo-dashboard/:path*',
+        '/auth',
     ],
 };

@@ -19,6 +19,8 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { searchOrganizations } from "@/lib/services/organizations";
 import { SearchResult } from "@shared/api";
+import { getFitScoreDisplay, getScoreColor } from "@/lib/utils/fitScore";
+import { getProjectExpectation } from "@/lib/services/projectExpectations";
 
 // ============================================================================
 // TYPES
@@ -39,11 +41,7 @@ interface DashboardOrg {
 // HELPER FUNCTIONS
 // ============================================================================
 
-function getScoreColor(score: number): string {
-    if (score >= 70) return "text-green-600 bg-green-100 dark:bg-green-900/30";
-    if (score >= 50) return "text-orange-600 bg-orange-100 dark:bg-orange-900/30";
-    return "text-red-600 bg-red-100 dark:bg-red-900/30";
-}
+
 
 function generateMatchReason(org: SearchResult): string {
     // Generate a contextual reason based on org attributes
@@ -71,6 +69,30 @@ function mapToDisplayOrg(org: SearchResult): DashboardOrg {
 // ============================================================================
 // COMPONENTS
 // ============================================================================
+
+/**
+ * Fit Score Badge - Shows label for CSR, percentage for others
+ */
+function FitScoreBadge({ score, isSecondary }: { score: number; isSecondary?: boolean }) {
+    const { user } = useAuth();
+    const isCSR = user?.role === 'csr';
+
+    if (isCSR) {
+        const fitDisplay = getFitScoreDisplay(score);
+        return (
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${isSecondary ? "opacity-70 " : ""}${fitDisplay.color} ${fitDisplay.bgColor}`}>
+                {fitDisplay.label}
+            </span>
+        );
+    }
+
+    // Non-CSR: show percentage
+    return (
+        <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${isSecondary ? "opacity-70 " + getScoreColor(score) : getScoreColor(score)}`}>
+            {score}%
+        </span>
+    );
+}
 
 /**
  * Organization Card - Links to /org/[id]
@@ -130,12 +152,7 @@ function OrgCard({ org, variant = "primary" }: { org: DashboardOrg; variant?: "p
                 </div>
                 <div className="flex items-center gap-2.5 flex-shrink-0 ml-2">
                     {/* Score badge - slightly smaller */}
-                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${isSecondary
-                        ? "opacity-70 " + getScoreColor(org.fitScore)
-                        : getScoreColor(org.fitScore)
-                        }`}>
-                        {org.fitScore}%
-                    </span>
+                    <FitScoreBadge score={org.fitScore} isSecondary={isSecondary} />
                     <ArrowRight className={`w-3.5 h-3.5 transition-colors ${isSecondary
                         ? "text-muted-foreground/50 group-hover:text-muted-foreground"
                         : "text-muted-foreground group-hover:text-primary"
@@ -220,6 +237,10 @@ export default function DashboardPage() {
     const [organizations, setOrganizations] = useState<DashboardOrg[]>([]);
     const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [hasProjectExpectations, setHasProjectExpectations] = useState<boolean | null>(null);
+
+    const isCSR = user?.role === 'csr';
+
 
     // Redirect to auth if not authenticated
     useEffect(() => {
@@ -228,9 +249,34 @@ export default function DashboardPage() {
         }
     }, [authLoading, isAuthenticated, router]);
 
-    // Fetch organizations when authenticated
+    // 🚨 EARLY FETCH: Check project expectations for CSR users
+    // This MUST run before any organization data fetching
+    useEffect(() => {
+        const checkProjectExpectations = async () => {
+            if (!isAuthenticated || !user) return;
+
+            if (isCSR) {
+                try {
+                    const expectation = await getProjectExpectation(user.id);
+                    setHasProjectExpectations(!!expectation);
+                } catch (error) {
+                    console.error('[Dashboard] Error checking project expectations:', error);
+                    // On error, assume no expectations to be safe
+                    setHasProjectExpectations(false);
+                }
+            } else {
+                // Non-CSR users bypass this check
+                setHasProjectExpectations(true);
+            }
+        };
+
+        checkProjectExpectations();
+    }, [isAuthenticated, isCSR, user]);
+
+    // Fetch organizations - ONLY runs if project expectations check passes
     const fetchOrgs = async () => {
-        if (!isAuthenticated) return;
+        // Do NOT fetch if CSR user without expectations
+        if (!isAuthenticated || (isCSR && hasProjectExpectations === false)) return;
 
         try {
             setIsLoadingOrgs(true);
@@ -253,16 +299,64 @@ export default function DashboardPage() {
     };
 
     useEffect(() => {
-        if (isAuthenticated) {
+        // Only fetch orgs if:
+        // - User is authenticated
+        // - For CSR: has project expectations
+        // - For non-CSR: hasProjectExpectations is true (set automatically)
+        if (isAuthenticated && hasProjectExpectations) {
             fetchOrgs();
+        } else if (isAuthenticated && hasProjectExpectations === false) {
+            setIsLoadingOrgs(false); // Stop loading, we're showing the gate
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, hasProjectExpectations]);
 
     // Loading state
     if (authLoading || !isAuthenticated) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    // Still checking project expectations (must be BEFORE the gate check)
+    if (isCSR && hasProjectExpectations === null) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    // 🚨 CSR Project Expectations Gate - EARLY RETURN
+    // If user.role === "csr" AND project expectations do NOT exist:
+    // - Do NOT render any dashboard sections
+    // - Immediately return the blocked state UI
+    // - Do not load or map organization data at all
+    if (isCSR && hasProjectExpectations === false) {
+        return (
+            <div className="min-h-screen bg-background flex flex-col">
+                <Header />
+                <main className="flex-1 container mx-auto px-4 py-8 flex items-center justify-center">
+                    <div className="text-center max-w-md">
+                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                            <Target className="w-8 h-8 text-primary" />
+                        </div>
+                        <h1 className="text-2xl font-bold text-foreground mb-3">
+                            Start with your project expectations
+                        </h1>
+                        <p className="text-muted-foreground mb-8">
+                            We need this to evaluate NGOs realistically.
+                        </p>
+                        <Link href="/project/setup">
+                            <Button size="lg" className="gap-2">
+                                Define Project Expectations
+                                <ArrowRight className="w-4 h-4" />
+                            </Button>
+                        </Link>
+                    </div>
+                </main>
+                <Footer />
             </div>
         );
     }

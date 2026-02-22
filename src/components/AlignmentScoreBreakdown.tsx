@@ -1,4 +1,6 @@
 import { SearchResult } from "@shared/api";
+import { useAuth } from "@/hooks/useAuth";
+import { getFitScoreDisplay } from "@/lib/utils/fitScore";
 
 interface AlignmentScoreBreakdownProps {
     organization: SearchResult;
@@ -94,6 +96,8 @@ export default function AlignmentScoreBreakdown({
     organization,
     compact = false,
 }: AlignmentScoreBreakdownProps) {
+    const { user } = useAuth();
+    const isCSR = user?.role === 'csr';
     const score = organization.alignmentScore || 0;
     const breakdown = calculateBreakdown(organization);
     const strength = getStrengthLabel(score);
@@ -108,12 +112,22 @@ export default function AlignmentScoreBreakdown({
             <div className={`${strength.bgColor} rounded-lg p-4 min-w-[180px]`}>
                 {/* Score and Label */}
                 <div className="text-center mb-3">
-                    <div className={`text-3xl font-bold mb-1 ${strength.color}`}>
-                        {score}
-                    </div>
-                    <div className={`text-sm font-medium ${strength.color}`}>
-                        {strength.label}
-                    </div>
+                    {isCSR ? (
+                        <>
+                            <div className={`text-2xl font-bold mb-1 ${getFitScoreDisplay(score).color}`}>
+                                {getFitScoreDisplay(score).label}
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className={`text-3xl font-bold mb-1 ${strength.color}`}>
+                                {score}
+                            </div>
+                            <div className={`text-sm font-medium ${strength.color}`}>
+                                {strength.label}
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Segmented Progress Bar */}
@@ -164,12 +178,22 @@ export default function AlignmentScoreBreakdown({
         <div className={`${strength.bgColor} rounded-xl p-6`}>
             {/* Score and Label */}
             <div className="text-center mb-4">
-                <div className={`text-5xl font-bold mb-2 ${strength.color}`}>
-                    {score}
-                </div>
-                <div className={`text-lg font-semibold ${strength.color}`}>
-                    {strength.label}
-                </div>
+                {isCSR ? (
+                    <>
+                        <div className={`text-4xl font-bold mb-2 ${getFitScoreDisplay(score).color}`}>
+                            {getFitScoreDisplay(score).label}
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className={`text-5xl font-bold mb-2 ${strength.color}`}>
+                            {score}
+                        </div>
+                        <div className={`text-lg font-semibold ${strength.color}`}>
+                            {strength.label}
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Explanation */}

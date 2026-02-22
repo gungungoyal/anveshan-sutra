@@ -3,8 +3,8 @@
  * Timeout wrappers to prevent stuck loading states
  */
 
-// Default timeout in milliseconds (10 seconds for better UX)
-const DEFAULT_TIMEOUT_MS = 10000;
+// Default timeout in milliseconds (30 seconds for auth operations)
+const DEFAULT_TIMEOUT_MS = 30000;
 
 /**
  * Wraps a fetch call with a timeout using AbortController.

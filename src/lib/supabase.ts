@@ -9,12 +9,25 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('For local development, create .env.local with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY')
 }
 
+// Create Supabase client with proper configuration to avoid timeouts
 export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true, // Important for OAuth callbacks
+      detectSessionInUrl: true,
+      flowType: 'pkce', // More secure auth flow
+      storage: typeof window !== 'undefined' ? window.localStorage : undefined, // Explicit storage only in browser
+      storageKey: 'drivya-auth-token', // Custom storage key
+    },
+    global: {
+      headers: {
+        'X-Client-Info': 'drivya-web@1.0.0',
+      },
+    },
+    db: {
+      schema: 'public',
     },
   })
   : null
+

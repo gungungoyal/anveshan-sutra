@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStore } from "@/lib/stores/userStore";
 import { useAccessCheck } from "@/components/RequireAuth";
+import { useCsrProjectSetupGuard } from "@/hooks/useCsrProjectSetupGuard";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -98,6 +99,11 @@ function ExploreContent() {
     const { isAuthenticated, isLoading: authLoading, user } = useAuth();
     const { role, hasOrganization, interestAreas } = useUserStore();
     const { needsSetup, showSetupPrompt } = useAccessCheck();
+
+    // ===== CSR PROJECT SETUP GUARD =====
+    // Redirect CSR users to /project/setup if they haven't defined project expectations
+    const { isCheckingSetup, needsProjectSetup } = useCsrProjectSetupGuard();
+
     const [shortlist, setShortlist] = useState<Set<string>>(new Set());
     const [savingOrgs, setSavingOrgs] = useState<Set<string>>(new Set()); // Track in-progress saves
 
@@ -189,8 +195,8 @@ function ExploreContent() {
         window.history.replaceState(null, "", `?${params.toString()}`);
     }, [query, selectedFocusArea, selectedRegion, sortBy, searchParams]);
 
-    // Show loading while checking auth
-    if (authLoading) {
+    // Show loading while checking auth or CSR project setup
+    if (authLoading || isCheckingSetup) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -200,6 +206,15 @@ function ExploreContent() {
 
     // Don't render content if not authenticated (will redirect)
     if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    // Block CSR users who haven't completed project setup (hook handles redirect)
+    if (needsProjectSetup) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
