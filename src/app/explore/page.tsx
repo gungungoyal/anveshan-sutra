@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, ExternalLink, CheckCircle2, Search as SearchIcon, HelpCircle, AlertTriangle, X, Loader2, Lock } from "lucide-react";
+import { Heart, ExternalLink, CheckCircle2, Search as SearchIcon, HelpCircle, AlertTriangle, X, Loader2, Lock, ShieldAlert } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { searchOrganizations } from "@/lib/services/organizations";
 import { SearchResult } from "@shared/api";
@@ -28,6 +28,8 @@ import { useQuery } from "@tanstack/react-query";
 import AlignmentScoreBreakdown from "@/components/AlignmentScoreBreakdown";
 import { toast } from "sonner";
 import { usePurchasedOrgs } from "@/hooks/usePurchase";
+import { computeMatch, MatchResult, getMatchLevelStyle } from "@/lib/utils/matchEngine";
+import { getProjectExpectation, ProjectExpectation } from "@/lib/services/projectExpectations";
 
 // Use SearchResult from shared API
 type Organization = SearchResult;
@@ -116,6 +118,10 @@ function ExploreContent() {
     // Guided intro state - persisted to localStorage
     const [showGuidedIntro, setShowGuidedIntro] = useState(true);
 
+    // ===== CSR MATCHING STATE =====
+    const [csrExpectation, setCsrExpectation] = useState<ProjectExpectation | null>(null);
+    const isCSR = user?.role === "csr";
+
     // Filter state
     const [query, setQuery] = useState(searchParams?.get("q") || "");
     const [selectedFocusArea, setSelectedFocusArea] = useState(
@@ -133,6 +139,14 @@ function ExploreContent() {
         setDismissedSetupPrompt(localStorage.getItem("dismissedIncubatorSetup") === "true");
         setShowGuidedIntro(localStorage.getItem("dismissedGuidedIntro") !== "true");
     }, []);
+
+    // ===== Load CSR Project Expectations =====
+    useEffect(() => {
+        if (!isAuthenticated || !user?.id || !isCSR) return;
+        getProjectExpectation(user.id)
+            .then((exp) => setCsrExpectation(exp))
+            .catch(() => setCsrExpectation(null));
+    }, [isAuthenticated, user?.id, isCSR]);
 
     // Load saved organizations on mount
     useEffect(() => {
@@ -175,12 +189,42 @@ function ExploreContent() {
         enabled: isAuthenticated, // Only fetch when authenticated
     });
 
-    // Extract data from React Query result
-    const results = searchData?.results || [];
+    // Extract filter metadata from React Query result
     const focusAreas = searchData?.focusAreas || [];
     const regions = searchData?.regions || [];
     const loading = isLoading;
     const error = queryError ? (queryError instanceof Error ? queryError.message : "Search failed") : null;
+
+    // ===== Compute match results for ALL visible orgs (CSR only) =====
+    // matchMap: orgId -> MatchResult  — must be AFTER searchData is declared
+    type Organisation = import("@shared/api").Organization;
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const matchMap = useMemo<Map<string, MatchResult>>(() => {
+        const map = new Map<string, MatchResult>();
+        if (!isCSR || !csrExpectation) return map;
+        const rawResults = searchData?.results ?? [];
+        for (const org of rawResults) {
+            try {
+                map.set(org.id, computeMatch(csrExpectation, org as Organisation));
+            } catch {
+                // skip orgs that error
+            }
+        }
+        return map;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isCSR, csrExpectation, searchData]);
+
+    // For CSR with expectations: sort results by fit score (highest first)
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const results = useMemo(() => {
+        const raw = searchData?.results ?? [];
+        if (!isCSR || matchMap.size === 0) return raw;
+        return [...raw].sort((a, b) => {
+            const aScore = matchMap.get(a.id)?.fitScore ?? 0;
+            const bScore = matchMap.get(b.id)?.fitScore ?? 0;
+            return bScore - aScore;
+        });
+    }, [isCSR, matchMap, searchData]);
 
     // Update URL params (preserve role param for contextual experience)
     useEffect(() => {
@@ -617,148 +661,179 @@ function ExploreContent() {
                                 </div>
 
                                 <div className="space-y-4">
-                                    {results.map((org) => (
-                                        <Card key={org.id} className="hover:border-primary transition-colors">
-                                            <CardContent className="pt-6">
-                                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                                                    {/* Org Info */}
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <h3 className="text-xl font-bold text-foreground">
-                                                                {org.name}
-                                                            </h3>
-                                                            {org.verificationStatus === "verified" && (
-                                                                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                                                            )}
+                                    {results.map((org) => {
+                                        const matchResult = matchMap.get(org.id);
+                                        const matchStyle = matchResult ? getMatchLevelStyle(matchResult.matchLevel) : null;
+                                        return (
+                                            <Card
+                                                key={org.id}
+                                                className={`hover:border-primary transition-colors ${matchResult ? `border-l-4 ${matchResult.matchLevel === "Strong match" ? "border-l-green-500" : matchResult.matchLevel === "Risky" ? "border-l-amber-500" : "border-l-red-400"}` : ""
+                                                    }`}
+                                            >
+                                                <CardContent className="pt-6">
+                                                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                                        {/* Org Info */}
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <h3 className="text-xl font-bold text-foreground">
+                                                                    {org.name}
+                                                                </h3>
+                                                                {org.verificationStatus === "verified" && (
+                                                                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                                                                )}
+                                                            </div>
+
+                                                            <div className="flex flex-wrap gap-2 mb-3">
+                                                                <Badge variant="secondary">{org.type}</Badge>
+                                                                <Badge variant="outline">{org.region}</Badge>
+
+                                                                {/* ===== CSR MATCH LEVEL BADGE ===== */}
+                                                                {matchResult && matchStyle && (
+                                                                    <Badge className={matchStyle.badge}>
+                                                                        {matchResult.matchLevel}
+                                                                    </Badge>
+                                                                )}
+
+                                                                {/* Risk flag count pill */}
+                                                                {matchResult && matchResult.riskFlags.length > 0 && (
+                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                                                        <ShieldAlert className="w-3 h-3" />
+                                                                        {matchResult.riskFlags.length} risk{matchResult.riskFlags.length > 1 ? "s" : ""}
+                                                                    </span>
+                                                                )}
+
+                                                                {/* Fit score pill (CSR only) */}
+                                                                {matchResult && (
+                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                                        {matchResult.fitScore}% fit
+                                                                    </span>
+                                                                )}
+
+                                                                {/* Best Match badge for non-CSR 80%+ alignment */}
+                                                                {!matchResult && org.alignmentScore >= 80 && (
+                                                                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0">
+                                                                        ✨ Best Match
+                                                                    </Badge>
+                                                                )}
+                                                                {!purchasedIds.has(org.id) && (
+                                                                    <Badge variant="secondary" className="bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-100 border-amber-200 dark:border-amber-800">
+                                                                        <Lock className="w-3 h-3 mr-1" />
+                                                                        Locked
+                                                                    </Badge>
+                                                                )}
+                                                                {org.verificationStatus && (
+                                                                    <Badge
+                                                                        variant={
+                                                                            org.verificationStatus === "verified"
+                                                                                ? "default"
+                                                                                : "secondary"
+                                                                        }
+                                                                    >
+                                                                        {org.verificationStatus}
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+
+                                                            <p className="text-sm text-muted-foreground mb-3">
+                                                                {org.mission}
+                                                            </p>
+
+                                                            <div className="flex flex-wrap gap-1 mb-3">
+                                                                {org.focusAreas?.map((area) => (
+                                                                    <Badge key={area} variant="outline" className="text-xs">
+                                                                        {area}
+                                                                    </Badge>
+                                                                ))}
+                                                            </div>
                                                         </div>
 
-                                                        <div className="flex flex-wrap gap-2 mb-3">
-                                                            <Badge variant="secondary">{org.type}</Badge>
-                                                            <Badge variant="outline">{org.region}</Badge>
-                                                            {/* Best Match badge for 80%+ alignment */}
-                                                            {org.alignmentScore >= 80 && (
-                                                                <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0">
-                                                                    ✨ Best Match
-                                                                </Badge>
-                                                            )}
-                                                            {!purchasedIds.has(org.id) && (
-                                                                <Badge variant="secondary" className="bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-100 border-amber-200 dark:border-amber-800">
-                                                                    <Lock className="w-3 h-3 mr-1" />
-                                                                    Locked
-                                                                </Badge>
-                                                            )}
-                                                            {org.verificationStatus && (
-                                                                <Badge
-                                                                    variant={
-                                                                        org.verificationStatus === "verified"
-                                                                            ? "default"
-                                                                            : "secondary"
-                                                                    }
-                                                                >
-                                                                    {org.verificationStatus}
-                                                                </Badge>
-                                                            )}
-                                                        </div>
+                                                        {/* Alignment Score with Breakdown */}
+                                                        <div className="md:text-right">
+                                                            <AlignmentScoreBreakdown organization={org} compact />
 
-                                                        <p className="text-sm text-muted-foreground mb-3">
-                                                            {org.mission}
-                                                        </p>
+                                                            {/* Why this matches you */}
+                                                            {(() => {
+                                                                const matchReasons = generateMatchReasons(org, selectedFocusArea, selectedRegion);
+                                                                return (
+                                                                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 mb-4">
+                                                                        <h4 className="text-sm font-medium text-foreground mb-2">
+                                                                            Why this matches you
+                                                                        </h4>
+                                                                        {matchReasons.length > 0 ? (
+                                                                            <ul className="space-y-1">
+                                                                                {matchReasons.map((reason, idx) => (
+                                                                                    <li key={idx} className="text-xs text-muted-foreground flex items-start gap-2">
+                                                                                        <span className="text-primary mt-0.5">•</span>
+                                                                                        <span>{reason}</span>
+                                                                                    </li>
+                                                                                ))}
+                                                                            </ul>
+                                                                        ) : (
+                                                                            <p className="text-xs text-muted-foreground">
+                                                                                This organization partially matches your criteria.
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })()}
 
-                                                        <div className="flex flex-wrap gap-1 mb-3">
-                                                            {org.focusAreas?.map((area) => (
-                                                                <Badge key={area} variant="outline" className="text-xs">
-                                                                    {area}
-                                                                </Badge>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Alignment Score with Breakdown */}
-                                                    <div className="md:text-right">
-                                                        <AlignmentScoreBreakdown organization={org} compact />
-
-                                                        {/* Why this matches you */}
-                                                        {(() => {
-                                                            const matchReasons = generateMatchReasons(org, selectedFocusArea, selectedRegion);
-                                                            return (
-                                                                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 mb-4">
-                                                                    <h4 className="text-sm font-medium text-foreground mb-2">
-                                                                        Why this matches you
-                                                                    </h4>
-                                                                    {matchReasons.length > 0 ? (
-                                                                        <ul className="space-y-1">
-                                                                            {matchReasons.map((reason, idx) => (
-                                                                                <li key={idx} className="text-xs text-muted-foreground flex items-start gap-2">
-                                                                                    <span className="text-primary mt-0.5">•</span>
-                                                                                    <span>{reason}</span>
-                                                                                </li>
-                                                                            ))}
-                                                                        </ul>
-                                                                    ) : (
-                                                                        <p className="text-xs text-muted-foreground">
-                                                                            This organization partially matches your criteria.
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                            );
-                                                        })()}
-
-                                                        {/* Actions */}
-                                                        <div className="flex gap-2 flex-col">
-                                                            <Button
-                                                                variant="default"
-                                                                size="sm"
-                                                                className="w-full"
-                                                                asChild
-                                                            >
-                                                                <Link href={`/org/${org.id}`} className="flex items-center gap-2">
-                                                                    View Details
-                                                                    {!purchasedIds.has(org.id) && <Lock className="w-3 h-3" />}
-                                                                </Link>
-                                                            </Button>
-                                                            {org.description && (
-                                                                <p className="text-sm text-muted-foreground mb-3">
-                                                                    {org.description.length > 160
-                                                                        ? org.description.slice(0, 157) + "..."
-                                                                        : org.description}
-                                                                </p>
-                                                            )}
-                                                            <Button
-                                                                variant={shortlist.has(org.id) ? "default" : "outline"}
-                                                                size="sm"
-                                                                className="w-full"
-                                                                onClick={() => toggleShortlist(org.id)}
-                                                            >
-                                                                <Heart
-                                                                    className="w-4 h-4 mr-2"
-                                                                    fill={shortlist.has(org.id) ? "currentColor" : "none"}
-                                                                />
-                                                                {shortlist.has(org.id) ? "Saved" : "Save"}
-                                                            </Button>
-
-                                                            {org.website && (
+                                                            {/* Actions */}
+                                                            <div className="flex gap-2 flex-col">
                                                                 <Button
-                                                                    variant="ghost"
+                                                                    variant="default"
                                                                     size="sm"
                                                                     className="w-full"
                                                                     asChild
                                                                 >
-                                                                    <a
-                                                                        href={org.website}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                    >
-                                                                        <ExternalLink className="w-4 h-4 mr-2" />
-                                                                        Website
-                                                                    </a>
+                                                                    <Link href={`/org/${org.id}`} className="flex items-center gap-2">
+                                                                        View Details
+                                                                        {!purchasedIds.has(org.id) && <Lock className="w-3 h-3" />}
+                                                                    </Link>
                                                                 </Button>
-                                                            )}
+                                                                {org.description && (
+                                                                    <p className="text-sm text-muted-foreground mb-3">
+                                                                        {org.description.length > 160
+                                                                            ? org.description.slice(0, 157) + "..."
+                                                                            : org.description}
+                                                                    </p>
+                                                                )}
+                                                                <Button
+                                                                    variant={shortlist.has(org.id) ? "default" : "outline"}
+                                                                    size="sm"
+                                                                    className="w-full"
+                                                                    onClick={() => toggleShortlist(org.id)}
+                                                                >
+                                                                    <Heart
+                                                                        className="w-4 h-4 mr-2"
+                                                                        fill={shortlist.has(org.id) ? "currentColor" : "none"}
+                                                                    />
+                                                                    {shortlist.has(org.id) ? "Saved" : "Save"}
+                                                                </Button>
+
+                                                                {org.website && (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="w-full"
+                                                                        asChild
+                                                                    >
+                                                                        <a
+                                                                            href={org.website}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                        >
+                                                                            <ExternalLink className="w-4 h-4 mr-2" />
+                                                                            Website
+                                                                        </a>
+                                                                    </Button>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    })}
                                 </div>
                             </>
                         )}

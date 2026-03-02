@@ -181,6 +181,20 @@ export interface Organization {
   targetBeneficiaries: string[];
   partnerHistory: string[];
   confidence: number;
+
+  // ==================== CAPACITY FIELDS (for CSR matching) ====================
+  /** Maximum beneficiary count this org has handled in a single project */
+  maxBeneficiaries?: number;
+  /** Geography types this org has experience in */
+  geographyTypes?: ("urban" | "rural" | "tribal" | "remote")[];
+  /** Highest reporting intensity this org can deliver */
+  reportingCapability?: "simple" | "moderate" | "heavy";
+  /** Whether org provides job placement support */
+  hasJobPlacement?: boolean;
+  /** Realistic cost-per-beneficiary range in INR [min, max] */
+  costPerBeneficiaryRange?: [number, number];
+  /** Rough team size indicator */
+  teamSize?: "small" | "medium" | "large";
 }
 
 export interface SearchParams {

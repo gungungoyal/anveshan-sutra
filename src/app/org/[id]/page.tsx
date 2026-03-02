@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -14,7 +14,7 @@ import LockedContentOverlay from "@/components/LockedContentOverlay";
 import { useAuth } from "@/hooks/useAuth";
 import { useCsrProjectSetupGuard } from "@/hooks/useCsrProjectSetupGuard";
 import { usePurchaseCheck } from "@/hooks/usePurchase";
-import { SearchResult } from "@shared/api";
+import { SearchResult, Organization } from "@shared/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,11 +32,125 @@ import {
     Lock,
     Mail,
     StickyNote,
+    ShieldAlert,
+    ThumbsDown,
+    Users,
+    Globe,
+    FileText,
+    Target,
+    Wallet,
 } from "lucide-react";
 import { getOrganizationById } from "@/lib/services/organizations";
+import { computeMatch, MatchResult, getMatchLevelStyle, DimensionResult } from "@/lib/utils/matchEngine";
+import { getProjectExpectation, ProjectExpectation } from "@/lib/services/projectExpectations";
+
 
 // TODO: This page was moved from /organization/[id] to /org/[id]
 // TODO: Add server-side auth gating in Phase 2
+
+// ============================================================
+// DECISION SCREEN COMPONENT (inline — CSR only)
+// ============================================================
+function DecisionScreen({
+    matchResult,
+    onShortlist,
+    onDismiss,
+    isShortlisted,
+}: {
+    matchResult: MatchResult;
+    onShortlist: () => void;
+    onDismiss: () => void;
+    isShortlisted: boolean;
+}) {
+    const style = getMatchLevelStyle(matchResult.matchLevel);
+
+    const dimensionRows: { icon: React.ReactNode; label: string; result: DimensionResult }[] = [
+        { icon: <Users className="w-4 h-4" />, label: "Capacity", result: matchResult.dimensions.capacity },
+        { icon: <Globe className="w-4 h-4" />, label: "Geography", result: matchResult.dimensions.geography },
+        { icon: <FileText className="w-4 h-4" />, label: "Reporting", result: matchResult.dimensions.reporting },
+        { icon: <Target className="w-4 h-4" />, label: "Program Fit", result: matchResult.dimensions.program },
+        { icon: <Wallet className="w-4 h-4" />, label: "Budget Realism", result: matchResult.dimensions.budget },
+    ];
+
+    return (
+        <Card className={`mb-8 border-2 ${style.border} ${style.bg}`}>
+            <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">Decision Analysis — vs Your Project</CardTitle>
+                    <div className="flex items-center gap-3">
+                        <span className={`text-3xl font-bold ${style.text}`}>{matchResult.fitScore}%</span>
+                        <Badge className={style.badge}>{matchResult.matchLevel}</Badge>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                {/* Dimension rows */}
+                <div className="space-y-2">
+                    {dimensionRows.map(({ icon, label, result }) => (
+                        <div key={label} className="flex items-start gap-3">
+                            <span className="text-muted-foreground mt-0.5">{icon}</span>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-foreground w-[100px] shrink-0">{label}</span>
+                                    <span className="text-base">{result.status}</span>
+                                    <span className="text-sm text-foreground font-medium truncate">{result.label}</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-0.5 ml-[112px]">{result.detail}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Risk flags */}
+                {matchResult.riskFlags.length > 0 && (
+                    <div className="mt-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                        <div className="flex items-center gap-2 mb-2">
+                            <ShieldAlert className="w-4 h-4 text-amber-600" />
+                            <span className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                                {matchResult.riskFlags.length} risk{matchResult.riskFlags.length > 1 ? "s" : ""} flagged
+                            </span>
+                        </div>
+                        <ul className="space-y-1">
+                            {matchResult.riskFlags.map((flag, i) => (
+                                <li key={i} className="text-xs text-amber-700 dark:text-amber-400 flex items-start gap-1.5">
+                                    <span className="mt-0.5">•</span>
+                                    <span>{flag}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
+                {/* Budget realism call-out */}
+                {matchResult.budgetRealism.isBelowRange && (
+                    <div className="mt-2 text-xs text-muted-foreground bg-background/80 rounded px-3 py-2 border border-border">
+                        <span className="font-semibold">Budget note:</span> Estimated cost ₹{matchResult.budgetRealism.realisticRange[0].toLocaleString()}–₹{matchResult.budgetRealism.realisticRange[1].toLocaleString()} per beneficiary for this geography. Consider increasing your per-beneficiary budget before engaging.
+                    </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-2">
+                    <Button
+                        className="flex-1"
+                        variant={isShortlisted ? "default" : "outline"}
+                        onClick={onShortlist}
+                    >
+                        <Heart className="w-4 h-4 mr-2" fill={isShortlisted ? "currentColor" : "none"} />
+                        {isShortlisted ? "Shortlisted" : "Shortlist"}
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        className="flex items-center gap-2 text-muted-foreground"
+                        onClick={onDismiss}
+                    >
+                        <ThumbsDown className="w-4 h-4" />
+                        Not a fit
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 export default function OrgProfileDetail() {
     const params = useParams();
@@ -58,6 +172,9 @@ export default function OrgProfileDetail() {
     const [privateNotes, setPrivateNotes] = useState("");
     const [notesLoading, setNotesLoading] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+    // ===== CSR MATCHING STATE =====
+    const [csrExpectation, setCsrExpectation] = useState<ProjectExpectation | null>(null);
 
     // Check if user has purchased this organization
     const { isPurchased, isLoading: isPurchaseLoading } = usePurchaseCheck(id || "");
@@ -88,6 +205,24 @@ export default function OrgProfileDetail() {
 
         fetchOrganization();
     }, [id]);
+
+    // ===== Load CSR Project Expectations =====
+    useEffect(() => {
+        if (!isAuthenticated || !user?.id || !isCSR) return;
+        getProjectExpectation(user.id)
+            .then((exp) => setCsrExpectation(exp))
+            .catch(() => setCsrExpectation(null));
+    }, [isAuthenticated, user?.id, isCSR]);
+
+    // ===== Compute match result (CSR + org loaded) =====
+    const matchResult: MatchResult | null = useMemo(() => {
+        if (!isCSR || !csrExpectation || !org) return null;
+        try {
+            return computeMatch(csrExpectation, org as unknown as Organization);
+        } catch {
+            return null;
+        }
+    }, [isCSR, csrExpectation, org]);
 
     // Handle auth-gated actions
     const handleSaveClick = () => {
@@ -177,6 +312,19 @@ export default function OrgProfileDetail() {
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Explore
                 </Button>
+
+                {/* ===== CSR DECISION SCREEN ===== */}
+                {isCSR && isAuthenticated && matchResult && (
+                    <DecisionScreen
+                        matchResult={matchResult}
+                        isShortlisted={isShortlisted}
+                        onShortlist={handleSaveClick}
+                        onDismiss={() => {
+                            toast.info("Marked as not a fit");
+                            router.push("/explore");
+                        }}
+                    />
+                )}
 
                 {/* Organization Header - Always Visible (Public Info) */}
                 <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-8 mb-8">
