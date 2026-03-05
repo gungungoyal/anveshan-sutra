@@ -368,34 +368,28 @@ function ExploreContent() {
         <div className="min-h-screen bg-background">
             <Header />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
                 {/* Page Header */}
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-foreground mb-2">
+                <div className="mb-6">
+                    <h1 className="text-2xl font-extrabold text-foreground mb-1">
                         {roleContext.title}
                     </h1>
-                    <p className="text-lg text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                         {roleContext.subtitle}
                     </p>
                 </div>
 
                 {/* NGO BLOCKING BANNER - Must complete setup */}
                 {needsSetup && (
-                    <div className="mb-8 p-8 bg-amber-50 dark:bg-amber-950/30 border-2 border-amber-200 dark:border-amber-800 rounded-2xl text-center">
-                        <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <AlertTriangle className="w-8 h-8 text-amber-600" />
+                    <div className="mb-6 drivya-card p-6 border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/20 text-center">
+                        <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                            <AlertTriangle className="w-6 h-6 text-amber-600" />
                         </div>
-                        <h2 className="text-xl font-bold text-foreground mb-2">
-                            Set up your NGO profile to find partners
-                        </h2>
-                        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                            Tell us about your organization so we can show you relevant CSR partners and incubators that align with your mission.
+                        <h2 className="text-base font-bold text-foreground mb-1">Set up your NGO profile to find partners</h2>
+                        <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+                            Tell us about your organization so we can show you relevant CSR partners and incubators.
                         </p>
-                        <Button
-                            size="lg"
-                            className="bg-green-600 hover:bg-green-700"
-                            onClick={() => router.push("/org-submit")}
-                        >
+                        <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white" onClick={() => router.push("/org-submit")}>
                             Complete Setup
                         </Button>
                     </div>
@@ -403,38 +397,21 @@ function ExploreContent() {
 
                 {/* INCUBATOR SETUP PROMPT - Dismissible */}
                 {showSetupPrompt && !dismissedSetupPrompt && (
-                    <div className="mb-8 p-4 bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800 rounded-xl">
-                        <div className="flex items-center justify-between gap-4">
+                    <div className="mb-5 drivya-card p-4 border-l-4 border-l-sky-500">
+                        <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/50 rounded-xl flex items-center justify-center flex-shrink-0">
-                                    <AlertTriangle className="w-5 h-5 text-sky-600" />
+                                <div className="w-9 h-9 bg-sky-100 dark:bg-sky-900/50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <AlertTriangle className="w-4 h-4 text-sky-600" />
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-foreground">
-                                        Complete your Incubator profile to unlock alignment insights
-                                    </p>
-                                    <p className="text-sm text-muted-foreground">
-                                        Save organizations, download PPTs, and see detailed matching scores.
-                                    </p>
+                                    <p className="text-sm font-semibold text-foreground">Complete your Incubator profile to unlock insights</p>
+                                    <p className="text-xs text-muted-foreground">Save orgs, download PPTs, and see match scores.</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
-                                <Button
-                                    size="sm"
-                                    className="bg-sky-500 hover:bg-sky-600"
-                                    onClick={() => router.push("/org-submit")}
-                                >
-                                    Set Up Now
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => {
-                                        setDismissedSetupPrompt(true);
-                                        localStorage.setItem("dismissedIncubatorSetup", "true");
-                                    }}
-                                >
-                                    <X className="w-4 h-4" />
+                                <Button size="sm" className="bg-sky-500 hover:bg-sky-600 text-white text-xs" onClick={() => router.push("/org-submit")}>Set Up</Button>
+                                <Button size="sm" variant="ghost" className="p-1.5" onClick={() => { setDismissedSetupPrompt(true); localStorage.setItem("dismissedIncubatorSetup", "true"); }}>
+                                    <X className="w-3.5 h-3.5" />
                                 </Button>
                             </div>
                         </div>
@@ -443,7 +420,7 @@ function ExploreContent() {
 
                 {/* Guided First Match Intro - shows for first-time users */}
                 {showGuidedIntro && (
-                    <div className="mb-8 p-6 bg-primary/5 border border-primary/20 rounded-xl">
+                    <div className="mb-5 drivya-card p-5 border-primary/20 bg-primary/3">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                             <div className="flex-1">
                                 {/* Title */}
@@ -496,13 +473,13 @@ function ExploreContent() {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     {/* Filters Sidebar */}
                     <div className="lg:col-span-1">
-                        <div className="sticky top-20 space-y-6">
-                            <Card>
-                                <CardContent className="pt-6">
-                                    <h3 className="font-bold text-lg mb-4">Filters</h3>
+                        <div className="sticky top-24 space-y-4">
+                            <Card className="drivya-card shadow-card">
+                                <CardContent className="pt-5">
+                                    <h3 className="font-bold text-sm mb-4 text-foreground">Filters</h3>
 
                                     {/* Search Query */}
                                     <div className="mb-6">
@@ -611,18 +588,16 @@ function ExploreContent() {
 
                         {loading ? (
                             <div className="flex justify-center items-center h-64">
-                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                                <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
                             </div>
                         ) : results.length === 0 ? (
-                            <div className="text-center py-16 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                                <div className="text-5xl mb-4">🔍</div>
-                                <h3 className="text-xl font-bold text-slate-700 mb-2">
-                                    No matches yet
-                                </h3>
-                                <p className="text-slate-500 mb-6 max-w-md mx-auto">
-                                    Try different keywords or filters — we're searching across hundreds of organizations!
+                            <div className="text-center py-16 drivya-card border-dashed">
+                                <div className="text-4xl mb-3">🔍</div>
+                                <h3 className="text-lg font-bold text-foreground mb-2">No matches yet</h3>
+                                <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
+                                    Try different keywords or filters — we search across hundreds of verified organizations!
                                 </p>
-                                <Button onClick={handleClearFilters} variant="outline">
+                                <Button onClick={handleClearFilters} variant="outline" size="sm">
                                     Clear All Filters
                                 </Button>
                             </div>
@@ -664,32 +639,35 @@ function ExploreContent() {
                                     {results.map((org) => {
                                         const matchResult = matchMap.get(org.id);
                                         const matchStyle = matchResult ? getMatchLevelStyle(matchResult.matchLevel) : null;
+                                        const matchBorderColor = matchResult
+                                            ? matchResult.matchLevel === "Strong match" ? "border-l-green-500"
+                                                : matchResult.matchLevel === "Risky" ? "border-l-amber-500"
+                                                    : "border-l-red-400" : "";
                                         return (
-                                            <Card
+                                            <div
                                                 key={org.id}
-                                                className={`hover:border-primary transition-colors ${matchResult ? `border-l-4 ${matchResult.matchLevel === "Strong match" ? "border-l-green-500" : matchResult.matchLevel === "Risky" ? "border-l-amber-500" : "border-l-red-400"}` : ""
-                                                    }`}
+                                                className={`drivya-card overflow-hidden ${matchResult ? `border-l-4 ${matchBorderColor}` : ""}`}
                                             >
-                                                <CardContent className="pt-6">
+                                                <div className="p-5">
                                                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                                                         {/* Org Info */}
                                                         <div className="flex-1">
                                                             <div className="flex items-center gap-2 mb-2">
-                                                                <h3 className="text-xl font-bold text-foreground">
+                                                                <h3 className="text-base font-bold text-foreground">
                                                                     {org.name}
                                                                 </h3>
                                                                 {org.verificationStatus === "verified" && (
-                                                                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                                                                    <CheckCircle2 className="w-4 h-4 text-green-600" />
                                                                 )}
                                                             </div>
 
-                                                            <div className="flex flex-wrap gap-2 mb-3">
-                                                                <Badge variant="secondary">{org.type}</Badge>
-                                                                <Badge variant="outline">{org.region}</Badge>
+                                                            <div className="flex flex-wrap gap-1.5 mb-3">
+                                                                <Badge variant="secondary" className="text-xs">{org.type}</Badge>
+                                                                <Badge variant="outline" className="text-xs">{org.region}</Badge>
 
-                                                                {/* ===== CSR MATCH LEVEL BADGE ===== */}
+                                                                {/* CSR MATCH LEVEL BADGE */}
                                                                 {matchResult && matchStyle && (
-                                                                    <Badge className={matchStyle.badge}>
+                                                                    <Badge className={`text-xs ${matchStyle.badge}`}>
                                                                         {matchResult.matchLevel}
                                                                     </Badge>
                                                                 )}
@@ -704,134 +682,91 @@ function ExploreContent() {
 
                                                                 {/* Fit score pill (CSR only) */}
                                                                 {matchResult && (
-                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-foreground">
                                                                         {matchResult.fitScore}% fit
                                                                     </span>
                                                                 )}
 
-                                                                {/* Best Match badge for non-CSR 80%+ alignment */}
+                                                                {/* Best Match badge */}
                                                                 {!matchResult && org.alignmentScore >= 80 && (
-                                                                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0">
+                                                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white">
                                                                         ✨ Best Match
-                                                                    </Badge>
+                                                                    </span>
                                                                 )}
                                                                 {!purchasedIds.has(org.id) && (
-                                                                    <Badge variant="secondary" className="bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-100 border-amber-200 dark:border-amber-800">
-                                                                        <Lock className="w-3 h-3 mr-1" />
+                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                                                                        <Lock className="w-3 h-3" />
                                                                         Locked
-                                                                    </Badge>
-                                                                )}
-                                                                {org.verificationStatus && (
-                                                                    <Badge
-                                                                        variant={
-                                                                            org.verificationStatus === "verified"
-                                                                                ? "default"
-                                                                                : "secondary"
-                                                                        }
-                                                                    >
-                                                                        {org.verificationStatus}
-                                                                    </Badge>
+                                                                    </span>
                                                                 )}
                                                             </div>
 
-                                                            <p className="text-sm text-muted-foreground mb-3">
+                                                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                                                                 {org.mission}
                                                             </p>
 
-                                                            <div className="flex flex-wrap gap-1 mb-3">
+                                                            <div className="flex flex-wrap gap-1 mb-2">
                                                                 {org.focusAreas?.map((area) => (
-                                                                    <Badge key={area} variant="outline" className="text-xs">
-                                                                        {area}
-                                                                    </Badge>
+                                                                    <span key={area} className="tag-chip">{area}</span>
                                                                 ))}
                                                             </div>
                                                         </div>
 
-                                                        {/* Alignment Score with Breakdown */}
-                                                        <div className="md:text-right">
+                                                        {/* Right column: Score + Actions */}
+                                                        <div className="md:text-right md:min-w-[160px]">
                                                             <AlignmentScoreBreakdown organization={org} compact />
 
                                                             {/* Why this matches you */}
                                                             {(() => {
                                                                 const matchReasons = generateMatchReasons(org, selectedFocusArea, selectedRegion);
                                                                 return (
-                                                                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 mb-4">
-                                                                        <h4 className="text-sm font-medium text-foreground mb-2">
-                                                                            Why this matches you
-                                                                        </h4>
+                                                                    <div className="bg-secondary/60 rounded-xl p-3 mb-3 text-left">
+                                                                        <h4 className="text-xs font-semibold text-foreground mb-1.5">Why this matches you</h4>
                                                                         {matchReasons.length > 0 ? (
                                                                             <ul className="space-y-1">
                                                                                 {matchReasons.map((reason, idx) => (
-                                                                                    <li key={idx} className="text-xs text-muted-foreground flex items-start gap-2">
-                                                                                        <span className="text-primary mt-0.5">•</span>
+                                                                                    <li key={idx} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                                                                                        <span className="text-primary mt-0.5 flex-shrink-0">•</span>
                                                                                         <span>{reason}</span>
                                                                                     </li>
                                                                                 ))}
                                                                             </ul>
                                                                         ) : (
-                                                                            <p className="text-xs text-muted-foreground">
-                                                                                This organization partially matches your criteria.
-                                                                            </p>
+                                                                            <p className="text-xs text-muted-foreground">Partially matches your criteria.</p>
                                                                         )}
                                                                     </div>
                                                                 );
                                                             })()}
 
                                                             {/* Actions */}
-                                                            <div className="flex gap-2 flex-col">
-                                                                <Button
-                                                                    variant="default"
-                                                                    size="sm"
-                                                                    className="w-full"
-                                                                    asChild
-                                                                >
-                                                                    <Link href={`/org/${org.id}`} className="flex items-center gap-2">
+                                                            <div className="flex flex-col gap-2">
+                                                                <Button variant="default" size="sm" className="w-full gradient-bg border-0 text-white shadow-blue hover:shadow-blue-lg" asChild>
+                                                                    <Link href={`/org/${org.id}`} className="flex items-center justify-center gap-2">
                                                                         View Details
                                                                         {!purchasedIds.has(org.id) && <Lock className="w-3 h-3" />}
                                                                     </Link>
                                                                 </Button>
-                                                                {org.description && (
-                                                                    <p className="text-sm text-muted-foreground mb-3">
-                                                                        {org.description.length > 160
-                                                                            ? org.description.slice(0, 157) + "..."
-                                                                            : org.description}
-                                                                    </p>
-                                                                )}
                                                                 <Button
-                                                                    variant={shortlist.has(org.id) ? "default" : "outline"}
+                                                                    variant={shortlist.has(org.id) ? "secondary" : "outline"}
                                                                     size="sm"
                                                                     className="w-full"
                                                                     onClick={() => toggleShortlist(org.id)}
                                                                 >
-                                                                    <Heart
-                                                                        className="w-4 h-4 mr-2"
-                                                                        fill={shortlist.has(org.id) ? "currentColor" : "none"}
-                                                                    />
+                                                                    <Heart className="w-3.5 h-3.5 mr-1.5" fill={shortlist.has(org.id) ? "currentColor" : "none"} />
                                                                     {shortlist.has(org.id) ? "Saved" : "Save"}
                                                                 </Button>
-
                                                                 {org.website && (
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        className="w-full"
-                                                                        asChild
-                                                                    >
-                                                                        <a
-                                                                            href={org.website}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                        >
-                                                                            <ExternalLink className="w-4 h-4 mr-2" />
-                                                                            Website
+                                                                    <Button variant="ghost" size="sm" className="w-full" asChild>
+                                                                        <a href={org.website} target="_blank" rel="noopener noreferrer">
+                                                                            <ExternalLink className="w-3.5 h-3.5 mr-1.5" /> Website
                                                                         </a>
                                                                     </Button>
                                                                 )}
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </CardContent>
-                                            </Card>
+                                                </div>
+                                            </div>
                                         );
                                     })}
                                 </div>
