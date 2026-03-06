@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drivya | Authentication</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=DM+Sans:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --navy: #0D1B2A;
+            --gold: #C9A84C;
+            --cream: #FAF7F2;
+            --muted: #666e75;
+            --red: #e63946;
+            --serif: 'Cormorant Garamond', serif;
+            --sans: 'DM Sans', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: var(--sans);
+            background-color: var(--navy);
+            color: var(--navy);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* Split Layout */
+        .page-container {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Left Panel */
+        .left-panel {
+            flex: 1;
+            background-color: var(--navy);
+            color: var(--cream);
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(201, 168, 76, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(201, 168, 76, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .logo {
+            font-family: var(--serif);
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: -1px;
+            z-index: 1;
+        }
+
+        .logo span {
+            color: var(--gold);
+        }
+
+        .brand-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-width: 500px;
+            z-index: 1;
+        }
+
+        .brand-content h1 {
+            font-family: var(--serif);
+            font-size: 64px;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+
+        .brand-content p {
+            font-size: 18px;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        .trust-signals {
+            display: flex;
+            gap: 24px;
+            font-size: 14px;
+            opacity: 0.7;
+            z-index: 1;
+        }
+
+        .signal {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .signal span {
+            color: var(--gold);
+            font-weight: bold;
+        }
+
+        /* Right Panel */
+        .right-panel {
+            flex: 1;
+            background-color: var(--cream);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 40px 80px;
+            justify-content: center;
+        }
+
+        .toggle-label {
+            position: absolute;
+            top: 40px;
+            right: 80px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .toggle-link {
+            color: var(--gold);
+            cursor: pointer;
+            font-weight: 700;
+            margin-left: 4px;
+            text-decoration: underline;
+        }
+
+        .form-container {
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .form-container.hidden {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .form-header h2 {
+            font-family: var(--serif);
+            font-size: 48px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-header p {
+            color: var(--muted);
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(13, 27, 42, 0.1);
+            border-radius: 4px;
+            background-color: #fff;
+            font-family: var(--sans);
+            font-size: 16px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+        }
+
+        input.error {
+            border-color: var(--red);
+        }
+
+        .error-msg {
+            color: var(--red);
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            opacity: 0.5;
+        }
+
+        .forgot-link {
+            display: block;
+            text-align: right;
+            font-size: 14px;
+            color: var(--muted);
+            margin-top: 8px;
+            text-decoration: none;
+        }
+
+        /* Role Selector */
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .role-card {
+            border: 1px solid rgba(13, 27, 42, 0.1);
+            border-radius: 4px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        .role-card:hover {
+            border-color: var(--gold);
+        }
+
+        .role-card.selected {
+            background-color: var(--navy);
+            border-color: var(--gold);
+            color: var(--cream);
+            box-shadow: 0 4px 12px rgba(13, 27, 42, 0.1);
+        }
+
+        .role-card .emoji {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .role-card span {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 4px;
+            font-family: var(--sans);
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-gold {
+            background-color: var(--gold);
+            color: var(--navy);
+        }
+
+        .btn-gold:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid rgba(13, 27, 42, 0.2);
+            color: var(--navy);
+            margin-top: 20px;
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(13, 27, 42, 0.02);
+            border-color: var(--navy);
+        }
+
+        .divider {
+            position: relative;
+            text-align: center;
+            margin: 30px 0 10px;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: rgba(13, 27, 42, 0.1);
+        }
+
+        .divider span {
+            position: relative;
+            background: var(--cream);
+            padding: 0 16px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .terms {
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* Success Overlay */
+        .success-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(13, 27, 42, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: var(--gold);
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 2;
+            stroke: var(--gold);
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px var(--gold);
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: var(--gold);
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes scale {
+
+            0%,
+            100% {
+                transform: none;
+            }
+
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 30px transparent;
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .page-container {
+                flex-direction: column;
+            }
+
+            .left-panel {
+                order: 2;
+                padding: 40px;
+                min-height: auto;
+            }
+
+            .right-panel {
+                order: 1;
+                padding: 100px 40px 60px;
+                min-height: 100vh;
+            }
+
+            .toggle-label {
+                top: 30px;
+                right: 40px;
+            }
+
+            .brand-content h1 {
+                font-size: 40px;
+            }
+        }
+
+        /* Transitions */
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page-container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="logo">Driv<span>ya</span></div>
+
+            <div class="brand-content">
+                <h1>Where the right partnerships begin.</h1>
+                <p>Matching Incubators, CSRs, and NGOs based on real compatibility — not guesswork.</p>
+            </div>
+
+            <div class="trust-signals">
+                <div class="signal"><span>✓</span> Verified Organizations</div>
+                <div class="signal"><span>✓</span> Real Match Scores</div>
+                <div class="signal"><span>✓</span> Compliance Ready</div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+
+            <!-- Sign Up View -->
+            <div id="signup-view" class="form-container fade-in">
+                <div class="toggle-label">
+                    Already have an account? <span class="toggle-link" onclick="toggleView('signin')">Sign In</span>
+                </div>
+
+                <div class="form-header">
+                    <h2>Create your account</h2>
+                    <p>Start finding aligned partners in minutes.</p>
+                </div>
+
+                <form onsubmit="handleSubmit(event, 'signup')">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="fullname" placeholder="John Doe">
+                        <div class="error-msg">Please enter your full name</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Work Email</label>
+                        <input type="email" name="email" placeholder="john@company.com">
+                        <div class="error-msg">Please enter a valid work email</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" name="password" placeholder="Min. 8 characters">
+                            <span class="toggle-password" onclick="togglePassword(this)">👁️</span>
+                        </div>
+                        <div class="error-msg">Password must be at least 8 characters</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" name="confirm_password" placeholder="Repeat password">
+                        </div>
+                        <div class="error-msg">Passwords do not match</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select your role</label>
+                        <div class="role-selector">
+                            <div class="role-card selected" onclick="selectRole(this, 'incubator')">
+                                <span class="emoji">🏗️</span>
+                                <span>Incubator</span>
+                            </div>
+                            <div class="role-card" onclick="selectRole(this, 'csr')">
+                                <span class="emoji">🏢</span>
+                                <span>CSR</span>
+                            </div>
+                            <div class="role-card" onclick="selectRole(this, 'ngo')">
+                                <span class="emoji">🤝</span>
+                                <span>NGO</span>
+                            </div>
+                        </div>
+                        <input type="hidden" name="role" value="incubator">
+                    </div>
+
+                    <button type="submit" class="btn btn-gold">Create Account →</button>
+                </form>
+
+                <p class="terms">By signing up you agree to Drivya's <br> Terms and Privacy Policy</p>
+            </div>
+
+            <!-- Sign In View -->
+            <div id="signin-view" class="form-container hidden">
+                <div class="toggle-label">
+                    New to Drivya? <span class="toggle-link" onclick="toggleView('signup')">Sign Up</span>
+                </div>
+
+                <div class="form-header">
+                    <h2>Welcome back.</h2>
+                    <p>Sign in to see your matches.</p>
+                </div>
+
+                <form onsubmit="handleSubmit(event, 'signin')">
+                    <div class="form-group">
+                        <label>Work Email</label>
+                        <input type="email" name="email" placeholder="john@company.com">
+                        <div class="error-msg">Account not found or invalid email</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" name="password" placeholder="Your password">
+                            <span class="toggle-password" onclick="togglePassword(this)">👁️</span>
+                        </div>
+                        <a href="#" class="forgot-link">Forgot password?</a>
+                        <div class="error-msg">Incorrect password</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-gold">Sign In →</button>
+                </form>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <button class="btn btn-outline">
+                    <svg width="18" height="18" viewBox="0 0 18 18">
+                        <path
+                            d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84a4.14 4.14 0 0 1-1.8 2.71v2.24h2.91c1.7-1.57 2.69-3.88 2.69-6.58z"
+                            fill="#4285f4" />
+                        <path
+                            d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.24c-.8.54-1.84.85-3.05.85-2.34 0-4.32-1.58-5.03-3.71H.95v2.3A8.99 8.99 0 0 0 9 18z"
+                            fill="#34a853" />
+                        <path d="M3.97 10.72a5.41 5.41 0 0 1 0-3.44V4.98H.95a8.99 8.99 0 0 0 0 8.04l3.02-2.3z"
+                            fill="#fbbc05" />
+                        <path
+                            d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A8.99 8.99 0 0 0 1.25 1.25l1.25 1.25C1.25 1.25 1.25 1.25 1.25 1.25L3.97 4.98c.71-2.13 2.69-3.71 5.03-3.71z"
+                            fill="#ea4335" />
+                    </svg>
+                    Continue with Google
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Success Overlay -->
+    <div id="success-overlay" class="success-overlay">
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
+            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+        </svg>
+        <p style="margin-top: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em;">Success</p>
+    </div>
+
+    <script>
+        function toggleView(view) {
+            const signup = document.getElementById('signup-view');
+            const signin = document.getElementById('signin-view');
+
+            if (view === 'signin') {
+                signup.classList.add('hidden');
+                signin.classList.remove('hidden');
+                signin.classList.add('fade-in');
+            } else {
+                signin.classList.add('hidden');
+                signup.classList.remove('hidden');
+                signup.classList.add('fade-in');
+            }
+        }
+
+        function togglePassword(el) {
+            const input = el.previousElementSibling;
+            if (input.type === 'password') {
+                input.type = 'text';
+                el.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                el.textContent = '👁️';
+            }
+        }
+
+        function selectRole(card, role) {
+            document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            document.querySelector('input[name="role"]').value = role;
+        }
+
+        function handleSubmit(e, type) {
+            e.preventDefault();
+            const form = e.target;
+            const inputs = form.querySelectorAll('input:not([type="hidden"])');
+            let hasError = false;
+
+            // Reset errors
+            inputs.forEach(input => {
+                input.classList.remove('error');
+                const msg = input.parentElement.parentElement.querySelector('.error-msg');
+                if (msg) msg.style.display = 'none';
+            });
+
+            // Basic validation
+            inputs.forEach(input => {
+                if (!input.value) {
+                    setError(input);
+                    hasError = true;
+                } else if (input.type === 'email' && !input.value.includes('@')) {
+                    setError(input);
+                    hasError = true;
+                } else if (input.name === 'password' && input.value.length < 8) {
+                    setError(input);
+                    hasError = true;
+                }
+            });
+
+            // Confirm password check
+            if (type === 'signup') {
+                const pass = form.querySelector('input[name="password"]');
+                const confirm = form.querySelector('input[name="confirm_password"]');
+                if (pass.value !== confirm.value) {
+                    setError(confirm);
+                    hasError = true;
+                }
+            }
+
+            if (!hasError) {
+                showSuccess();
+            }
+        }
+
+        function setError(input) {
+            input.classList.add('error');
+            const group = input.closest('.form-group');
+            const msg = group.querySelector('.error-msg');
+            if (msg) msg.style.display = 'block';
+        }
+
+        function showSuccess() {
+            const overlay = document.getElementById('success-overlay');
+            overlay.style.display = 'flex';
+
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>

@@ -16,6 +16,8 @@ export default {
       fontFamily: {
         sans: ["var(--font-manrope)", "Manrope", "system-ui", "sans-serif"],
         manrope: ["var(--font-manrope)", "Manrope", "sans-serif"],
+        serif: ["var(--font-serif)", "Cormorant Garamond", "serif"],
+        "sans-dm": ["var(--font-sans-dm)", "DM Sans", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
