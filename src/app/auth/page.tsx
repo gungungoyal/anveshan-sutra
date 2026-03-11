@@ -82,10 +82,31 @@ function AuthPageContent() {
 
         setIsLoading(true);
         try {
-            await signUpWithPassword(email, password, name, roleMap[role]);
-            setStep("otp");
-            setIsInfoMessage(true);
-            setErrorMessage("Please check your email for the verification code.");
+            const result = await signUpWithPassword(email, password, name, roleMap[role] as any);
+
+            if (result.error) {
+                if (result.errorCode === 'USER_EXISTS') {
+                    setErrorMessage("This email is already registered. Please sign in instead.");
+                } else {
+                    setErrorMessage(result.error);
+                }
+                setIsInfoMessage(false);
+                return;
+            }
+
+            // Actually send the OTP email now that the account is created
+            const otpResult = await sendOtp(email, 'signup');
+            if (!otpResult.success) {
+                // Account created but email failed — still show OTP step so user can resend
+                setStep("otp");
+                setIsInfoMessage(false);
+                setErrorMessage(otpResult.error || "Account created but failed to send verification email. Click Resend.");
+            } else {
+                setResendCooldown(60); // start cooldown so user doesn't immediately resend
+                setStep("otp");
+                setIsInfoMessage(true);
+                setErrorMessage("Verification code sent! Please check your email.");
+            }
         } catch (error: any) {
             setErrorMessage(error.message || "An error occurred during sign up");
         } finally {
@@ -136,7 +157,7 @@ function AuthPageContent() {
         setIsLoading(true);
         setErrorMessage("");
         try {
-            await verifyOtp(email, otp, mode === "forgot_password" ? "recovery" : "signup");
+            await verifyOtp(email, otp);
             if (mode === "forgot_password") {
                 setStep("reset_password");
             } else {
@@ -152,7 +173,7 @@ function AuthPageContent() {
     const handleResetPassword = async () => {
         setIsLoading(true);
         try {
-            await resetPassword(newPassword);
+            await resetPassword(email, newPassword);
             setStep("success");
         } catch (error: any) {
             setErrorMessage(error.message);
