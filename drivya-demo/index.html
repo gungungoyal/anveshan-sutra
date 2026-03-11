@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drivya | Connecting NGOs & Funders</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <link rel="shortcut icon" href="assets/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=DM+Sans:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: '#0D1B2A',
+                        gold: '#C9A84C',
+                        cream: '#FAF7F2',
+                    },
+                    fontFamily: {
+                        serif: ['Cormorant Garamond', 'serif'],
+                        sans: ['DM Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #FAF7F2;
+            color: #0D1B2A;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #0D1B2A 0%, #1B263B 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="flex justify-between items-center px-8 py-6 max-w-7xl mx-auto w-full">
+        <div class="text-2xl font-serif font-bold">Driv<span class="text-gold">ya</span></div>
+        <div class="space-x-8 text-sm font-bold uppercase tracking-widest hidden md:flex">
+            <a href="#" class="hover:text-gold transition-colors">Platform</a>
+            <a href="#" class="hover:text-gold transition-colors">Pricing</a>
+            <a href="auth.html" class="hover:text-gold transition-colors">Sign In</a>
+            <a href="auth.html" class="bg-gold px-6 py-2 text-navy rounded-sm hover:brightness-110 transition-all">Get
+                Started</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-cream py-32 px-8 overflow-hidden relative">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16 relative z-10">
+            <div class="md:w-1/2 space-y-8 text-center md:text-left">
+                <h1 class="text-5xl md:text-7xl font-serif font-bold leading-tight">
+                    Helping CSR Teams Find the Right NGO Partner.<br>
+                    <span class="text-gold">Verified. Aligned. Ready to Deliver.</span>
+                </h1>
+                <p class="text-lg md:text-xl text-white/70 max-w-xl leading-relaxed">
+                    Drivya matches CSR teams with NGOs and Incubators based on real compatibility — focus area,
+                    geography, past project success, and delivery capacity. No more 30-40 day surprises. No more
+                    misaligned partners.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                    <a href="auth.html"
+                        class="bg-gold text-navy px-10 py-5 font-bold uppercase tracking-widest rounded-sm hover:scale-105 transition-all">Sign
+                        Up Free</a>
+                    <a href="auth.html"
+                        class="border border-white/20 px-10 py-5 font-bold uppercase tracking-widest rounded-sm hover:bg-white/5 transition-all">Request
+                        Demo</a>
+                </div>
+                <div class="pt-4">
+                    <a href="#explore"
+                        class="inline-block text-sm text-white/40 hover:text-gold transition-colors italic">Explore
+                        organizations without signing up →</a>
+                </div>
+            </div>
+            <div class="md:w-1/2 relative">
+                <div
+                    class="bg-white/5 backdrop-blur-xl p-8 rounded-lg border border-white/10 shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-700">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div
+                            class="w-12 h-12 bg-gold rounded-full flex items-center justify-center text-navy font-bold text-lg">
+                            94</div>
+                        <div>
+                            <div class="text-xs uppercase tracking-widest font-bold opacity-50">Match Score</div>
+                            <div class="font-serif text-xl font-bold">Excellent Compatibility</div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                            <div class="bg-gold h-full" style="width: 95%;"></div>
+                        </div>
+                        <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                            <div class="bg-gold h-full" style="width: 90%;"></div>
+                        </div>
+                        <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                            <div class="bg-gold h-full" style="width: 88%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Role Cards Section -->
+    <section class="py-24 px-8 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- CSR Card (Highlighted) -->
+            <div class="relative bg-white p-12 rounded-sm border-2 border-gold shadow-2xl transform md:scale-105 z-10">
+                <div
+                    class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gold text-navy text-[10px] font-bold uppercase tracking-widest px-6 py-2 rounded-full">
+                    Most Popular
+                </div>
+                <div class="space-y-6 text-center">
+                    <div
+                        class="w-16 h-16 bg-navy text-gold rounded-full flex items-center justify-center mx-auto text-2xl">
+                        🤝</div>
+                    <h3 class="text-3xl font-serif font-bold">I am a CSR Team</h3>
+                    <p class="text-navy/60 text-sm leading-relaxed">Find verified partners who can actually deliver at
+                        scale. Reduce due diligence time by 70%.</p>
+                    <a href="role-selection.html"
+                        class="inline-block w-full bg-navy text-white py-4 text-[11px] font-bold uppercase tracking-widest hover:bg-navy/90 transition-all text-center">Get
+                        Started</a>
+                </div>
+            </div>
+            <!-- NGO Card -->
+            <div
+                class="bg-white p-12 rounded-sm border border-navy/5 shadow-sm hover:border-navy/20 transition-all flex flex-col justify-center">
+                <div class="space-y-6 text-center">
+                    <div
+                        class="w-16 h-16 bg-navy/5 text-navy/40 rounded-full flex items-center justify-center mx-auto text-2xl">
+                        🌱</div>
+                    <h3 class="text-3xl font-serif font-bold">I am an NGO</h3>
+                    <p class="text-navy/40 text-sm leading-relaxed">Connect with funders who align with your mission and
+                        geography. Showcase your real capacity.</p>
+                    <a href="role-selection.html"
+                        class="inline-block w-full border border-navy/10 py-4 text-[11px] font-bold uppercase tracking-widest hover:border-navy/30 transition-all text-center">Register
+                        NGO</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="bg-navy text-cream py-24 px-8">
+        <div class="max-w-5xl mx-auto space-y-16">
+            <div class="text-center space-y-4">
+                <h2 class="text-4xl md:text-5xl font-serif font-bold italic">The Partnership Gap</h2>
+                <div class="w-24 h-1 bg-gold mx-auto opacity-30"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12">
+                <div class="flex gap-6 items-start">
+                    <span class="text-gold font-serif text-3xl opacity-50">01.</span>
+                    <p class="text-white/80 leading-relaxed font-medium">You've shortlisted an NGO — only to realize
+                        30-40 days later they can't deliver at scale.</p>
+                </div>
+                <div class="flex gap-6 items-start">
+                    <span class="text-gold font-serif text-3xl opacity-50">02.</span>
+                    <p class="text-white/80 leading-relaxed font-medium">Your CSR budget is allocated but the right
+                        verified partner is still not finalized.</p>
+                </div>
+                <div class="flex gap-6 items-start">
+                    <span class="text-gold font-serif text-3xl opacity-50">03.</span>
+                    <p class="text-white/80 leading-relaxed font-medium">KPI negotiations and contract discussions drag
+                        on for weeks after you find someone.</p>
+                </div>
+                <div class="flex gap-6 items-start">
+                    <span class="text-gold font-serif text-3xl opacity-50">04.</span>
+                    <p class="text-white/80 leading-relaxed font-medium">Due diligence keeps filtering out NGOs with
+                        false claims and past failures.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="py-32 px-8 bg-cream border-y border-navy/5">
+        <div class="max-w-4xl mx-auto text-center space-y-10">
+            <h2 class="text-4xl md:text-6xl font-serif font-bold leading-tight">Verified. Aligned. Automated.</h2>
+            <p class="text-xl md:text-2xl text-navy/70 leading-relaxed italic">
+                "Drivya analyses each organization's focus area, geography, past project success rate, delivery
+                capacity, and funding fit — then shows you verified, aligned partners with a Drivya Match Score. Know
+                why a partnership works before you spend a single rupee or day on it."
+            </p>
+            <div class="flex justify-center gap-6 pt-6">
+                <div class="text-center">
+                    <div class="text-3xl font-serif font-bold text-gold">70%</div>
+                    <div class="text-[10px] uppercase font-bold tracking-widest opacity-40">Less Time</div>
+                </div>
+                <div class="w-px h-12 bg-navy/10"></div>
+                <div class="text-center">
+                    <div class="text-3xl font-serif font-bold text-gold">100%</div>
+                    <div class="text-[10px] uppercase font-bold tracking-widest opacity-40">Verified</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Explore Section -->
+    <section id="explore" class="py-24 px-8 bg-white scroll-mt-20">
+        <div class="max-w-7xl mx-auto space-y-16">
+            <div class="text-center space-y-4">
+                <div class="text-[10px] uppercase tracking-widest font-bold text-gold">Explore Organizations</div>
+                <h2 class="text-4xl md:text-5xl font-serif font-bold">See who's already on Drivya.</h2>
+                <p class="text-navy/60">Sign up to see your compatibility score with each organization.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Card 1 -->
+                <div
+                    class="bg-cream/30 p-8 rounded-sm border border-navy/5 flex flex-col justify-between hover:border-gold/30 transition-all">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div
+                                class="w-12 h-12 bg-navy text-gold rounded-sm flex items-center justify-center font-bold font-serif text-xl border border-gold/20">
+                                AS</div>
+                            <span
+                                class="text-[10px] bg-navy/5 px-3 py-1 rounded-full uppercase font-bold tracking-wider">CSR
+                                Partner</span>
+                        </div>
+                        <div>
+                            <h4 class="text-2xl font-serif font-bold">Aryan Social Foundation</h4>
+                            <p class="text-sm text-navy/50">Focus: Education, Skill Development</p>
+                            <p class="text-sm text-navy/50">Location: Uttar Pradesh</p>
+                        </div>
+                        <div class="pt-4 border-t border-navy/5 mt-4">
+                            <div class="text-[10px] font-bold uppercase tracking-widest text-gold mb-1">Match Score
+                            </div>
+                            <div class="text-sm italic text-navy/30">Sign up to see your Match Score</div>
+                        </div>
+                    </div>
+                    <a href="auth.html"
+                        class="mt-8 text-[11px] font-bold uppercase tracking-widest text-navy/40 hover:text-gold transition-colors">See
+                        Match Score →</a>
+                </div>
+
+                <!-- Card 2 -->
+                <div
+                    class="bg-cream/30 p-8 rounded-sm border border-navy/5 flex flex-col justify-between hover:border-gold/30 transition-all">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div
+                                class="w-12 h-12 bg-navy text-gold rounded-sm flex items-center justify-center font-bold font-serif text-xl border border-gold/20">
+                                GF</div>
+                            <span
+                                class="text-[10px] bg-navy/5 px-3 py-1 rounded-full uppercase font-bold tracking-wider">CSR
+                                Partner</span>
+                        </div>
+                        <div>
+                            <h4 class="text-2xl font-serif font-bold">GreenRoots Foundation</h4>
+                            <p class="text-sm text-navy/50">Focus: Environment, Rural Development</p>
+                            <p class="text-sm text-navy/50">Location: Maharashtra</p>
+                        </div>
+                        <div class="pt-4 border-t border-navy/5 mt-4">
+                            <div class="text-[10px] font-bold uppercase tracking-widest text-navy/20 mb-1">Match Score
+                            </div>
+                            <div class="text-sm italic text-navy/20">Login to unlock assessment</div>
+                        </div>
+                    </div>
+                    <a href="auth.html"
+                        class="mt-8 text-[11px] font-bold uppercase tracking-widest text-navy/40 hover:text-gold transition-colors">See
+                        Match Score →</a>
+                </div>
+
+                <!-- Card 3 -->
+                <div
+                    class="relative group bg-cream/30 p-8 rounded-sm border border-navy/5 flex flex-col justify-between overflow-hidden">
+                    <div class="blur-[2px] opacity-40 space-y-4 transition-all group-hover:blur-[1px]">
+                        <div class="flex justify-between items-start">
+                            <div
+                                class="w-12 h-12 bg-navy text-gold rounded-sm flex items-center justify-center font-bold font-serif text-xl border border-gold/20">
+                                PS</div>
+                            <span
+                                class="text-[10px] bg-navy/5 px-3 py-1 rounded-full uppercase font-bold tracking-wider">NGO</span>
+                        </div>
+                        <div>
+                            <h4 class="text-2xl font-serif font-bold">Prayas Social Initiative</h4>
+                            <p class="text-sm text-navy/50">Focus: Women Empowerment</p>
+                            <p class="text-sm text-navy/50">Location: Delhi NCR</p>
+                        </div>
+                    </div>
+                    <div
+                        class="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-[1px] opacity-100 transition-opacity">
+                        <a href="auth.html"
+                            class="bg-navy text-white px-8 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-navy transition-all shadow-xl">Reveal
+                            Partner</a>
+                    </div>
+                    <a href="auth.html" class="mt-8 text-[11px] font-bold uppercase tracking-widest text-navy/20">See
+                        Match Score →</a>
+                </div>
+
+                <!-- Card 4 -->
+                <div
+                    class="relative bg-cream/30 p-8 rounded-sm border border-navy/5 flex flex-col justify-between overflow-hidden">
+                    <div class="blur-[8px] opacity-10 space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div
+                                class="w-12 h-12 bg-navy text-gold rounded-sm flex items-center justify-center font-bold font-serif text-xl border border-gold/20">
+                                ??</div>
+                            <span
+                                class="text-[10px] bg-navy/5 px-3 py-1 rounded-full uppercase font-bold tracking-wider">NGO</span>
+                        </div>
+                        <div>
+                            <h4 class="text-2xl font-serif font-bold">Hidden until signup</h4>
+                            <p class="text-sm text-navy/50">Focus: Educational Research</p>
+                            <p class="text-sm text-navy/50">Location: Blurred</p>
+                        </div>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-md">
+                        <div class="text-center space-y-4">
+                            <div class="text-navy font-bold text-[10px] uppercase tracking-[0.2em] opacity-50">Premium
+                                Feature</div>
+                            <a href="auth.html"
+                                class="inline-block border-2 border-navy px-8 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-navy hover:text-white transition-all">Sign
+                                Up Free</a>
+                        </div>
+                    </div>
+                    <a href="auth.html" class="mt-8 text-[11px] font-bold uppercase tracking-widest text-navy/10">See
+                        Match Score →</a>
+                </div>
+            </div>
+
+            <div class="text-center pt-8 space-y-8">
+                <p class="text-navy/40 font-bold uppercase tracking-[0.2em] text-[10px]">
+                    + 6 more organizations on Drivya.<br>Sign up free to see all matches and scores.
+                </p>
+                <div class="pt-4">
+                    <a href="auth.html"
+                        class="inline-block bg-gold text-navy px-12 py-5 font-bold uppercase tracking-widest rounded-sm hover:scale-105 transition-all shadow-xl shadow-gold/20">
+                        Sign Up Free
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 px-8 text-center bg-white">
+        <div class="max-w-3xl mx-auto space-y-8">
+            <h2 class="text-4xl md:text-5xl font-serif font-bold italic">Stop discovering problems 30 days in.<br>Start
+                with verified partners.</h2>
+            <div class="pt-6">
+                <a href="auth.html"
+                    class="bg-gold text-navy px-12 py-5 font-bold uppercase tracking-widest rounded-sm hover:scale-105 transition-all shadow-xl shadow-gold/20">
+                    Find Your Partner Now
+                </a>
+            </div>
+            <p class="text-[10px] uppercase tracking-widest font-bold opacity-30 mt-8">Free for basic search | Premium
+                unlocked for deep diligence</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-navy/5 text-center px-8">
+        <div class="text-2xl font-serif font-bold mb-4">Driv<span class="text-gold">ya</span></div>
+        <p class="text-xs text-navy/40 uppercase tracking-[0.3em]">&copy; 2026 Drivya Platform | Verified Partnerships
+        </p>
+    </footer>
+</body>
+
+</html>

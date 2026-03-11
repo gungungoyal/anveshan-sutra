@@ -149,7 +149,7 @@
 
     <!-- LEFT SIDEBAR -->
     <aside class="sidebar bg-navy text-white flex flex-col p-6 shadow-2xl">
-        <div class="sidebar-logo mb-10">
+        <div class="sidebar-logo mb-10 cursor-pointer" onclick="window.location.href='index.html'">
             <h1 class="text-2xl font-serif font-bold tracking-tight">
                 Driv<span class="text-gold">ya</span>
             </h1>
@@ -196,10 +196,10 @@
                 <span>👤</span>
                 <span class="md:block hidden">My Profile</span>
             </a>
-            <a href="#"
+            <a href="index.html"
                 class="nav-link px-6 py-4 flex items-center space-x-4 text-xs font-bold uppercase tracking-widest transition-colors hover:text-gold text-white/40 text-[10px]">
-                <span>⚙️</span>
-                <span class="md:block hidden">Settings</span>
+                <span>🚪</span>
+                <span class="md:block hidden">Log Out</span>
             </a>
         </nav>
 
@@ -306,7 +306,7 @@
                         data-type="CSR Partner">
                         <div
                             class="w-20 h-20 bg-navy rounded-sm flex items-center justify-center font-serif text-3xl text-gold shrink-0">
-                            AF</div>
+                            AS</div>
 
                         <div class="flex-1 text-center lg:text-left space-y-4 w-full">
                             <div class="flex flex-col lg:flex-row lg:items-center gap-3">
@@ -318,22 +318,71 @@
                             <div class="flex flex-wrap justify-center lg:justify-start gap-4 text-xs font-bold">
                                 <span class="bg-navy/5 px-2 py-1 rounded-sm text-navy/60">Education</span>
                                 <span class="bg-navy/5 px-2 py-1 rounded-sm text-navy/60">Skill Development</span>
-                                <span class="text-navy/40">📍 Pan India, Maharashtra</span>
+                                <span class="text-navy/40">📍 Uttar Pradesh, Pan India</span>
                             </div>
                         </div>
 
                         <div class="flex items-center gap-12 shrink-0 w-full lg:w-auto justify-center">
                             <div class="text-center space-y-4">
-                                <div class="text-5xl font-serif font-bold text-gold">87</div>
+                                <div class="text-5xl font-serif font-bold text-gold">91</div>
                                 <div class="flex flex-col gap-1 w-24">
                                     <div class="h-1 bg-navy/5 rounded-full overflow-hidden">
-                                        <div class="bg-gold h-full" style="width: 92%;"></div>
+                                        <div class="bg-gold h-full" style="width: 95%;" title="Focus Area: 95%"></div>
                                     </div>
                                     <div class="h-1 bg-navy/5 rounded-full overflow-hidden">
-                                        <div class="bg-gold h-full" style="width: 85%;"></div>
+                                        <div class="bg-gold h-full" style="width: 90%;" title="Geography: 90%"></div>
                                     </div>
                                     <div class="h-1 bg-navy/5 rounded-full overflow-hidden">
-                                        <div class="bg-gold h-full" style="width: 78%;"></div>
+                                        <div class="bg-gold h-full" style="width: 88%;" title="Past Projects: 88%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-3">
+                                <button onclick="toggleSave(this)"
+                                    class="p-4 border border-navy/10 rounded-sm hover:text-gold hover:border-gold transition-all">🔖</button>
+                                <button
+                                    class="px-8 py-4 bg-navy text-white text-[11px] font-bold uppercase tracking-widest rounded-sm hover:bg-navy/90 transition-all">View
+                                    Profile</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Free Preview -->
+                    <div class="match-card bg-white p-8 rounded-sm border border-navy/5 shadow-sm hover:border-gold/30 hover:shadow-md transition-all flex flex-col lg:flex-row items-center gap-12"
+                        data-type="CSR Partner">
+                        <div
+                            class="w-20 h-20 bg-navy rounded-sm flex items-center justify-center font-serif text-3xl text-gold shrink-0">
+                            MI</div>
+
+                        <div class="flex-1 text-center lg:text-left space-y-4 w-full">
+                            <div class="flex flex-col lg:flex-row lg:items-center gap-3">
+                                <h4 class="text-2xl font-serif font-bold">Meridian Impact Trust</h4>
+                                <span
+                                    class="w-fit mx-auto lg:mx-0 text-[9px] uppercase tracking-[0.2em] font-bold text-navy/40 border border-navy/10 px-2.5 py-1 rounded-sm">CSR
+                                    Partner</span>
+                            </div>
+                            <div class="flex flex-wrap justify-center lg:justify-start gap-4 text-xs font-bold">
+                                <span class="bg-navy/5 px-2 py-1 rounded-sm text-navy/60">Rural Development</span>
+                                <span class="bg-navy/5 px-2 py-1 rounded-sm text-navy/60">Women Empowerment</span>
+                                <span class="text-navy/40">📍 Maharashtra, Rajasthan</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-12 shrink-0 w-full lg:w-auto justify-center">
+                            <div class="text-center space-y-4">
+                                <div class="text-5xl font-serif font-bold text-gold">84</div>
+                                <div class="flex flex-col gap-1 w-24">
+                                    <div class="h-1 bg-navy/5 rounded-full overflow-hidden">
+                                        <div class="bg-gold h-full" style="width: 88%;" title="Focus Area: 88%"></div>
+                                    </div>
+                                    <div class="h-1 bg-navy/5 rounded-full overflow-hidden">
+                                        <div class="bg-gold h-full" style="width: 82%;" title="Geography: 82%"></div>
+                                    </div>
+                                    <div class="h-1 bg-navy/5 rounded-full overflow-hidden">
+                                        <div class="bg-gold h-full" style="width: 79%;" title="Past Projects: 79%">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -481,10 +530,14 @@
     <script>
         // Data for locked cards
         const lockedMatches = [
-            { initials: 'MT', name: 'Meridian Impact Trust', type: 'CSR Partner', score: 82, focus: 88, geo: 80, past: 75 },
-            { initials: 'GO', name: 'Goonj', type: 'NGO', score: 79, focus: 85, geo: 72, past: 80 },
-            { initials: 'SA', name: 'Social Alpha', type: 'Incubator', score: 74, focus: 80, geo: 68, past: 74 },
-            { initials: 'GR', name: 'GreenRoots NGO', type: 'NGO', score: 71, focus: 75, geo: 70, past: 68 }
+            { initials: 'GR', name: 'GreenRoots Foundation', type: 'CSR Partner', score: 81, focus: 85, geo: 80, past: 78 },
+            { initials: 'HW', name: 'Horizon Welfare Society', type: 'NGO', score: 78, focus: 82, geo: 75, past: 77 },
+            { initials: 'CT', name: 'Catalyst India Trust', type: 'CSR Partner', score: 76, focus: 80, geo: 72, past: 76 },
+            { initials: 'PI', name: 'Prayas Social Initiative', type: 'NGO', score: 73, focus: 78, geo: 70, past: 71 },
+            { initials: 'SF', name: 'Samridhi Foundation', type: 'CSR Partner', score: 70, focus: 75, geo: 68, past: 67 },
+            { initials: 'UN', name: 'Udaan NGO Network', type: 'NGO', score: 68, focus: 72, geo: 65, past: 67 },
+            { initials: 'NF', name: 'Navjyoti India Foundation', type: 'NGO', score: 65, focus: 70, geo: 62, past: 63 },
+            { initials: 'SW', name: 'Sparsh Welfare Trust', type: 'CSR Partner', score: 61, focus: 65, geo: 58, past: 60 }
         ];
 
         // Generate locked cards
@@ -527,9 +580,9 @@
 
         // Stats Count Up Animation
         function animateStats() {
-            fadeInStat('stat-matches', 24);
-            fadeInStat('stat-high', 8);
-            fadeInStat('stat-saved', 3);
+            fadeInStat('stat-matches', 10);
+            fadeInStat('stat-high', 3);
+            fadeInStat('stat-saved', 2);
             fadeInStat('stat-profile', 72, true);
 
             setTimeout(() => {
