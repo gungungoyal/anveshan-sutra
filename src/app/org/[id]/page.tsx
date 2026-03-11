@@ -172,6 +172,7 @@ export default function OrgProfileDetail() {
     const [privateNotes, setPrivateNotes] = useState("");
     const [notesLoading, setNotesLoading] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [activeTab, setActiveTab] = useState<'public' | 'full'>('public');
 
     // ===== CSR MATCHING STATE =====
     const [csrExpectation, setCsrExpectation] = useState<ProjectExpectation | null>(null);
@@ -326,378 +327,316 @@ export default function OrgProfileDetail() {
                     />
                 )}
 
-                {/* Organization Header - Always Visible (Public Info) */}
-                <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-8 mb-8">
-                    <div className="flex items-start justify-between gap-4 mb-6">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                                <h1 className="text-4xl font-bold text-foreground">
-                                    {org.name}
-                                </h1>
-                                {org.verificationStatus === "verified" && (
-                                    <CheckCircle2 className="w-8 h-8 text-green-600 flex-shrink-0" />
-                                )}
+                {/* Organization Header - Redesigned */}
+                <div className="bg-white rounded-sm p-10 mb-8 border border-navy/5 shadow-sm">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                        <div className="flex items-center gap-6">
+                            <div className="w-24 h-24 rounded-sm flex items-center justify-center text-4xl font-bold shrink-0"
+                                style={{ background: "#0D1B2A", color: "#C9A84C", fontFamily: "'Cormorant Garamond', serif" }}>
+                                {org.name.charAt(0)}
                             </div>
-
-                            <div className="flex flex-wrap gap-2 mb-4">
-                                <Badge variant="default" className="text-base">
-                                    {org.type}
-                                </Badge>
-                                <Badge variant="outline" className="text-base">
-                                    <MapPin className="w-4 h-4 mr-1" />
-                                    {org.region}
-                                </Badge>
-                                {org.verificationStatus && (
-                                    <Badge
-                                        variant={
-                                            org.verificationStatus === "verified"
-                                                ? "default"
-                                                : "secondary"
-                                        }
-                                        className="text-base"
-                                    >
-                                        {org.verificationStatus === "verified"
-                                            ? "✔ Verified"
-                                            : "Pending Verification"}
+                            <div>
+                                <div className="flex items-center gap-3 mb-2">
+                                    <h1 className="text-4xl font-bold" style={{ color: "#0D1B2A", fontFamily: "'Cormorant Garamond', serif" }}>
+                                        {org.name}
+                                    </h1>
+                                    {org.verificationStatus === "verified" && (
+                                        <Badge className="bg-green-100 text-green-800 border-green-200">
+                                            ✓ Verified Partner
+                                        </Badge>
+                                    )}
+                                    <Badge variant="outline" className="border-navy/10 text-navy bg-navy/5">
+                                        {org.type === 'CSR' ? 'CSR Partner' : org.type === 'NGO' ? 'NGO' : org.type}
                                     </Badge>
-                                )}
-                            </div>
-
-                            {/* Focus Areas - Public */}
-                            <div className="flex flex-wrap gap-2">
-                                {org.focusAreas.slice(0, 4).map((area) => (
-                                    <Badge key={area} variant="secondary">
-                                        {area}
-                                    </Badge>
-                                ))}
-                                {org.focusAreas.length > 4 && (
-                                    <Badge variant="outline">+{org.focusAreas.length - 4} more</Badge>
-                                )}
+                                </div>
+                                <div className="flex flex-wrap gap-2 text-sm font-bold" style={{ color: "rgba(13,27,42,0.6)" }}>
+                                    {org.focusAreas.slice(0, 4).map(fa => (
+                                        <span key={fa} className="px-3 py-1 bg-gray-50 rounded-sm border border-gray-100">{fa}</span>
+                                    ))}
+                                    <span className="px-3 py-1 flex items-center gap-1"><MapPin className="w-3.5 h-3.5"/> {org.region}</span>
+                                </div>
                             </div>
                         </div>
-
-                        {/* Alignment Score - Visible but gated explanation */}
-                        {isAuthenticated ? (
-                            <AlignmentScoreBreakdown organization={org} />
-                        ) : (
-                            <div className="text-center bg-card border border-border rounded-xl p-4 min-w-[120px]">
-                                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                                    Alignment
-                                </p>
-                                {isCSR ? (
-                                    <span className={`text-3xl font-bold ${getFitScoreDisplay(org.alignmentScore).color}`}>
-                                        {getFitScoreDisplay(org.alignmentScore).label}
-                                    </span>
-                                ) : (
-                                    <span className="text-3xl font-bold text-primary">{org.alignmentScore}%</span>
-                                )}
-                                <p className="text-xs text-muted-foreground mt-1">Sign in for details</p>
+                        <div className="text-center md:text-right shrink-0">
+                            <div className="text-5xl font-bold mb-1" style={{ color: "#C9A84C", fontFamily: "'Cormorant Garamond', serif" }}>
+                                {org.alignmentScore}% 
                             </div>
-                        )}
+                            <div className="text-[10px] uppercase tracking-widest font-bold" style={{ color: "rgba(13,27,42,0.4)" }}>Match Score</div>
+                        </div>
                     </div>
-
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-3">
-                        <Button variant="ghost" onClick={() => router.back()} className="flex items-center gap-2">
-                            <ArrowLeft className="w-4 h-4" />
-                            Go Back
-                        </Button>
+                    
+                    <div className="flex flex-wrap gap-4 pt-6 border-t border-navy/5">
                         <Button
-                            variant={isShortlisted ? "default" : "outline"}
                             onClick={handleSaveClick}
-                            className="flex items-center gap-2"
-                        >
-                            <Heart
-                                className="w-5 h-5"
-                                fill={isShortlisted ? "currentColor" : "none"}
-                            />
-                            {isShortlisted ? "Saved" : "Save to Shortlist"}
-                            {!isAuthenticated && <Lock className="w-3 h-3 ml-1" />}
-                        </Button>
-
-                        {org.website && (
-                            <Button variant="outline" asChild>
-                                <a
-                                    href={org.website}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2"
-                                >
-                                    <ExternalLink className="w-5 h-5" />
-                                    Visit Website
-                                </a>
-                            </Button>
-                        )}
-
-                        <Button asChild onClick={handlePPTClick}>
-                            <Link href={isAuthenticated ? `/ppt/${org.id}` : "#"} className="flex items-center gap-2">
-                                <Award className="w-5 h-5" />
-                                Generate PPT
-                                {!isAuthenticated && <Lock className="w-3 h-3 ml-1" />}
-                            </Link>
-                        </Button>
-
-                        <Button
-                            variant="outline"
-                            onClick={() => {
-                                if (!isAuthenticated) {
-                                    toast.info("Sign in to draft emails", {
-                                        action: {
-                                            label: "Sign In",
-                                            onClick: () => router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`),
-                                        },
-                                    });
-                                    return;
-                                }
-                                toast.success("Email draft feature coming soon!");
+                            className="rounded-sm font-bold tracking-widest uppercase text-[11px] px-8 h-12"
+                            style={{ 
+                                background: isShortlisted ? "#C9A84C" : "#0D1B2A", 
+                                color: isShortlisted ? "#0D1B2A" : "#FFFFFF" 
                             }}
-                            className="flex items-center gap-2"
                         >
-                            <Mail className="w-5 h-5" />
-                            Draft Email
-                            {!isAuthenticated && <Lock className="w-3 h-3 ml-1" />}
+                            <Heart className={`w-4 h-4 mr-2 ${isShortlisted ? "fill-navy" : ""}`} />
+                            {isShortlisted ? "Saved Partner" : "Save Partner"}
+                            {!isAuthenticated && <Lock className="w-3 h-3 ml-2 opacity-50" />}
+                        </Button>
+                        
+                        {org.website && (
+                             <Button variant="outline" asChild className="rounded-sm font-bold tracking-widest uppercase text-[11px] px-6 h-12 border-navy/20 hover:bg-navy/5">
+                                 <a href={org.website} target="_blank" rel="noopener noreferrer">
+                                     <ExternalLink className="w-4 h-4 mr-2" />
+                                     Visit Website
+                                 </a>
+                             </Button>
+                        )}
+                        
+                        <Button asChild onClick={handlePPTClick} className="rounded-sm font-bold tracking-widest uppercase text-[11px] px-6 h-12 bg-gray-100 text-navy hover:bg-gray-200">
+                            <Link href={isAuthenticated ? `/ppt/${org.id}` : "#"} className="flex items-center gap-2">
+                                <Award className="w-4 h-4 mr-2" />
+                                Generate PPT
+                                {!isAuthenticated && <Lock className="w-3 h-3 ml-1 opacity-50" />}
+                            </Link>
                         </Button>
                     </div>
                 </div>
 
-                {/* PURCHASE GATE: Full Profile Details */}
-                {isAuthenticated && isPurchased ? (
-                    <div className="grid md:grid-cols-3 gap-8 mb-8">
-                        {/* Main Content */}
-                        <div className="md:col-span-2 space-y-6">
-                            {/* Mission & Vision */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Mission & Vision</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div>
-                                        <h3 className="font-bold text-foreground mb-2">Mission</h3>
-                                        <p className="text-muted-foreground leading-relaxed">
-                                            {org.mission}
-                                        </p>
-                                    </div>
-                                    <div className="border-t pt-4">
-                                        <h3 className="font-bold text-foreground mb-2">Vision</h3>
-                                        <p className="text-muted-foreground leading-relaxed">
-                                            {org.description}
-                                        </p>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                {/* PUBLIC PROFILE CONTENT */}
+                <div className="space-y-8 mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-white rounded-sm p-10 border border-navy/5 shadow-sm">
+                        <h3 className="text-2xl font-bold mb-6" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#0D1B2A" }}>About Us / Mission</h3>
+                        <div className="space-y-4 text-[15px] leading-relaxed" style={{ color: "rgba(13,27,42,0.7)" }}>
+                            <p>{org.mission || org.description || "Information about this organization's mission is not available."}</p>
+                            {org.mission && org.description && <p>{org.description}</p>}
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white p-8 rounded-sm border border-navy/5 shadow-sm text-center transition-all hover:-translate-y-1 hover:border-gold/30 hover:shadow-md">
+                            <div className="text-4xl font-bold mb-2" style={{ color: "#C9A84C", fontFamily: "'Cormorant Garamond', serif" }}>
+                                {org.confidence}%
+                            </div>
+                            <div className="text-[10px] uppercase font-bold tracking-widest" style={{ color: "rgba(13,27,42,0.5)" }}>Data Confidence</div>
+                        </div>
+                        <div className="bg-white p-8 rounded-sm border border-navy/5 shadow-sm text-center transition-all hover:-translate-y-1 hover:border-gold/30 hover:shadow-md">
+                            <div className="text-4xl font-bold mb-2" style={{ color: "#C9A84C", fontFamily: "'Cormorant Garamond', serif" }}>
+                                {org.projects?.length || 0}
+                            </div>
+                            <div className="text-[10px] uppercase font-bold tracking-widest" style={{ color: "rgba(13,27,42,0.5)" }}>Known Projects</div>
+                        </div>
+                        <div className="bg-white p-8 rounded-sm border border-navy/5 shadow-sm text-center transition-all hover:-translate-y-1 hover:border-gold/30 hover:shadow-md">
+                            <div className="text-4xl font-bold mb-2" style={{ color: "#C9A84C", fontFamily: "'Cormorant Garamond', serif" }}>
+                                {org.fundingType || "Recipient"}
+                            </div>
+                            <div className="text-[10px] uppercase font-bold tracking-widest" style={{ color: "rgba(13,27,42,0.5)" }}>Primary Role</div>
+                        </div>
+                    </div>
+                </div>
 
-                            {/* Focus Areas */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Focus Areas</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex flex-wrap gap-2">
-                                        {org.focusAreas.map((area) => (
-                                            <Badge key={area} variant="secondary" className="text-base">
-                                                {area}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* Projects & Impact */}
-                            {org.projects && org.projects.length > 0 && (
-                                <Card>
+                {/* FULL DETAILS (LOCKED/UNLOCKED) */}
+                <div className="mb-8">
+                    <h2 className="text-3xl font-bold mb-6 flex items-center gap-3" style={{ color: "#0D1B2A", fontFamily: "'Cormorant Garamond', serif" }}>
+                        Full Details {(!isAuthenticated || !isPurchased) && <Lock className="w-5 h-5 text-gold" style={{ color: "#C9A84C" }} />}
+                    </h2>
+                    
+                    {isAuthenticated && isPurchased ? (
+                        <div className="grid md:grid-cols-3 gap-8 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {/* Main Content */}
+                            <div className="md:col-span-2 space-y-6">
+                                {/* Mission & Vision */}
+                                <Card className="rounded-sm border-navy/5 shadow-sm">
                                     <CardHeader>
-                                        <CardTitle>Key Projects & Impact</CardTitle>
+                                        <CardTitle style={{ fontFamily: "'Cormorant Garamond', serif" }}>Mission & Vision</CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        {org.projects.slice(0, 3).map((project, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="border-l-4 border-primary pl-4 py-2"
-                                            >
-                                                <h4 className="font-bold text-foreground mb-1">
-                                                    {project.title}
-                                                </h4>
-                                                <p className="text-sm text-muted-foreground mb-1">
-                                                    {project.year}
-                                                </p>
-                                                <p className="text-foreground">{project.description}</p>
-                                            </div>
-                                        ))}
+                                        <div>
+                                            <h3 className="font-bold mb-2" style={{ color: "#0D1B2A" }}>Mission</h3>
+                                            <p className="leading-relaxed" style={{ color: "rgba(13,27,42,0.7)" }}>
+                                                {org.mission}
+                                            </p>
+                                        </div>
+                                        <div className="border-t pt-4">
+                                            <h3 className="font-bold mb-2" style={{ color: "#0D1B2A" }}>Vision</h3>
+                                            <p className="leading-relaxed" style={{ color: "rgba(13,27,42,0.7)" }}>
+                                                {org.description}
+                                            </p>
+                                        </div>
                                     </CardContent>
                                 </Card>
-                            )}
 
-                            {/* Partners */}
-                            {org.partnerHistory && org.partnerHistory.length > 0 && (
-                                <Card>
+                                {/* Focus Areas */}
+                                <Card className="rounded-sm border-navy/5 shadow-sm">
                                     <CardHeader>
-                                        <CardTitle>Known Partners</CardTitle>
+                                        <CardTitle style={{ fontFamily: "'Cormorant Garamond', serif" }}>Focus Areas</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="flex flex-wrap gap-2">
-                                            {org.partnerHistory.map((partner, idx) => (
-                                                <Badge key={idx} variant="outline">
-                                                    {partner}
+                                            {org.focusAreas.map((area) => (
+                                                <Badge key={area} variant="secondary" className="text-base bg-navy/5 text-navy hover:bg-navy/10 rounded-sm">
+                                                    {area}
                                                 </Badge>
                                             ))}
                                         </div>
                                     </CardContent>
                                 </Card>
-                            )}
-                        </div>
 
-                        {/* Sidebar */}
-                        <div className="space-y-6">
-                            {/* Key Info */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">Organization Info</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div>
-                                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                                            Type
-                                        </p>
-                                        <p className="font-semibold text-foreground">{org.type}</p>
-                                    </div>
-                                    <div className="border-t pt-4">
-                                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                                            Region
-                                        </p>
-                                        <p className="font-semibold text-foreground">{org.region}</p>
-                                    </div>
-                                    <div className="border-t pt-4">
-                                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                                            Headquarters
-                                        </p>
-                                        <p className="font-semibold text-foreground">
-                                            {org.headquarters}
-                                        </p>
-                                    </div>
-                                    <div className="border-t pt-4">
-                                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                                            Funding Type
-                                        </p>
-                                        <p className="font-semibold text-foreground">
-                                            {org.fundingType}
-                                        </p>
-                                    </div>
-                                    <div className="border-t pt-4">
-                                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                                            Data Confidence
-                                        </p>
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex-1 bg-secondary rounded-full h-2">
+                                {/* Projects & Impact */}
+                                {org.projects && org.projects.length > 0 && (
+                                    <Card className="rounded-sm border-navy/5 shadow-sm">
+                                        <CardHeader>
+                                            <CardTitle style={{ fontFamily: "'Cormorant Garamond', serif" }}>Key Projects & Impact</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            {org.projects.slice(0, 3).map((project, idx) => (
                                                 <div
-                                                    className="bg-primary h-full rounded-full"
-                                                    style={{ width: `${org.confidence}%` }}
-                                                ></div>
+                                                    key={idx}
+                                                    className="border-l-4 pl-4 py-2"
+                                                    style={{ borderColor: "#C9A84C" }}
+                                                >
+                                                    <h4 className="font-bold mb-1" style={{ color: "#0D1B2A" }}>
+                                                        {project.title}
+                                                    </h4>
+                                                    <p className="text-sm mb-1" style={{ color: "rgba(13,27,42,0.5)" }}>
+                                                        {project.year}
+                                                    </p>
+                                                    <p style={{ color: "rgba(13,27,42,0.7)" }}>{project.description}</p>
+                                                </div>
+                                            ))}
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Partners */}
+                                {org.partnerHistory && org.partnerHistory.length > 0 && (
+                                    <Card className="rounded-sm border-navy/5 shadow-sm">
+                                        <CardHeader>
+                                            <CardTitle style={{ fontFamily: "'Cormorant Garamond', serif" }}>Known Partners</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="flex flex-wrap gap-2">
+                                                {org.partnerHistory.map((partner, idx) => (
+                                                    <Badge key={idx} variant="outline" className="rounded-sm border-navy/10 text-navy">
+                                                        {partner}
+                                                    </Badge>
+                                                ))}
                                             </div>
-                                            <span className="text-sm font-semibold text-foreground">
-                                                {org.confidence}%
-                                            </span>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </div>
 
-                            {/* Private Notes - Your internal notes */}
-                            <Card className="border-amber-500/30 bg-amber-500/5">
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <StickyNote className="w-5 h-5 text-amber-600" />
-                                        Your Notes
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-xs text-muted-foreground mb-3">
-                                        Private notes only visible to you. Why is this a good fit?
-                                    </p>
-                                    <textarea
-                                        value={privateNotes}
-                                        onChange={(e) => setPrivateNotes(e.target.value)}
-                                        placeholder="e.g., 'Aligned on rural education. Good for pilot proposal. Contact after March funding cycle.'"
-                                        rows={4}
-                                        className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 resize-none"
-                                    />
-                                    <div className="flex justify-end mt-2">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="text-xs"
-                                            onClick={() => {
-                                                // TODO: Save to Supabase shortlist.notes
-                                                toast.success("Notes saved!");
-                                            }}
-                                        >
-                                            Save Notes
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* Target Beneficiaries */}
-                            {org.targetBeneficiaries && org.targetBeneficiaries.length > 0 && (
-                                <Card>
+                            {/* Sidebar */}
+                            <div className="space-y-6">
+                                {/* Key Info */}
+                                <Card className="rounded-sm border-navy/5 shadow-sm">
                                     <CardHeader>
-                                        <CardTitle className="text-lg">
-                                            Target Beneficiaries
+                                        <CardTitle className="text-lg" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Detailed Info</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="border-t pt-4">
+                                            <p className="text-[10px] uppercase tracking-widest mb-1 font-bold" style={{ color: "rgba(13,27,42,0.4)" }}>
+                                                Headquarters
+                                            </p>
+                                            <p className="font-semibold" style={{ color: "#0D1B2A" }}>
+                                                {org.headquarters}
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Target Beneficiaries */}
+                                {org.targetBeneficiaries && org.targetBeneficiaries.length > 0 && (
+                                    <Card className="rounded-sm border-navy/5 shadow-sm">
+                                        <CardHeader>
+                                            <CardTitle className="text-lg" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                                                Target Beneficiaries
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <ul className="space-y-2">
+                                                {org.targetBeneficiaries.map((beneficiary, idx) => (
+                                                    <li
+                                                        key={idx}
+                                                        className="text-sm text-foreground flex items-start gap-2"
+                                                        style={{ color: "rgba(13,27,42,0.8)" }}
+                                                    >
+                                                        <span className="mt-1" style={{ color: "#C9A84C" }}>•</span>
+                                                        {beneficiary}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Why This Match Card */}
+                                <Card className="rounded-sm shadow-sm" style={{ background: "rgba(201,168,76,0.05)", borderColor: "rgba(201,168,76,0.2)" }}>
+                                    <CardHeader>
+                                        <CardTitle className="text-lg flex items-center gap-2" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#0D1B2A" }}>
+                                            <Lightbulb className="w-5 h-5" style={{ color: "#C9A84C" }} />
+                                            Why this matches you
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <ul className="space-y-2">
-                                            {org.targetBeneficiaries.map((beneficiary, idx) => (
-                                                <li
-                                                    key={idx}
-                                                    className="text-sm text-foreground flex items-start gap-2"
-                                                >
-                                                    <span className="text-primary mt-1">•</span>
-                                                    {beneficiary}
-                                                </li>
-                                            ))}
-                                        </ul>
+                                        <MatchExplanation organization={org} />
                                     </CardContent>
                                 </Card>
-                            )}
 
-                            {/* Why This Match Card */}
-                            <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
-                                <CardHeader>
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <Lightbulb className="w-5 h-5 text-primary" />
-                                        Why this organization matches you
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <MatchExplanation organization={org} />
-                                    <p className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border/50">
-                                        Based on publicly available organization information
-                                    </p>
-                                </CardContent>
-                            </Card>
-
-                            {/* Community Signals */}
-                            <CommunitySignals organizationId={org.id} />
+                                {/* Community Signals */}
+                                <CommunitySignals organizationId={org.id} />
+                            </div>
                         </div>
-                    </div>
-                ) : isAuthenticated && !isPurchased ? (
-                    /* LOCKED CONTENT: For authenticated users who haven't purchased */
-                    <div className="mt-8">
-                        <LockedContentOverlay
-                            organizationName={org.name}
-                            price={99}
-                            onUnlock={() => setShowPaymentModal(true)}
-                        />
-                    </div>
-                ) : (
-                    /* AUTH PROMPT: For unauthenticated users */
-                    <div className="mt-8">
-                        <AuthPrompt
-                            feature="full organization details"
-                            message="Sign in to access full organization details, alignment insights, and collaboration tools."
-                        />
-                    </div>
-                )}
+                    ) : (
+                        /* LOCKED CONTENT: For authenticated/unpurchased OR unauthenticated users */
+                        <div className="relative bg-white rounded-sm border border-navy/5 shadow-sm overflow-hidden p-10 min-h-[600px] flex items-center justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="absolute inset-0 pointer-events-none opacity-20 blur-md grayscale transition-all text-navy/10 flex flex-col justify-between p-12">
+                                <div className="space-y-6">
+                                    <div className="h-8 w-1/3 bg-current rounded" />
+                                    <div className="space-y-4 pt-4">
+                                        <div className="h-4 w-full bg-current rounded" />
+                                        <div className="h-4 w-5/6 bg-current rounded" />
+                                        <div className="h-4 w-4/5 bg-current rounded" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-8 mt-12">
+                                    <div className="h-48 bg-current rounded" />
+                                    <div className="h-48 bg-current rounded" />
+                                </div>
+                            </div>
+                            
+                            <div className="relative z-10 w-full max-w-lg bg-white p-12 rounded-sm shadow-2xl text-center border-t-4" style={{ borderColor: "#C9A84C" }}>
+                                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: "rgba(201,168,76,0.1)" }}>
+                                    <Lock className="w-8 h-8" style={{ color: "#C9A84C" }} />
+                                </div>
+                                <h3 className="text-3xl font-bold mb-4" style={{ color: "#0D1B2A", fontFamily: "'Cormorant Garamond', serif" }}>
+                                    {isAuthenticated ? "Unlock Full Profile" : "Sign in to Unlock"}
+                                </h3>
+                                <p className="text-sm leading-relaxed mb-8" style={{ color: "rgba(13,27,42,0.6)" }}>
+                                    {isAuthenticated 
+                                        ? <>Get full access to financial data, past projects, impact reports and direct messaging for <span className="font-bold text-navy">{org.name}</span>.</>
+                                        : <>Join Drivya to access full financial data, past projects, impact reports and direct messaging for <span className="font-bold text-navy">{org.name}</span>.</>
+                                    }
+                                </p>
+                                
+                                {isAuthenticated ? (
+                                    <>
+                                        <Button onClick={() => setShowPaymentModal(true)} className="w-full h-14 text-xs font-bold uppercase tracking-widest hover:brightness-110 transition-all rounded-sm"
+                                            style={{ background: "#C9A84C", color: "#0D1B2A", boxShadow: "0 8px 24px rgba(201,168,76,0.2)" }}>
+                                            View Upgrade Plans
+                                        </Button>
+                                        <p className="text-[10px] uppercase tracking-widest mt-6 font-bold" style={{ color: "rgba(13,27,42,0.3)" }}>One-time purchase • Lifetime access</p>
+                                    </>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <Link href={`/auth?returnTo=/org/${org.id}`}>
+                                            <Button className="w-full h-14 text-xs font-bold uppercase tracking-widest hover:brightness-110 transition-all rounded-sm"
+                                                style={{ background: "#0D1B2A", color: "#FAF7F2", boxShadow: "0 8px 24px rgba(13,27,42,0.2)" }}>
+                                                Sign In to Continue
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </main>
 
             <Footer />
