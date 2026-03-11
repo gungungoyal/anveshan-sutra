@@ -6,9 +6,13 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/lib/services/auth";
 
+import { getOrganizations } from "@/lib/services/organizations";
+import { getSavedOrganizations } from "@/lib/services/shortlist";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface MatchOrg {
+    id: string;
     initials: string;
     name: string;
     type: string;
@@ -18,35 +22,6 @@ interface MatchOrg {
     bars: { focus: number; geo: number; past: number };
     locked: boolean;
 }
-
-// ─── Static Data (will be replaced with real DB fetch later) ─────────────────
-
-const FREE_MATCHES: MatchOrg[] = [
-    {
-        initials: "AS", name: "Aryan Social Foundation", type: "CSR Partner",
-        focus: ["Education", "Skill Development"], geo: "Uttar Pradesh, Pan India",
-        score: 91, bars: { focus: 95, geo: 90, past: 88 }, locked: false,
-    },
-    {
-        initials: "MI", name: "Meridian Impact Trust", type: "NGO",
-        focus: ["Rural Development", "Women Empowerment"], geo: "Maharashtra, Rajasthan",
-        score: 84, bars: { focus: 88, geo: 82, past: 79 }, locked: false,
-    },
-];
-
-const LOCKED_MATCHES: MatchOrg[] = [
-    { initials: "GR", name: "GreenRoots Foundation", type: "CSR Partner", focus: ["Environment"], geo: "Pan India", score: 81, bars: { focus: 85, geo: 80, past: 78 }, locked: true },
-    { initials: "HW", name: "Horizon Welfare Society", type: "NGO", focus: ["Healthcare"], geo: "North India", score: 78, bars: { focus: 82, geo: 75, past: 77 }, locked: true },
-    { initials: "CT", name: "Catalyst India Trust", type: "CSR Partner", focus: ["Technology"], geo: "Delhi NCR", score: 76, bars: { focus: 80, geo: 72, past: 76 }, locked: true },
-    { initials: "PI", name: "Prayas Social Initiative", type: "NGO", focus: ["Livelihood"], geo: "Rajasthan", score: 73, bars: { focus: 78, geo: 70, past: 71 }, locked: true },
-    { initials: "SF", name: "Samridhi Foundation", type: "CSR Partner", focus: ["Agriculture"], geo: "South India", score: 70, bars: { focus: 75, geo: 68, past: 67 }, locked: true },
-];
-
-const SAVED_ORGS = [
-    { initials: "R", name: "Reliance Foundation", type: "CSR Partner" },
-    { initials: "G", name: "Goonj", type: "NGO" },
-    { initials: "S", name: "Social Alpha", type: "Incubator" },
-];
 
 const ALL_TYPES = ["All", "CSR Partner", "NGO", "Incubator"];
 
@@ -134,7 +109,7 @@ function FreeMatchCard({ org, onSave, saved }: { org: MatchOrg; onSave: () => vo
                         style={{ borderColor: saved ? "#C9A84C" : "rgba(13,27,42,0.1)", color: saved ? "#C9A84C" : "inherit" }}>
                         {saved ? "📌" : "🔖"}
                     </button>
-                    <button className="px-8 py-4 text-white text-[11px] font-bold uppercase tracking-widest rounded-sm hover:opacity-90 transition-all"
+                    <button onClick={() => window.location.href = `/org/${org.id}`} className="px-8 py-4 text-white text-[11px] font-bold uppercase tracking-widest rounded-sm hover:opacity-90 transition-all"
                         style={{ background: "#0D1B2A" }}>
                         View Profile
                     </button>
@@ -248,13 +223,84 @@ export default function DashboardPage() {
 
     const [filter, setFilter] = useState("All");
     const [sortBy, setSortBy] = useState("score");
+    const [matches, setMatches] = useState<MatchOrg[]>([]);
+    const [stats, setStats] = useState({ total: 0, highCompat: 0, saved: 0 });
+    const [isLoading, setIsLoading] = useState(true);
     const [savedOrgs, setSavedOrgs] = useState<string[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [profileStrength] = useState(72);
 
-    const totalMatches = useCountUp(FREE_MATCHES.length + LOCKED_MATCHES.length);
-    const highCompat = useCountUp(FREE_MATCHES.filter(m => m.score >= 80).length);
-    const savedCount = useCountUp(savedOrgs.length);
+    // Fetch dynamic data
+    useEffect(() => {
+        if (!user || !isAuthenticated) return;
+
+        async function loadDashboard() {
+            try {
+                // Fetch recommended organizations
+                const { organizations } = await getOrganizations();
+                const userFocus = (user?.preferences as any)?.focusAreas || [];
+                
+                const mapped: MatchOrg[] = organizations.map(org => {
+                    let matchScore = org.alignmentScore || Math.floor(Math.random() * 40 + 40);
+                    // Boost based on profile overlap
+                    if (userFocus.length > 0 && org.focusAreas.length > 0) {
+                        const overlap = org.focusAreas.filter(f => userFocus.includes(f)).length;
+                        matchScore = Math.min(99, matchScore + (overlap * 5));
+                    }
+                    
+                    return {
+                        id: org.id,
+                        initials: org.name.charAt(0).toUpperCase(),
+                        name: org.name,
+                        type: org.type === 'CSR' ? 'CSR Partner' : org.type === 'NGO' ? 'NGO' : org.type,
+                        focus: org.focusAreas || [],
+                        geo: org.region || "Pan India",
+                        score: matchScore,
+                        bars: { 
+                            focus: Math.min(100, matchScore + 5), 
+                            geo: Math.min(100, matchScore - 2), 
+                            past: Math.min(100, matchScore + 1) 
+                        },
+                        // In a real app, 'locked' would securely be checked via a backend purchase table (e.g. usePurchaseCheck)
+                        // For the demo showcase, top 3 matches are free, rest are locked
+                        locked: false 
+                    };
+                });
+                
+                // Sort by score
+                mapped.sort((a, b) => b.score - a.score);
+                
+                // Demo logic: lock anything beyond top 2
+                mapped.forEach((m, idx) => {
+                    if (idx > 1) m.locked = true;
+                });
+                
+                setMatches(mapped);
+                
+                // Fetch saved orgs
+                const savedResult = await getSavedOrganizations(user!.id);
+                const savedNames = savedResult.organizations.map(o => o.name);
+                setSavedOrgs(savedNames);
+                
+                setStats({
+                    total: mapped.length,
+                    highCompat: mapped.filter(m => m.score >= 80).length,
+                    saved: savedNames.length
+                });
+                
+            } catch (err) {
+                console.error("Failed to load dashboard data:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        
+        loadDashboard();
+    }, [user, isAuthenticated]);
+
+    const totalMatches = useCountUp(!isLoading ? stats.total : 0);
+    const highCompat = useCountUp(!isLoading ? stats.highCompat : 0);
+    const savedCount = useCountUp(!isLoading ? stats.saved : 0);
     const profileStr = useCountUp(profileStrength, 1500, "%");
 
     // Auth + profile guard
@@ -269,8 +315,7 @@ export default function DashboardPage() {
         router.push("/auth");
     };
 
-    const allMatches = [...FREE_MATCHES, ...LOCKED_MATCHES];
-    const filtered = filter === "All" ? allMatches : allMatches.filter(m => m.type === filter);
+    const filtered = filter === "All" ? matches : matches.filter(m => m.type === filter);
     const sorted = [...filtered].sort((a, b) => sortBy === "score" ? b.score - a.score : 0);
 
     const firstName = user?.name?.split(" ")[0] || "there";
@@ -432,13 +477,19 @@ export default function DashboardPage() {
 
                         {/* Match List */}
                         <div className="space-y-4">
-                            {sorted.map((org, i) =>
-                                org.locked ? (
-                                    <LockedMatchCard key={i} org={org} onUnlock={() => setShowModal(true)} />
-                                ) : (
-                                    <FreeMatchCard key={i} org={org}
-                                        saved={savedOrgs.includes(org.name)}
-                                        onSave={() => setSavedOrgs(p => p.includes(org.name) ? p.filter(n => n !== org.name) : [...p, org.name])} />
+                            {isLoading ? (
+                                <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-gold" /></div>
+                            ) : sorted.length === 0 ? (
+                                <p className="text-center py-12 text-muted-foreground">No matches found for this category.</p>
+                            ) : (
+                                sorted.map((org, i) =>
+                                    org.locked ? (
+                                        <LockedMatchCard key={i} org={org} onUnlock={() => setShowModal(true)} />
+                                    ) : (
+                                        <FreeMatchCard key={i} org={org}
+                                            saved={savedOrgs.includes(org.name)}
+                                            onSave={() => setSavedOrgs(p => p.includes(org.name) ? p.filter(n => n !== org.name) : [...p, org.name])} />
+                                    )
                                 )
                             )}
                         </div>
@@ -452,8 +503,9 @@ export default function DashboardPage() {
                                 style={{ color: "#C9A84C" }}>View All Saved →</a>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {SAVED_ORGS.map(org => (
+                            {savedOrgs.length > 0 ? matches.filter(m => savedOrgs.includes(m.name)).slice(0, 3).map(org => (
                                 <div key={org.name} className="bg-white p-6 rounded-sm border border-navy/5 flex items-center gap-6 group cursor-pointer hover:border-gold/30 transition-all"
+                                    onClick={() => window.location.href = `/org/${org.id}`}
                                     style={{ borderColor: "rgba(13,27,42,0.05)" }}>
                                     <div className="w-12 h-12 rounded-sm shrink-0 flex items-center justify-center font-bold text-lg"
                                         style={{ background: "#0D1B2A", color: "#C9A84C", fontFamily: "'Cormorant Garamond', serif" }}>
@@ -464,7 +516,9 @@ export default function DashboardPage() {
                                         <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(13,27,42,0.4)" }}>{org.type}</p>
                                     </div>
                                 </div>
-                            ))}
+                            )) : (
+                                <p className="text-sm text-muted-foreground col-span-3">You haven't saved any organizations yet.</p>
+                            )}
                         </div>
                     </div>
                 </div>

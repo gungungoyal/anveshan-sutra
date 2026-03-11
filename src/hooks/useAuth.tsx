@@ -60,6 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (error || !session?.user) {
                     return;
                 }
+                
+                // Sync token to cookie for SSR/Middleware on initial load
+                const cookieName = 'sb-auth-token';
+                const maxAge = 60 * 60 * 24 * 7; // 7 days
+                document.cookie = `${cookieName}=${session.access_token}; path=/; max-age=${maxAge}; samesite=lax; secure`;
+                
                 await fetchUser();
             } catch {
                 // Auth error - proceed without user
@@ -76,13 +82,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Listen for auth state changes (login, logout, token refresh)
         const { data: { subscription } } = sb.auth.onAuthStateChange(
             async (event, session) => {
+                const cookieName = 'sb-auth-token';
                 if (!mounted) return;
 
                 if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                     if (session?.user) {
+                        // Sync token to cookie for SSR/Middleware
+                        const maxAge = 60 * 60 * 24 * 7; // 7 days
+                        document.cookie = `${cookieName}=${session.access_token}; path=/; max-age=${maxAge}; samesite=lax; secure`;
                         await fetchUser();
                     }
                 } else if (event === 'SIGNED_OUT') {
+                    document.cookie = `${cookieName}=; path=/; max-age=0; samesite=lax; secure`;
                     setUser(null);
                 }
             }
