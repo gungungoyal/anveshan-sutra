@@ -12,12 +12,21 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Create Supabase client with proper configuration to avoid timeouts
 export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: false,
-    },
-  })
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: false,
+        // CRITICAL FIX: Disable navigator.locks to prevent deadlock on Vercel Edge/Node
+        // We provide a dummy lock function that immediately resolves to bypass the actual locking mechanism
+        lock: async (name, timeout, fn) => await fn(),
+      },
+      global: {
+        // CRITICAL FIX: Bypass Next.js aggressive fetch caching which stalls globally
+        fetch: (url, options) => {
+          return fetch(url, { ...options, cache: 'no-store' });
+        }
+      }
+    })
   : null
 
 
