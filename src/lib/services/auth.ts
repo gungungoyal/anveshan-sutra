@@ -182,10 +182,12 @@ export async function signUpWithPassword(
             name,
             role,
             profile_complete: false,
+            form_filled: false,
             verified: false,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
         };
+
 
         return { user: authUser, error: null };
     } catch (error: any) {
@@ -207,31 +209,19 @@ export async function signInWithPassword(
         }
 
         console.log('[Auth] Starting login for:', email);
-        const startTime = Date.now();
 
-        // Add timeout to prevent infinite loading
-        const { withTimeout } = await import('../utils/async');
-
-        const { data, error } = await withTimeout(
-            supabase.auth.signInWithPassword({
-                email,
-                password,
-            }),
-            60000, // 60 second timeout (increased from 30s)
-            'Login request timed out. Please check your connection and try again.'
-        );
-
-        const loginDuration = Date.now() - startTime;
-        console.log(`[Auth] Login attempt took ${loginDuration}ms`);
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
 
         if (error) {
             console.error('[Auth] Signin error:', error);
-            // Provide more helpful error messages
             if (error.message.includes('Invalid login credentials')) {
                 return { user: null, error: 'Invalid email or password. Please check your credentials.' };
             }
             if (error.message.includes('Email not confirmed')) {
-                return { user: null, error: 'Please verify your email before signing in.' };
+                return { user: null, error: 'EMAIL_NOT_CONFIRMED' };
             }
             return { user: null, error: error.message };
         }
@@ -241,27 +231,16 @@ export async function signInWithPassword(
         }
 
         console.log('[Auth] Login successful, fetching profile...');
-        // Get the full user profile with timeout
-        const { user } = await withTimeout(
-            getCurrentUser(),
-            20000, // 20 second timeout for profile fetch
-            'Failed to load profile. Please try again.'
-        );
+        const { user } = await getCurrentUser();
 
         console.log('[Auth] Profile loaded successfully');
         return { user, error: null };
     } catch (error: any) {
         console.error('[Auth] signInWithPassword error:', error);
-        // Check if it's a timeout error
-        if (error.message && error.message.includes('timed out')) {
-            return {
-                user: null,
-                error: 'Connection is taking longer than expected. Please check your internet connection or try again in a few moments.'
-            };
-        }
         return { user: null, error: error.message || 'Failed to sign in' };
     }
 }
+
 
 /**
  * Reset password - uses server-side API to update password after OTP verification
@@ -463,7 +442,8 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
                 .from('user_profiles')
                 .select('*')
                 .eq('id', user.id)
-                .single(),
+                .maybeSingle(),
+
             supabase
                 .from('user_organizations')
                 .select('organization_id, organizations(id, name, type)')
@@ -492,6 +472,7 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
             name: profileData?.name || user.user_metadata?.name || user.email?.split('@')[0] || '',
             role: profileData?.role || user.user_metadata?.role || 'ngo',
             profile_complete: profileData?.profile_complete || false,
+            form_filled: profileData?.form_filled || false,
             verified: profileData?.verified || false,
             phone: profileData?.phone || undefined,
             avatar_url: profileData?.avatar_url || undefined,
@@ -503,6 +484,7 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
             created_at: profileData?.created_at || new Date().toISOString(),
             updated_at: profileData?.updated_at || new Date().toISOString(),
         };
+
 
         return { user: authUser, error: null };
     } catch (error: any) {

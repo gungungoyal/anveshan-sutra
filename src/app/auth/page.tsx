@@ -63,11 +63,11 @@ function AuthPageContent() {
         }
     }, [resendCooldown]);
 
-    // Role mapping for backend
+    // Role mapping for backend — must match DB values AND dashboard checks
     const roleMap = {
         incubator: 'incubator',
-        csr: 'csr_partner',
-        ngo: 'ngo_partner'
+        csr: 'csr',       // was 'csr_partner' — fixed Bug #16
+        ngo: 'ngo',       // was 'ngo_partner' — fixed for consistency
     };
 
     const handleSignupSubmit = async (e: React.FormEvent) => {
@@ -121,18 +121,32 @@ function AuthPageContent() {
         setIsLoading(true);
 
         try {
-            await signInWithPassword(email, password);
-            router.push("/dashboard");
-        } catch (error: any) {
-            // Check if email not verified
-            if (error.message?.includes("Email not confirmed")) {
-                await sendOtp(email);
-                setStep("otp");
-                setIsInfoMessage(true);
-                setErrorMessage("Your email is not verified. We've sent a new code.");
-            } else {
-                setErrorMessage(error.message || "Invalid email or password");
+            const result = await signInWithPassword(email, password);
+
+            if (result.error) {
+                // Check if email not verified
+                if (result.error.includes("Email not confirmed") || result.error.includes("not verified")) {
+                    const otpResult = await sendOtp(email, 'signup');
+                    setStep("otp");
+                    setIsInfoMessage(true);
+                    setErrorMessage(otpResult.success
+                        ? "Your email is not verified. We've sent a new verification code."
+                        : "Your email is not verified. Please request a code below."
+                    );
+                } else {
+                    setErrorMessage(result.error);
+                }
+                return;
             }
+
+            // Login successful — check if profile is complete
+            if (result.user && !result.user.profile_complete) {
+                router.push("/org-profile");
+            } else {
+                router.push("/dashboard");
+            }
+        } catch (error: any) {
+            setErrorMessage(error.message || "Invalid email or password");
         } finally {
             setIsLoading(false);
         }
@@ -142,12 +156,17 @@ function AuthPageContent() {
         if (resendCooldown > 0) return;
         setIsLoading(true);
         try {
-            await sendOtp(email);
-            setResendCooldown(60);
-            setIsInfoMessage(true);
-            setErrorMessage("Verification code resent to your email.");
+            const result = await sendOtp(email, mode === 'forgot_password' ? 'password_reset' : 'signup');
+            if (result.success) {
+                setResendCooldown(60);
+                setIsInfoMessage(true);
+                setErrorMessage("Verification code resent to your email.");
+            } else {
+                setIsInfoMessage(false);
+                setErrorMessage(result.error || "Failed to send verification code. Please try again.");
+            }
         } catch (error: any) {
-            setErrorMessage(error.message);
+            setErrorMessage(error.message || "Failed to send code.");
         } finally {
             setIsLoading(false);
         }
@@ -157,9 +176,34 @@ function AuthPageContent() {
         setIsLoading(true);
         setErrorMessage("");
         try {
-            await verifyOtp(email, otp);
+            const result = await verifyOtp(email, otp);
+
+            if (!result.success || !result.verified) {
+                setIsInfoMessage(false);
+                setErrorMessage(result.error || "Invalid code. Please try again.");
+                return;
+            }
+
             if (mode === "forgot_password") {
                 setStep("reset_password");
+                return;
+            }
+
+            // Signup mode: OTP verified — now create a real session by signing in
+            // The account was already created by signUpWithPassword earlier
+            const loginResult = await signInWithPassword(email, password);
+            if (loginResult.error) {
+                // Session creation failed — still show success but tell user to log in manually
+                setIsInfoMessage(true);
+                setErrorMessage("Email verified! Please sign in with your credentials.");
+                setMode("login");
+                setStep("form");
+                return;
+            }
+
+            // Session created successfully — go to org-profile if not yet complete
+            if (loginResult.user && !loginResult.user.profile_complete) {
+                router.push("/org-profile");
             } else {
                 router.push("/dashboard");
             }

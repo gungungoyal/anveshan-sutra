@@ -354,7 +354,10 @@ export async function searchOrganizations(params: SearchParams, userInterests?: 
         // Apply sorting
         switch (params.sortBy) {
             case "alignment":
-                query = query.order('alignment_score', { ascending: false });
+                // Alignment score is calculated client-side, so we do not order by it here.
+                // We'll sort the final array in memory after calculation.
+                // However, we still need a deterministic fallback sort, e.g., created_at
+                query = query.order('created_at', { ascending: false });
                 break;
             case "confidence":
                 query = query.order('confidence', { ascending: false });

@@ -15,19 +15,9 @@ export const supabase = supabaseUrl && supabaseAnonKey
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true,
-      flowType: 'pkce', // More secure auth flow
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined, // Explicit storage only in browser
-      storageKey: 'drivya-auth-token', // Custom storage key
-    },
-    global: {
-      headers: {
-        'X-Client-Info': 'drivya-web@1.0.0',
-      },
-    },
-    db: {
-      schema: 'public',
+      detectSessionInUrl: false,
     },
   })
   : null
+
 

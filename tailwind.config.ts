@@ -69,6 +69,11 @@ export default {
           "blue-light": "#e8f2fd",
           "blue-dark": "#0d5fb0",
         },
+        // Drivya design system (drivya-demo)
+        navy: "#0D1B2A",
+        gold: "#C9A84C",
+        cream: "#FAF7F2",
+
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, ExternalLink, CheckCircle2, Search as SearchIcon, HelpCircle, AlertTriangle, X, Loader2, Lock, ShieldAlert } from "lucide-react";
+import { Heart, ExternalLink, CheckCircle2, Search as SearchIcon, HelpCircle, AlertTriangle, X, Loader2, Lock, ShieldAlert, MapPin } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { searchOrganizations } from "@/lib/services/organizations";
 import { SearchResult } from "@shared/api";
@@ -365,16 +365,16 @@ function ExploreContent() {
     };
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-cream font-sans text-navy">
             <Header />
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 lg:py-10">
                 {/* Page Header */}
-                <div className="mb-6">
-                    <h1 className="text-2xl font-extrabold text-foreground mb-1">
+                <div className="mb-8">
+                    <h1 className="font-serif text-3xl md:text-4xl text-navy mb-2 lg:mb-4">
                         {roleContext.title}
                     </h1>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-base text-navy/70">
                         {roleContext.subtitle}
                     </p>
                 </div>
@@ -473,307 +473,213 @@ function ExploreContent() {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    {/* Filters Sidebar */}
-                    <div className="lg:col-span-1">
-                        <div className="sticky top-24 space-y-4">
-                            <Card className="drivya-card shadow-card">
-                                <CardContent className="pt-5">
-                                    <h3 className="font-bold text-sm mb-4 text-foreground">Filters</h3>
-
-                                    {/* Search Query */}
-                                    <div className="mb-6">
-                                        <label className="block text-sm font-medium mb-2">
-                                            Search
-                                        </label>
-                                        <div className="relative">
-                                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                placeholder="Search organizations..."
-                                                value={query}
-                                                onChange={(e) => setQuery(e.target.value)}
-                                                className="w-full pl-10"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Focus Area Filter */}
-                                    <div className="mb-6">
-                                        <label className="block text-sm font-medium mb-2">
-                                            Focus Area
-                                        </label>
-                                        <Select
-                                            value={selectedFocusArea || "__all__"}
-                                            onValueChange={(val) => setSelectedFocusArea(val === "__all__" ? "" : val)}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="All areas" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="__all__">All Areas</SelectItem>
-                                                {focusAreas.map((area) => (
-                                                    <SelectItem key={area} value={area}>
-                                                        {area}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    {/* Region Filter */}
-                                    <div className="mb-6">
-                                        <label className="block text-sm font-medium mb-2">
-                                            Region
-                                        </label>
-                                        <Select
-                                            value={selectedRegion || "__all__"}
-                                            onValueChange={(val) => setSelectedRegion(val === "__all__" ? "" : val)}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="All regions" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="__all__">All Regions</SelectItem>
-                                                {regions.map((region) => (
-                                                    <SelectItem key={region} value={region}>
-                                                        {region}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    {/* Sort By */}
-                                    <div className="mb-6">
-                                        <label className="block text-sm font-medium mb-2">
-                                            Sort By
-                                        </label>
-                                        <Select
-                                            value={sortBy}
-                                            onValueChange={(value) =>
-                                                setSortBy(value as "alignment" | "name" | "recency")
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="alignment">Alignment Score</SelectItem>
-                                                <SelectItem value="name">Name (A-Z)</SelectItem>
-                                                <SelectItem value="recency">Recently Added</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    {/* Clear Filters */}
-                                    <Button
-                                        variant="outline"
-                                        className="w-full"
-                                        onClick={handleClearFilters}
-                                    >
-                                        Clear Filters
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        </div>
+                {/* Search and Filters - Horizontal Layout */}
+                <div className="flex flex-col gap-4 mb-10">
+                    <div className="relative group">
+                        <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gold group-focus-within:text-navy transition-colors opacity-70" />
+                        <Input
+                            placeholder="Search NGOs, CSRs, or Incubators..."
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            className="w-full pl-14 pr-4 py-8 rounded-xl border-none bg-white shadow-sm ring-1 ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold outline-none transition-all placeholder:text-muted-foreground text-base"
+                        />
                     </div>
 
-                    {/* Results Grid */}
-                    <div className="lg:col-span-3">
-                        {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-                                {error}
-                            </div>
-                        )}
+                    <div className="flex flex-wrap items-center gap-3">
+                        <Select value={selectedFocusArea || "__all__"} onValueChange={(val) => setSelectedFocusArea(val === "__all__" ? "" : val)}>
+                            <SelectTrigger className="w-fit gap-2 rounded-full border border-gold/20 bg-white hover:border-gold transition-colors px-5 py-2.5 h-auto text-sm font-medium focus:ring-0 shadow-sm text-navy">
+                                <SelectValue placeholder="Focus Area" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="__all__">All Focus Areas</SelectItem>
+                                {focusAreas.map(area => <SelectItem key={area} value={area}>{area}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
 
-                        {loading ? (
-                            <div className="flex justify-center items-center h-64">
-                                <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                            </div>
-                        ) : results.length === 0 ? (
-                            <div className="text-center py-16 drivya-card border-dashed">
-                                <div className="text-4xl mb-3">🔍</div>
-                                <h3 className="text-lg font-bold text-foreground mb-2">No matches yet</h3>
-                                <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
-                                    Try different keywords or filters — we search across hundreds of verified organizations!
-                                </p>
-                                <Button onClick={handleClearFilters} variant="outline" size="sm">
-                                    Clear All Filters
-                                </Button>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="mb-4">
-                                    <p className="text-sm text-muted-foreground">
-                                        Showing {results.length} relevant organization{results.length !== 1 ? "s" : ""}
-                                    </p>
-                                    {results.length > 0 && (
-                                        <>
-                                            <div className="flex items-center gap-1 mt-1">
-                                                <span className="text-sm text-muted-foreground">
-                                                    Estimated time saved: ~48 minutes (per search)
-                                                </span>
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <button className="text-muted-foreground hover:text-foreground transition-colors">
-                                                                <HelpCircle className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent className="max-w-xs">
-                                                            <p className="text-sm">
-                                                                Manual research typically takes ~60 minutes. Drivya's matching reduces this to ~12 minutes by consolidating verified data in one place.
-                                                            </p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </div>
-                                            <p className="text-xs text-muted-foreground/70 mt-0.5">
-                                                Compared to manual research across multiple websites
-                                            </p>
-                                        </>
-                                    )}
-                                </div>
+                        <Select value={selectedRegion || "__all__"} onValueChange={(val) => setSelectedRegion(val === "__all__" ? "" : val)}>
+                            <SelectTrigger className="w-fit gap-2 rounded-full border border-gold/20 bg-white hover:border-gold transition-colors px-5 py-2.5 h-auto text-sm font-medium focus:ring-0 shadow-sm text-navy">
+                                <SelectValue placeholder="Region" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="__all__">All Regions</SelectItem>
+                                {regions.map(region => <SelectItem key={region} value={region}>{region}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
 
-                                <div className="space-y-4">
-                                    {results.map((org) => {
-                                        const matchResult = matchMap.get(org.id);
-                                        const matchStyle = matchResult ? getMatchLevelStyle(matchResult.matchLevel) : null;
-                                        const matchBorderColor = matchResult
-                                            ? matchResult.matchLevel === "Strong match" ? "border-l-green-500"
-                                                : matchResult.matchLevel === "Risky" ? "border-l-amber-500"
-                                                    : "border-l-red-400" : "";
-                                        return (
-                                            <div
-                                                key={org.id}
-                                                className={`drivya-card overflow-hidden ${matchResult ? `border-l-4 ${matchBorderColor}` : ""}`}
-                                            >
-                                                <div className="p-5">
-                                                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                                                        {/* Org Info */}
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <h3 className="text-base font-bold text-foreground">
-                                                                    {org.name}
-                                                                </h3>
-                                                                {org.verificationStatus === "verified" && (
-                                                                    <CheckCircle2 className="w-4 h-4 text-green-600" />
-                                                                )}
-                                                            </div>
-
-                                                            <div className="flex flex-wrap gap-1.5 mb-3">
-                                                                <Badge variant="secondary" className="text-xs">{org.type}</Badge>
-                                                                <Badge variant="outline" className="text-xs">{org.region}</Badge>
-
-                                                                {/* CSR MATCH LEVEL BADGE */}
-                                                                {matchResult && matchStyle && (
-                                                                    <Badge className={`text-xs ${matchStyle.badge}`}>
-                                                                        {matchResult.matchLevel}
-                                                                    </Badge>
-                                                                )}
-
-                                                                {/* Risk flag count pill */}
-                                                                {matchResult && matchResult.riskFlags.length > 0 && (
-                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-                                                                        <ShieldAlert className="w-3 h-3" />
-                                                                        {matchResult.riskFlags.length} risk{matchResult.riskFlags.length > 1 ? "s" : ""}
-                                                                    </span>
-                                                                )}
-
-                                                                {/* Fit score pill (CSR only) */}
-                                                                {matchResult && (
-                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-foreground">
-                                                                        {matchResult.fitScore}% fit
-                                                                    </span>
-                                                                )}
-
-                                                                {/* Best Match badge */}
-                                                                {!matchResult && org.alignmentScore >= 80 && (
-                                                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-                                                                        ✨ Best Match
-                                                                    </span>
-                                                                )}
-                                                                {!purchasedIds.has(org.id) && (
-                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-                                                                        <Lock className="w-3 h-3" />
-                                                                        Locked
-                                                                    </span>
-                                                                )}
-                                                            </div>
-
-                                                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                                                                {org.mission}
-                                                            </p>
-
-                                                            <div className="flex flex-wrap gap-1 mb-2">
-                                                                {org.focusAreas?.map((area) => (
-                                                                    <span key={area} className="tag-chip">{area}</span>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Right column: Score + Actions */}
-                                                        <div className="md:text-right md:min-w-[160px]">
-                                                            <AlignmentScoreBreakdown organization={org} compact />
-
-                                                            {/* Why this matches you */}
-                                                            {(() => {
-                                                                const matchReasons = generateMatchReasons(org, selectedFocusArea, selectedRegion);
-                                                                return (
-                                                                    <div className="bg-secondary/60 rounded-xl p-3 mb-3 text-left">
-                                                                        <h4 className="text-xs font-semibold text-foreground mb-1.5">Why this matches you</h4>
-                                                                        {matchReasons.length > 0 ? (
-                                                                            <ul className="space-y-1">
-                                                                                {matchReasons.map((reason, idx) => (
-                                                                                    <li key={idx} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                                                                                        <span className="text-primary mt-0.5 flex-shrink-0">•</span>
-                                                                                        <span>{reason}</span>
-                                                                                    </li>
-                                                                                ))}
-                                                                            </ul>
-                                                                        ) : (
-                                                                            <p className="text-xs text-muted-foreground">Partially matches your criteria.</p>
-                                                                        )}
-                                                                    </div>
-                                                                );
-                                                            })()}
-
-                                                            {/* Actions */}
-                                                            <div className="flex flex-col gap-2">
-                                                                <Button variant="default" size="sm" className="w-full gradient-bg border-0 text-white shadow-blue hover:shadow-blue-lg" asChild>
-                                                                    <Link href={`/org/${org.id}`} className="flex items-center justify-center gap-2">
-                                                                        View Details
-                                                                        {!purchasedIds.has(org.id) && <Lock className="w-3 h-3" />}
-                                                                    </Link>
-                                                                </Button>
-                                                                <Button
-                                                                    variant={shortlist.has(org.id) ? "secondary" : "outline"}
-                                                                    size="sm"
-                                                                    className="w-full"
-                                                                    onClick={() => toggleShortlist(org.id)}
-                                                                >
-                                                                    <Heart className="w-3.5 h-3.5 mr-1.5" fill={shortlist.has(org.id) ? "currentColor" : "none"} />
-                                                                    {shortlist.has(org.id) ? "Saved" : "Save"}
-                                                                </Button>
-                                                                {org.website && (
-                                                                    <Button variant="ghost" size="sm" className="w-full" asChild>
-                                                                        <a href={org.website} target="_blank" rel="noopener noreferrer">
-                                                                            <ExternalLink className="w-3.5 h-3.5 mr-1.5" /> Website
-                                                                        </a>
-                                                                    </Button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </>
+                        <Select value={sortBy} onValueChange={(value) => setSortBy(value as "alignment" | "name" | "recency")}>
+                            <SelectTrigger className="w-fit gap-2 rounded-full border border-gold/20 bg-white hover:border-gold transition-colors px-5 py-2.5 h-auto text-sm font-medium lg:ml-auto focus:ring-0 shadow-sm text-navy">
+                                <span className="text-navy/60 font-normal">Sort By:</span> <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="alignment">Alignment Score</SelectItem>
+                                <SelectItem value="name">Name (A-Z)</SelectItem>
+                                <SelectItem value="recency">Recently Added</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        
+                        {(query || selectedFocusArea || selectedRegion || sortBy !== "alignment") && (
+                            <Button onClick={handleClearFilters} variant="ghost" size="sm" className="rounded-full text-navy hover:bg-gold/10 font-medium px-4">
+                                Clear All
+                            </Button>
                         )}
                     </div>
                 </div>
+
+                {/* Results Grid */}
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-4 rounded-xl mb-6 shadow-sm">
+                        {error}
+                    </div>
+                )}
+
+                {loading ? (
+                    <div className="flex justify-center items-center h-64">
+                        <div className="w-10 h-10 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+                    </div>
+                ) : results.length === 0 ? (
+                    <div className="text-center py-20 bg-white/50 backdrop-blur-sm rounded-xl border border-gold/20 border-dashed shadow-sm">
+                        <div className="text-5xl mb-4 opacity-70">🔍</div>
+                        <h3 className="text-xl font-serif font-bold text-navy mb-2">No organizations found</h3>
+                        <p className="text-sm text-navy/70 mb-6 max-w-md mx-auto">
+                            Try adjusting your search terms or clearing some filters to see more verified organizations.
+                        </p>
+                        <Button onClick={handleClearFilters} variant="outline" className="rounded-full border-gold/30 text-navy hover:bg-gold/10 px-6 font-medium">
+                            Clear All Filters
+                        </Button>
+                    </div>
+                ) : (
+                    <>
+                        <div className="mb-6 flex justify-between items-end px-1">
+                            <p className="text-sm text-navy/60 font-medium tracking-wide text-transform: uppercase">
+                                Showing <span className="text-navy font-bold">{results.length}</span> Verified Partner{results.length !== 1 ? "s" : ""}
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
+                            {results.map((org) => {
+                                const matchResult = matchMap.get(org.id);
+                                return (
+                                    <div key={org.id} className="bg-white rounded-xl p-6 shadow-sm border border-gold/20 hover:shadow-lg hover:border-gold/40 transition-all duration-300 relative overflow-hidden flex flex-col group translate-y-0 hover:-translate-y-1">
+                                        {/* Badge top right - Using drivya-demo gold accents */}
+                                        {matchResult ? (
+                                            <div className="absolute top-0 right-0 p-3 z-10">
+                                                <span className="bg-gold/10 text-gold text-xs font-bold px-3 py-1.5 rounded-full border border-gold/30 flex items-center gap-1 shadow-sm backdrop-blur-md">
+                                                    Match {matchResult.fitScore}%
+                                                </span>
+                                            </div>
+                                        ) : org.alignmentScore >= 80 ? (
+                                            <div className="absolute top-0 right-0 p-3 z-10">
+                                                <span className="bg-gold text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
+                                                    ✨ Best Match
+                                                </span>
+                                            </div>
+                                        ) : null}
+
+                                        {/* Card Header & Logo */}
+                                        <div className="flex items-start gap-4 mb-4 mt-2">
+                                            <div className="w-14 h-14 rounded-full bg-cream flex items-center justify-center overflow-hidden border border-gold/20 flex-shrink-0 shadow-sm">
+                                                <span className="font-serif text-2xl font-bold text-gold">{org.name.charAt(0)}</span>
+                                            </div>
+                                            <div className="flex-1 min-w-0 pr-28 mt-1">
+                                                <h3 className="font-bold text-navy text-lg mb-1 group-hover:text-gold transition-colors flex items-start gap-2">
+                                                    <span className="line-clamp-2 break-words">
+                                                        {org.name}
+                                                    </span>
+                                                    {org.verificationStatus === "verified" && <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0 mt-1" />}
+                                                </h3>
+                                                <div className="flex items-center gap-1 text-navy/60 text-xs font-medium">
+                                                    <MapPin className="w-3.5 h-3.5 text-gold/80" />
+                                                    <span className="truncate">{org.region}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Type & Lock Badge */}
+                                        <div className="flex flex-wrap gap-1.5 mb-4">
+                                            <span className="px-2 py-0.5 bg-background border border-border rounded-md text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{org.type}</span>
+                                            {!purchasedIds.has(org.id) && (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold bg-amber-100 text-amber-800 uppercase tracking-widest">
+                                                    <Lock className="w-2.5 h-2.5" /> Locked
+                                                </span>
+                                             )}
+                                        </div>
+
+                                        <p className="text-sm text-navy/70 mb-5 line-clamp-3 leading-relaxed min-h-[60px]">
+                                            {org.mission}
+                                        </p>
+
+                                        {/* Focus Area Tags */}
+                                        <div className="flex flex-wrap gap-2 mb-6 mt-auto">
+                                            {org.focusAreas?.slice(0, 3).map((area) => (
+                                                <span key={area} className="px-3 py-1 bg-cream text-[10px] font-bold uppercase tracking-widest text-navy/80 rounded border border-gold/20 truncate max-w-full transition-colors hover:bg-gold/10">
+                                                    {area}
+                                                </span>
+                                            ))}
+                                            {org.focusAreas && org.focusAreas.length > 3 && (
+                                                <span className="px-2 py-1 bg-cream text-[10px] font-bold uppercase tracking-widest text-navy/80 rounded border border-gold/10">
+                                                    +{org.focusAreas.length - 3}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Match Reasons Highlight */}
+                                        {(() => {
+                                            const matchReasons = generateMatchReasons(org, selectedFocusArea, selectedRegion);
+                                            return matchReasons.length > 0 ? (
+                                                <div className="bg-cream/50 rounded-lg p-3.5 mb-5 text-left border border-gold/10">
+                                                    <h4 className="text-[10px] font-bold text-navy/60 mb-2 uppercase tracking-widest">Why it matches</h4>
+                                                    <ul className="space-y-1.5">
+                                                        {matchReasons.map((reason, idx) => (
+                                                            <li key={idx} className="text-xs text-navy/80 flex items-start gap-2">
+                                                                <span className="text-gold mt-0.5 flex-shrink-0 text-[10px]">◆</span>
+                                                                <span className="line-clamp-1">{reason}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            ) : null;
+                                        })()}
+
+                                        {/* Action Buttons */}
+                                        <div className="mt-auto flex flex-col gap-2.5 pt-4 border-t border-gold/10">
+                                            <Button variant="default" className="w-full py-5 rounded-lg border-0 bg-navy hover:bg-navy/90 text-white font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 group/btn" asChild>
+                                                <Link href={`/org/${org.id}`}>
+                                                    View Full Profile
+                                                    {!purchasedIds.has(org.id) ? (
+                                                        <Lock className="w-4 h-4 opacity-50 ml-1" />
+                                                    ) : (
+                                                        <span className="opacity-0 -ml-5 group-hover/btn:opacity-100 group-hover/btn:ml-1 transition-all duration-300">→</span>
+                                                    )}
+                                                </Link>
+                                            </Button>
+                                            <div className="grid grid-cols-2 gap-2.5">
+                                                <Button
+                                                    variant={shortlist.has(org.id) ? "secondary" : "outline"}
+                                                    className={`w-full py-4 rounded-lg font-bold text-xs transition-all shadow-sm ${shortlist.has(org.id) ? 'bg-gold border-gold text-white hover:bg-gold/90 hover:text-white' : 'bg-transparent border-gold/30 text-navy hover:bg-gold/10 hover:border-gold/50 hover:text-navy'}`}
+                                                    onClick={() => toggleShortlist(org.id)}
+                                                >
+                                                    <Heart className="w-3.5 h-3.5 mr-1.5" fill={shortlist.has(org.id) ? "currentColor" : "none"} />
+                                                    {shortlist.has(org.id) ? "Saved" : "Save"}
+                                                </Button>
+                                                <Button variant="outline" className="w-full py-4 rounded-lg bg-transparent border-gold/30 text-navy font-bold text-xs hover:bg-gold/10 hover:border-gold/50 transition-all shadow-sm group/site" asChild>
+                                                    {org.website ? (
+                                                        <a href={org.website} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
+                                                            <ExternalLink className="w-3.5 h-3.5 mr-1.5 opacity-70 group-hover/site:opacity-100 transition-opacity" /> Website
+                                                        </a>
+                                                    ) : (
+                                                        <button disabled className="opacity-50 cursor-not-allowed flex items-center justify-center">
+                                                            <ExternalLink className="w-3.5 h-3.5 mr-1.5" /> Website
+                                                        </button>
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </>
+                )}
             </div>
 
             <Footer />

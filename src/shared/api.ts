@@ -31,6 +31,7 @@ export interface User {
   name: string;
   role: "ngo" | "csr" | "incubator";
   profile_complete: boolean;
+  form_filled: boolean;
   verified: boolean;
   phone?: string;
   avatar_url?: string;
@@ -40,6 +41,7 @@ export interface User {
   created_at: string;
   updated_at: string;
 }
+
 
 export interface SignUpRequest {
   email: string;

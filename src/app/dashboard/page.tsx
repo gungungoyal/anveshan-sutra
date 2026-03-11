@@ -1,437 +1,482 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import {
-    ArrowRight, Loader2, Target, Clock, Star, AlertCircle,
-    Building2, Sparkles, Search, Bookmark, TrendingUp, ChevronRight,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { searchOrganizations } from "@/lib/services/organizations";
-import { SearchResult } from "@shared/api";
-import { getFitScoreDisplay, getScoreColor } from "@/lib/utils/fitScore";
-import { getProjectExpectation } from "@/lib/services/projectExpectations";
+import { signOut } from "@/lib/services/auth";
 
-interface DashboardOrg {
-    id: string;
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface MatchOrg {
+    initials: string;
     name: string;
     type: string;
-    region: string;
-    fitScore: number;
-    reason: string;
-    addedAt?: string;
-    isSaved?: boolean;
+    focus: string[];
+    geo: string;
+    score: number;
+    bars: { focus: number; geo: number; past: number };
+    locked: boolean;
 }
 
-function generateMatchReason(org: SearchResult): string {
-    if (org.focusAreas && org.focusAreas.length > 0) return `Focus area: ${org.focusAreas[0]}`;
-    if (org.region) return `Active in ${org.region}`;
-    return `${org.type} organization`;
+// ─── Static Data (will be replaced with real DB fetch later) ─────────────────
+
+const FREE_MATCHES: MatchOrg[] = [
+    {
+        initials: "AS", name: "Aryan Social Foundation", type: "CSR Partner",
+        focus: ["Education", "Skill Development"], geo: "Uttar Pradesh, Pan India",
+        score: 91, bars: { focus: 95, geo: 90, past: 88 }, locked: false,
+    },
+    {
+        initials: "MI", name: "Meridian Impact Trust", type: "NGO",
+        focus: ["Rural Development", "Women Empowerment"], geo: "Maharashtra, Rajasthan",
+        score: 84, bars: { focus: 88, geo: 82, past: 79 }, locked: false,
+    },
+];
+
+const LOCKED_MATCHES: MatchOrg[] = [
+    { initials: "GR", name: "GreenRoots Foundation", type: "CSR Partner", focus: ["Environment"], geo: "Pan India", score: 81, bars: { focus: 85, geo: 80, past: 78 }, locked: true },
+    { initials: "HW", name: "Horizon Welfare Society", type: "NGO", focus: ["Healthcare"], geo: "North India", score: 78, bars: { focus: 82, geo: 75, past: 77 }, locked: true },
+    { initials: "CT", name: "Catalyst India Trust", type: "CSR Partner", focus: ["Technology"], geo: "Delhi NCR", score: 76, bars: { focus: 80, geo: 72, past: 76 }, locked: true },
+    { initials: "PI", name: "Prayas Social Initiative", type: "NGO", focus: ["Livelihood"], geo: "Rajasthan", score: 73, bars: { focus: 78, geo: 70, past: 71 }, locked: true },
+    { initials: "SF", name: "Samridhi Foundation", type: "CSR Partner", focus: ["Agriculture"], geo: "South India", score: 70, bars: { focus: 75, geo: 68, past: 67 }, locked: true },
+];
+
+const SAVED_ORGS = [
+    { initials: "R", name: "Reliance Foundation", type: "CSR Partner" },
+    { initials: "G", name: "Goonj", type: "NGO" },
+    { initials: "S", name: "Social Alpha", type: "Incubator" },
+];
+
+const ALL_TYPES = ["All", "CSR Partner", "NGO", "Incubator"];
+
+// ─── Count-up Hook ────────────────────────────────────────────────────────────
+
+function useCountUp(target: number, duration = 1500, suffix = "") {
+    const [value, setValue] = useState(0);
+    const started = useRef(false);
+    useEffect(() => {
+        if (started.current) return;
+        started.current = true;
+        const step = (target / duration) * 10;
+        let current = 0;
+        const timer = setInterval(() => {
+            current += step;
+            if (current >= target) { setValue(target); clearInterval(timer); }
+            else setValue(Math.floor(current));
+        }, 10);
+        return () => clearInterval(timer);
+    }, [target, duration]);
+    return `${value}${suffix}`;
 }
 
-function mapToDisplayOrg(org: SearchResult): DashboardOrg {
-    return {
-        id: org.id,
-        name: org.name,
-        type: org.type,
-        region: org.region || "India",
-        fitScore: org.alignmentScore || org.confidence || 0,
-        reason: generateMatchReason(org),
-        isSaved: false,
-    };
-}
+// ─── Components ───────────────────────────────────────────────────────────────
 
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-function FitScoreBadge({ score, isSecondary }: { score: number; isSecondary?: boolean }) {
-    const { user } = useAuth();
-    const isCSR = user?.role === "csr";
-
-    if (isCSR) {
-        const fitDisplay = getFitScoreDisplay(score);
-        return (
-            <span className={`pill text-[11px] ${isSecondary ? "opacity-70 " : ""}${fitDisplay.color} ${fitDisplay.bgColor}`}>
-                {fitDisplay.label}
-            </span>
-        );
-    }
+function StatCard({ label, value, isGold = false, bar }: { label: string; value: string | number; isGold?: boolean; bar?: number }) {
     return (
-        <span className={`pill text-[11px] ${isSecondary ? "opacity-70 " + getScoreColor(score) : getScoreColor(score)}`}>
-            {score}%
-        </span>
-    );
-}
-
-function OrgCard({ org, variant = "primary" }: { org: DashboardOrg; variant?: "primary" | "secondary" }) {
-    const isSecondary = variant === "secondary";
-    return (
-        <Link href={`/org/${org.id}`} className="block group">
-            <div className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all ${isSecondary
-                    ? "border-border/50 hover:border-border hover:bg-secondary/30"
-                    : "border-border hover:border-primary/30 hover:bg-primary/3 hover:shadow-card"
-                }`}>
-                {/* Avatar */}
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isSecondary ? "bg-secondary" : "gradient-bg shadow-blue"
-                    }`}>
-                    <Building2 className={`w-4 h-4 ${isSecondary ? "text-muted-foreground" : "text-white"}`} />
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                        <h3 className={`text-sm font-semibold truncate transition-colors ${isSecondary ? "text-foreground/80 group-hover:text-foreground" : "text-foreground group-hover:text-primary"
-                            }`}>
-                            {org.name}
-                        </h3>
-                        {isSecondary && (
-                            <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400 flex-shrink-0 uppercase tracking-wide">
-                                New
-                            </span>
-                        )}
+        <div className="bg-white p-8 rounded-sm border border-navy/5 shadow-sm" style={{ animation: "countUp 0.6s ease forwards" }}>
+            <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-3" style={{ color: "rgba(13,27,42,0.4)" }}>{label}</p>
+            {bar !== undefined ? (
+                <div className="flex items-end gap-3">
+                    <h3 className="text-4xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#0D1B2A" }}>{value}</h3>
+                    <div className="flex-1 h-2 rounded-full overflow-hidden mb-2" style={{ background: "rgba(13,27,42,0.05)" }}>
+                        <div className="bg-[#C9A84C] h-full rounded-full transition-all duration-1000" style={{ width: `${bar}%` }} />
                     </div>
-                    <p className={`text-xs truncate mt-0.5 ${isSecondary ? "text-muted-foreground/60" : "text-muted-foreground/80"}`}>
-                        {org.type} · {org.region}
-                    </p>
-                    <p className={`text-xs truncate mt-0.5 ${isSecondary ? "text-muted-foreground/45" : "text-muted-foreground/60"}`}>
-                        {org.reason}
-                    </p>
                 </div>
-
-                {/* Score + arrow */}
-                <div className="flex items-center gap-2 flex-shrink-0">
-                    <FitScoreBadge score={org.fitScore} isSecondary={isSecondary} />
-                    <ChevronRight className={`w-3.5 h-3.5 transition-all ${isSecondary ? "text-muted-foreground/40 group-hover:text-muted-foreground" : "text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5"
-                        }`} />
-                </div>
-            </div>
-        </Link>
-    );
-}
-
-function EmptyState({ icon: Icon, title, subtitle, action }: {
-    icon: React.ElementType; title: string; subtitle: string; action?: { label: string; href: string };
-}) {
-    return (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center mb-3">
-                <Icon className="w-6 h-6 text-muted-foreground" />
-            </div>
-            <p className="font-semibold text-foreground text-sm mb-1">{title}</p>
-            <p className="text-xs text-muted-foreground mb-4">{subtitle}</p>
-            {action && (
-                <Link href={action.href}>
-                    <Button variant="outline" size="sm" className="text-xs">{action.label}</Button>
-                </Link>
+            ) : (
+                <h3 className="text-4xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif", color: isGold ? "#C9A84C" : "#0D1B2A" }}>{value}</h3>
             )}
         </div>
     );
 }
 
-function Section({ title, icon: Icon, iconBg, children, action }: {
-    title: string; icon: React.ElementType; iconBg: string; children: React.ReactNode;
-    action?: { label: string; href: string };
-}) {
+function MiniScoreBars({ bars }: { bars: { focus: number; geo: number; past: number } }) {
     return (
-        <div className="drivya-card overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3.5 border-b border-border">
-                <div className="flex items-center gap-2.5">
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${iconBg}`}>
-                        <Icon className="w-3.5 h-3.5 text-white" />
-                    </div>
-                    <h2 className="font-bold text-foreground text-sm">{title}</h2>
+        <div className="flex flex-col gap-1 w-24">
+            {[bars.focus, bars.geo, bars.past].map((w, i) => (
+                <div key={i} className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(13,27,42,0.05)" }}>
+                    <div className="h-full rounded-full" style={{ width: `${w}%`, background: "#C9A84C" }} />
                 </div>
-                {action && (
-                    <Link href={action.href} className="text-xs text-primary hover:underline font-medium flex items-center gap-0.5">
-                        See all <ChevronRight className="w-3 h-3" />
-                    </Link>
-                )}
-            </div>
-            <div className="p-3 space-y-2">{children}</div>
+            ))}
         </div>
     );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+function FreeMatchCard({ org, onSave, saved }: { org: MatchOrg; onSave: () => void; saved: boolean }) {
+    return (
+        <div className="bg-white p-8 rounded-sm border border-navy/5 shadow-sm hover:border-gold/30 hover:shadow-md transition-all flex flex-col lg:flex-row items-center gap-12"
+            style={{ '--gold-border': 'rgba(201,168,76,0.3)' } as any}>
+            <div className="w-20 h-20 rounded-sm shrink-0 flex items-center justify-center text-3xl font-bold"
+                style={{ background: "#0D1B2A", color: "#C9A84C", fontFamily: "'Cormorant Garamond', serif" }}>
+                {org.initials}
+            </div>
+            <div className="flex-1 text-center lg:text-left space-y-4 w-full">
+                <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+                    <h4 className="text-2xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{org.name}</h4>
+                    <span className="w-fit mx-auto lg:mx-0 text-[9px] uppercase tracking-[0.2em] font-bold px-2.5 py-1 rounded-sm"
+                        style={{ color: "rgba(13,27,42,0.4)", border: "1px solid rgba(13,27,42,0.1)" }}>{org.type}</span>
+                </div>
+                <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-xs font-bold">
+                    {org.focus.map(f => (
+                        <span key={f} className="px-2 py-1 rounded-sm" style={{ background: "rgba(13,27,42,0.05)", color: "rgba(13,27,42,0.6)" }}>{f}</span>
+                    ))}
+                    <span style={{ color: "rgba(13,27,42,0.4)" }}>📍 {org.geo}</span>
+                </div>
+            </div>
+            <div className="flex items-center gap-12 shrink-0 w-full lg:w-auto justify-center">
+                <div className="text-center space-y-4">
+                    <div className="text-5xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#C9A84C" }}>{org.score}</div>
+                    <MiniScoreBars bars={org.bars} />
+                </div>
+                <div className="flex flex-col gap-3">
+                    <button onClick={onSave}
+                        className="p-4 border rounded-sm transition-all"
+                        style={{ borderColor: saved ? "#C9A84C" : "rgba(13,27,42,0.1)", color: saved ? "#C9A84C" : "inherit" }}>
+                        {saved ? "📌" : "🔖"}
+                    </button>
+                    <button className="px-8 py-4 text-white text-[11px] font-bold uppercase tracking-widest rounded-sm hover:opacity-90 transition-all"
+                        style={{ background: "#0D1B2A" }}>
+                        View Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function LockedMatchCard({ org, onUnlock }: { org: MatchOrg; onUnlock: () => void }) {
+    return (
+        <div className="relative bg-white p-8 rounded-sm border border-navy/5 shadow-sm overflow-hidden group cursor-pointer" onClick={onUnlock}>
+            {/* Blurred content */}
+            <div className="w-full flex flex-col lg:flex-row items-center gap-12 transition-all" style={{ filter: "blur(6px)", opacity: 0.4 }}>
+                <div className="w-20 h-20 rounded-sm shrink-0 flex items-center justify-center text-3xl font-bold"
+                    style={{ background: "#0D1B2A", color: "#C9A84C", fontFamily: "'Cormorant Garamond', serif" }}>
+                    {org.initials}
+                </div>
+                <div className="flex-1 text-center lg:text-left space-y-4">
+                    <h4 className="text-2xl font-bold uppercase tracking-wider" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{org.name}</h4>
+                    <div className="flex gap-4 text-xs font-bold">
+                        <span className="px-2 py-1 rounded-sm" style={{ background: "rgba(13,27,42,0.05)" }}>••••••••</span>
+                        <span className="px-2 py-1 rounded-sm" style={{ background: "rgba(13,27,42,0.05)" }}>••••••••</span>
+                    </div>
+                </div>
+                <div className="text-5xl font-bold opacity-50" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#C9A84C" }}>{org.score}</div>
+            </div>
+            {/* Lock overlay */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4"
+                style={{ background: "rgba(13,27,42,0.05)", backdropFilter: "blur(2px)" }}>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"
+                    style={{ background: "rgba(255,255,255,0.9)", border: "1px solid #C9A84C", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", color: "#C9A84C" }}>
+                    🔒
+                </div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.25em] group-hover:text-navy transition-colors"
+                    style={{ color: "rgba(13,27,42,0.6)" }}>Unlock to View Full Profile</p>
+            </div>
+        </div>
+    );
+}
+
+// ─── Upgrade Modal ────────────────────────────────────────────────────────────
+
+function UpgradeModal({ onClose }: { onClose: () => void }) {
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <div className="absolute inset-0" onClick={onClose} style={{ background: "rgba(13,27,42,0.8)", backdropFilter: "blur(4px)" }} />
+            <div className="relative bg-white w-full max-w-4xl rounded-sm shadow-2xl overflow-hidden animate-scale-in">
+                <button onClick={onClose} className="absolute top-6 right-6 text-2xl transition-colors hover:opacity-60" style={{ color: "rgba(13,27,42,0.2)" }}>✕</button>
+                <div className="p-12 text-center space-y-12">
+                    <div className="space-y-4">
+                        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: "rgba(201,168,76,0.1)" }}>
+                            <svg className="w-10 h-10" fill="none" stroke="#C9A84C" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h2 className="text-4xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Unlock this profile</h2>
+                        <p className="max-w-xl mx-auto text-sm leading-relaxed" style={{ color: "rgba(13,27,42,0.6)" }}>
+                            Get full access to org details, past projects, contact information and direct messaging to accelerate your partnerships.
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                        {/* Tier 1 */}
+                        <div className="p-10 border border-navy/5 rounded-sm flex flex-col space-y-8 hover:border-gold/30 transition-all group">
+                            <div className="space-y-2">
+                                <h4 className="text-xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Tier 1 — Profile Unlock</h4>
+                                <p className="text-3xl font-bold">₹999<span className="text-sm font-normal" style={{ color: "rgba(13,27,42,0.4)" }}>/month</span></p>
+                            </div>
+                            <ul className="space-y-4 text-xs font-bold" style={{ color: "rgba(13,27,42,0.6)" }}>
+                                {["Full org profiles", "Past project history", "Contact details"].map(f => (
+                                    <li key={f} className="flex items-center gap-3"><span>✓</span> {f}</li>
+                                ))}
+                            </ul>
+                            <button className="w-full border-2 py-4 text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-gold hover:text-navy"
+                                style={{ borderColor: "#C9A84C", color: "#C9A84C" }}>
+                                Choose Tier 1
+                            </button>
+                        </div>
+                        {/* Tier 2 */}
+                        <div className="p-10 border-2 rounded-sm flex flex-col space-y-8 relative overflow-hidden"
+                            style={{ borderColor: "#C9A84C", background: "rgba(201,168,76,0.02)" }}>
+                            <div className="absolute top-0 right-0 text-[8px] font-bold uppercase tracking-widest px-4 py-1"
+                                style={{ background: "#C9A84C", color: "#0D1B2A" }}>Recommended</div>
+                            <div className="space-y-2">
+                                <h4 className="text-xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Tier 2 — Full Access</h4>
+                                <p className="text-3xl font-bold">₹2,499<span className="text-sm font-normal" style={{ color: "rgba(13,27,42,0.4)" }}>/month</span></p>
+                            </div>
+                            <ul className="space-y-4 text-xs font-bold" style={{ color: "rgba(13,27,42,0.8)" }}>
+                                {[{ text: "Everything in Tier 1", gold: true }, { text: "Direct messaging" }, { text: "Collaboration requests" }, { text: "Priority support" }].map(f => (
+                                    <li key={f.text} className="flex items-center gap-3" style={{ color: f.gold ? "#C9A84C" : undefined }}><span>✓</span> {f.text}</li>
+                                ))}
+                            </ul>
+                            <button className="w-full py-4 text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all"
+                                style={{ background: "#C9A84C", color: "#0D1B2A", boxShadow: "0 8px 24px rgba(201,168,76,0.2)" }}>
+                                Choose Tier 2
+                            </button>
+                        </div>
+                    </div>
+                    <p className="text-[10px] uppercase font-bold tracking-[0.2em]" style={{ color: "rgba(13,27,42,0.2)" }}>Cancel anytime. No hidden fees.</p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ─── Main Dashboard Page ──────────────────────────────────────────────────────
 
 export default function DashboardPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
-    const [organizations, setOrganizations] = useState<DashboardOrg[]>([]);
-    const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [hasProjectExpectations, setHasProjectExpectations] = useState<boolean | null>(null);
+    const [filter, setFilter] = useState("All");
+    const [sortBy, setSortBy] = useState("score");
+    const [savedOrgs, setSavedOrgs] = useState<string[]>([]);
+    const [showModal, setShowModal] = useState(false);
+    const [profileStrength] = useState(72);
 
-    const isCSR = user?.role === "csr";
+    const totalMatches = useCountUp(FREE_MATCHES.length + LOCKED_MATCHES.length);
+    const highCompat = useCountUp(FREE_MATCHES.filter(m => m.score >= 80).length);
+    const savedCount = useCountUp(savedOrgs.length);
+    const profileStr = useCountUp(profileStrength, 1500, "%");
 
+    // Auth + profile guard
     useEffect(() => {
-        if (!authLoading && !isAuthenticated) {
-            router.push("/auth?returnTo=/dashboard");
-        }
-    }, [authLoading, isAuthenticated, router]);
+        if (authLoading) return;
+        if (!isAuthenticated) { router.push("/auth?returnTo=/dashboard"); return; }
+        if (user && !user.form_filled) { window.location.href = "/org-profile"; }
+    }, [authLoading, isAuthenticated, user, router]);
 
-    useEffect(() => {
-        const checkProjectExpectations = async () => {
-            if (!isAuthenticated || !user) return;
-            if (isCSR) {
-                try {
-                    const expectation = await getProjectExpectation(user.id);
-                    setHasProjectExpectations(!!expectation);
-                } catch {
-                    setHasProjectExpectations(false);
-                }
-            } else {
-                setHasProjectExpectations(true);
-            }
-        };
-        checkProjectExpectations();
-    }, [isAuthenticated, isCSR, user]);
-
-    const fetchOrgs = async () => {
-        if (!isAuthenticated || (isCSR && hasProjectExpectations === false)) return;
-        try {
-            setIsLoadingOrgs(true);
-            setError(null);
-            const result = await searchOrganizations({});
-            if (result.success && result.results) {
-                setOrganizations(result.results.map(mapToDisplayOrg));
-            } else {
-                setError("Unable to load organizations. Please try again.");
-            }
-        } catch {
-            setError("An unexpected error occurred. Please check your connection.");
-        } finally {
-            setIsLoadingOrgs(false);
-        }
+    const handleSignOut = async () => {
+        await signOut();
+        router.push("/auth");
     };
 
-    useEffect(() => {
-        if (isAuthenticated && hasProjectExpectations) fetchOrgs();
-        else if (isAuthenticated && hasProjectExpectations === false) setIsLoadingOrgs(false);
-    }, [isAuthenticated, hasProjectExpectations]);
+    const allMatches = [...FREE_MATCHES, ...LOCKED_MATCHES];
+    const filtered = filter === "All" ? allMatches : allMatches.filter(m => m.type === filter);
+    const sorted = [...filtered].sort((a, b) => sortBy === "score" ? b.score - a.score : 0);
 
-    // ── Loading / Auth gates ──
+    const firstName = user?.name?.split(" ")[0] || "there";
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    const initials = user?.name?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() || "U";
+
+    const navItems = [
+        { icon: "🏠", label: "Dashboard", active: true, href: "/dashboard" },
+        { icon: "🔍", label: "Browse All", active: false, href: "/explore" },
+        { icon: "💾", label: "Saved", active: false, href: "#" },
+        { icon: "💬", label: "Messages", active: false, href: "#", locked: true },
+        { icon: "👤", label: "My Profile", active: false, href: "/profile" },
+    ];
+
+    const roleLabels: Record<string, string> = { csr: "CSR", ngo: "NGO", incubator: "Incubator" };
+    const roleLabel = roleLabels[user?.role || ""] || "Member";
+
     if (authLoading || !isAuthenticated) {
-        return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
+        return <div className="min-h-screen flex items-center justify-center" style={{ background: "#FAF7F2" }}><Loader2 className="w-8 h-8 animate-spin" style={{ color: "#C9A84C" }} /></div>;
     }
-
-    if (isCSR && hasProjectExpectations === null) {
-        return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
-    }
-
-    // CSR gate
-    if (isCSR && hasProjectExpectations === false) {
-        return (
-            <div className="min-h-screen bg-background flex flex-col">
-                <Header />
-                <main className="flex-1 flex items-center justify-center p-4">
-                    <div className="drivya-card max-w-md w-full p-8 text-center">
-                        <div className="w-16 h-16 rounded-2xl gradient-bg flex items-center justify-center mx-auto mb-5 shadow-blue">
-                            <Target className="w-8 h-8 text-white" />
-                        </div>
-                        <h1 className="text-xl font-bold text-foreground mb-2">
-                            Start with your project expectations
-                        </h1>
-                        <p className="text-sm text-muted-foreground mb-6">
-                            We need this to evaluate NGOs realistically and rank them by actual fit.
-                        </p>
-                        <Link href="/project/setup">
-                            <Button size="lg" className="gradient-bg border-0 text-white shadow-blue hover:shadow-blue-lg gap-2 w-full">
-                                Define Project Expectations <ArrowRight className="w-4 h-4" />
-                            </Button>
-                        </Link>
-                    </div>
-                </main>
-                <Footer />
-            </div>
-        );
-    }
-
-    // Derived org lists
-    const highFitOrgs = [...organizations].sort((a, b) => b.fitScore - a.fitScore).slice(0, 5);
-    const highFitIds = new Set(highFitOrgs.map((o) => o.id));
-    const recentOrgs = [...organizations]
-        .filter((o) => !highFitIds.has(o.id))
-        .sort((a, b) => (a.addedAt && b.addedAt ? new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime() : 0))
-        .slice(0, 5);
-    const savedOrgs = organizations.filter((o) => o.isSaved).slice(0, 5);
-    const lowPriorityOrgs = organizations.filter((o) => o.fitScore < 50).slice(0, 5);
-
-    // Quick stat values
-    const totalOrgs = organizations.length;
-    const highFitCount = organizations.filter((o) => o.fitScore >= 70).length;
-    const savedCount = savedOrgs.length;
 
     return (
-        <div className="min-h-screen bg-background flex flex-col">
-            <Header />
+        <div className="min-h-screen" style={{ background: "#FAF7F2", color: "#0D1B2A", fontFamily: "'DM Sans', sans-serif", WebkitFontSmoothing: "antialiased" }}>
+            <style>{`
+                @keyframes countUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+                .sidebar { width: 240px; height: 100vh; position: fixed; left: 0; top: 0; z-index: 50; }
+                .main-content { margin-left: 240px; min-height: 100vh; }
+                .nav-link-active { color: #C9A84C; border-left: 3px solid #C9A84C; background: rgba(201,168,76,0.05); }
+                ::-webkit-scrollbar { width: 6px; }
+                ::-webkit-scrollbar-track { background: #f1f1f1; }
+                ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+                ::-webkit-scrollbar-thumb:hover { background: #C9A84C; }
+                @media (max-width: 768px) {
+                    .sidebar { width:100%; height:60px; bottom:0; top:auto; left:0; flex-direction:row; padding:0; }
+                    .sidebar-logo,.sidebar-user,.sidebar-upgrade { display:none; }
+                    .sidebar-nav { width:100%; flex-direction:row !important; justify-content:space-around; align-items:center; height:100%; }
+                    .main-content { margin-left:0; padding-bottom:80px; }
+                }
+            `}</style>
 
-            <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6">
+            {/* ─── SIDEBAR ─── */}
+            <aside className="sidebar bg-navy text-white flex flex-col p-6 shadow-2xl" style={{ background: "#0D1B2A" }}>
+                {/* Logo */}
+                <div className="sidebar-logo mb-10 cursor-pointer" onClick={() => router.push("/")}>
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                        Driv<span style={{ color: "#C9A84C" }}>ya</span>
+                    </h1>
+                </div>
 
-                {/* ── Welcome Banner ── */}
-                <div className="relative overflow-hidden rounded-2xl gradient-bg p-6 mb-6 shadow-blue-lg">
-                    {/* Decorative blobs */}
-                    <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full translate-x-16 -translate-y-10" />
-                    <div className="absolute bottom-0 right-20 w-24 h-24 bg-white/5 rounded-full translate-y-8" />
-
-                    <div className="relative">
-                        <p className="text-white/70 text-sm font-medium mb-0.5">Welcome back 👋</p>
-                        <h1 className="text-2xl font-extrabold text-white mb-1">
-                            {user?.organization_name || user?.name || "Your Workspace"}
-                        </h1>
-                        <p className="text-white/75 text-sm">
-                            Here&apos;s what you should look at today.
-                        </p>
+                {/* User Info */}
+                <div className="sidebar-user mb-12 flex flex-col items-center text-center space-y-4">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center font-bold text-xl border-4"
+                        style={{ background: "#C9A84C", color: "#0D1B2A", borderColor: "#0D1B2A", boxShadow: "0 4px 14px rgba(0,0,0,0.2)" }}>
+                        {initials}
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-sm text-white">{user?.name || "User"}</h4>
+                        <span className="text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-sm"
+                            style={{ background: "rgba(201,168,76,0.2)", color: "#C9A84C" }}>{roleLabel}</span>
                     </div>
                 </div>
 
-                {/* ── Quick Stats ── */}
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                    {[
-                        { label: "Total Orgs", value: totalOrgs, icon: Building2, color: "bg-blue-500" },
-                        { label: "High-fit", value: highFitCount, icon: TrendingUp, color: "bg-green-500" },
-                        { label: "Saved", value: savedCount, icon: Bookmark, color: "bg-amber-500" },
-                    ].map((stat) => {
-                        const Icon = stat.icon;
-                        return (
-                            <div key={stat.label} className="drivya-card p-3.5 flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${stat.color}`}>
-                                    <Icon className="w-4 h-4 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-lg font-extrabold text-foreground leading-none">{stat.value}</p>
-                                    <p className="text-[11px] text-muted-foreground font-medium mt-0.5">{stat.label}</p>
+                {/* Nav */}
+                <nav className="sidebar-nav flex-1 flex flex-col space-y-2 -mx-6">
+                    {navItems.map(item => (
+                        <a key={item.label} href={item.href}
+                            className={`px-6 py-4 flex items-center space-x-4 text-xs font-bold uppercase tracking-widest transition-colors hover:text-gold ${item.active ? "nav-link-active" : ""}`}
+                            style={{ color: item.active ? "#C9A84C" : "rgba(255,255,255,0.4)" }}>
+                            <span>{item.icon}</span>
+                            <span className="md:block hidden">{item.label}</span>
+                            {item.locked && <span className="ml-auto">🔒</span>}
+                        </a>
+                    ))}
+                    <button onClick={handleSignOut}
+                        className="px-6 py-4 flex items-center space-x-4 text-xs font-bold uppercase tracking-widest transition-colors hover:text-gold w-full text-left"
+                        style={{ color: "rgba(255,255,255,0.4)" }}>
+                        <span>🚪</span>
+                        <span className="md:block hidden">Log Out</span>
+                    </button>
+                </nav>
+
+                {/* Upgrade Card */}
+                <div className="sidebar-upgrade mt-auto pt-8">
+                    <div className="p-4 rounded-sm space-y-4 text-center"
+                        style={{ background: "#0D1B2A", border: "1px solid rgba(201,168,76,0.3)" }}>
+                        <p className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>Unlock full profiles & messaging</p>
+                        <button onClick={() => setShowModal(true)}
+                            className="w-full text-navy font-bold text-[10px] uppercase tracking-widest py-2.5 rounded-sm hover:brightness-110 transition-all"
+                            style={{ background: "#C9A84C", color: "#0D1B2A" }}>
+                            Upgrade Now
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            {/* ─── MAIN CONTENT ─── */}
+            <main className="main-content">
+
+                {/* Header */}
+                <header className="sticky top-0 z-40 px-8 py-6 flex items-center justify-between"
+                    style={{ background: "rgba(255,255,255,0.8)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(13,27,42,0.05)" }}>
+                    <h2 className="text-3xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                        {greeting}, {firstName} 👋
+                    </h2>
+                    <div className="flex items-center space-x-6">
+                        <button className="relative p-2 transition-colors hover:text-gold" style={{ color: "rgba(13,27,42,0.4)" }}>
+                            <span>🔔</span>
+                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full border-2 border-white" style={{ background: "#C9A84C" }} />
+                        </button>
+                        <div className="w-10 h-10 rounded-full overflow-hidden cursor-pointer hover:border-gold transition-all flex items-center justify-center font-bold text-xs"
+                            style={{ background: "rgba(13,27,42,0.05)", border: "1px solid rgba(13,27,42,0.1)", color: "rgba(13,27,42,0.4)" }}>
+                            {initials}
+                        </div>
+                    </div>
+                </header>
+
+                {/* Dashboard Content */}
+                <div className="p-8 space-y-12 max-w-7xl mx-auto">
+
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                        <StatCard label="Total Matches" value={totalMatches} isGold />
+                        <StatCard label="High Compatibility (80%+)" value={highCompat} />
+                        <StatCard label="Saved Partners" value={savedCount} />
+                        <StatCard label="Profile Strength" value={profileStr} bar={profileStrength} />
+                    </div>
+
+                    {/* Match Section */}
+                    <div className="space-y-8">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                            <div className="space-y-4">
+                                <h2 className="text-4xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Your Top Matches</h2>
+                                <div className="flex flex-wrap gap-2">
+                                    {ALL_TYPES.map(t => (
+                                        <button key={t} onClick={() => setFilter(t)}
+                                            className="px-6 py-2 rounded-full border text-[11px] font-bold uppercase tracking-widest transition-all"
+                                            style={{
+                                                background: filter === t ? "#C9A84C" : "#fff",
+                                                borderColor: filter === t ? "#C9A84C" : "rgba(13,27,42,0.1)",
+                                                color: filter === t ? "#0D1B2A" : "rgba(13,27,42,0.6)",
+                                            }}>
+                                            {t}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
-                        );
-                    })}
+                            <div className="flex items-center space-x-6">
+                                <div className="text-right space-y-1">
+                                    <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "rgba(13,27,42,0.4)" }}>{sorted.length} matches found</p>
+                                    <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+                                        className="bg-transparent border-none text-xs font-bold focus:ring-0 p-0 cursor-pointer outline-none" style={{ color: "#0D1B2A" }}>
+                                        <option value="score">Sort by: Match Score ↓</option>
+                                        <option value="recent">Sort by: Recent</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Match List */}
+                        <div className="space-y-4">
+                            {sorted.map((org, i) =>
+                                org.locked ? (
+                                    <LockedMatchCard key={i} org={org} onUnlock={() => setShowModal(true)} />
+                                ) : (
+                                    <FreeMatchCard key={i} org={org}
+                                        saved={savedOrgs.includes(org.name)}
+                                        onSave={() => setSavedOrgs(p => p.includes(org.name) ? p.filter(n => n !== org.name) : [...p, org.name])} />
+                                )
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Recently Saved */}
+                    <div className="pt-12 space-y-8" style={{ borderTop: "1px solid rgba(13,27,42,0.05)" }}>
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-2xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Recently Saved</h2>
+                            <a href="#" className="text-[11px] font-bold uppercase tracking-widest inline-block hover:translate-x-1 transition-transform"
+                                style={{ color: "#C9A84C" }}>View All Saved →</a>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {SAVED_ORGS.map(org => (
+                                <div key={org.name} className="bg-white p-6 rounded-sm border border-navy/5 flex items-center gap-6 group cursor-pointer hover:border-gold/30 transition-all"
+                                    style={{ borderColor: "rgba(13,27,42,0.05)" }}>
+                                    <div className="w-12 h-12 rounded-sm shrink-0 flex items-center justify-center font-bold text-lg"
+                                        style={{ background: "#0D1B2A", color: "#C9A84C", fontFamily: "'Cormorant Garamond', serif" }}>
+                                        {org.initials}
+                                    </div>
+                                    <div>
+                                        <h5 className="font-bold text-lg" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{org.name}</h5>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(13,27,42,0.4)" }}>{org.type}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
-                {/* ── Quick Actions ── */}
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                    <Link href="/explore" className="drivya-card p-4 flex items-center gap-3 group hover:border-primary/40">
-                        <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center flex-shrink-0 shadow-blue group-hover:shadow-blue-lg transition-shadow">
-                            <Search className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                            <p className="font-bold text-foreground text-sm">Explore Partners</p>
-                            <p className="text-xs text-muted-foreground">Find & filter organizations</p>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto group-hover:text-primary transition-colors" />
-                    </Link>
-                    <Link href="/shortlist" className="drivya-card p-4 flex items-center gap-3 group hover:border-amber-300">
-                        <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center flex-shrink-0 shadow-sm">
-                            <Bookmark className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                            <p className="font-bold text-foreground text-sm">Saved</p>
-                            <p className="text-xs text-muted-foreground">Review your shortlist</p>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto group-hover:text-amber-500 transition-colors" />
-                    </Link>
-                </div>
-
-                {/* ── Error Banner ── */}
-                {error && !isLoadingOrgs && (
-                    <div className="mb-5 p-4 rounded-xl border border-destructive/40 bg-destructive/8 flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                            <p className="font-semibold text-destructive text-sm mb-1">Failed to load organizations</p>
-                            <p className="text-xs text-destructive/80">{error}</p>
-                        </div>
-                        <Button variant="outline" size="sm" onClick={fetchOrgs} className="flex-shrink-0 text-xs">
-                            Retry
-                        </Button>
-                    </div>
-                )}
-
-                {/* ── Content Area ── */}
-                {isLoadingOrgs ? (
-                    <div className="flex flex-col items-center justify-center py-16 gap-3">
-                        <Loader2 className="w-7 h-7 animate-spin text-primary" />
-                        <p className="text-sm text-muted-foreground">Loading your workspace…</p>
-                    </div>
-                ) : !error && (
-                    <>
-                        {/* Dashboard Grid */}
-                        <div className="grid gap-4 lg:grid-cols-2">
-                            <Section
-                                title="High-fit Organizations"
-                                icon={Target}
-                                iconBg="bg-green-500"
-                                action={{ label: "See all", href: "/explore" }}
-                            >
-                                {highFitOrgs.length > 0 ? (
-                                    highFitOrgs.map((org) => <OrgCard key={org.id} org={org} variant="primary" />)
-                                ) : (
-                                    <EmptyState icon={Sparkles} title="No high-fit matches yet" subtitle="We're analyzing organizations for you" action={{ label: "Browse All", href: "/explore" }} />
-                                )}
-                            </Section>
-
-                            <Section
-                                title="Recently Added"
-                                icon={Clock}
-                                iconBg="bg-primary"
-                                action={{ label: "See all", href: "/explore?sort=recency" }}
-                            >
-                                {recentOrgs.length > 0 ? (
-                                    recentOrgs.map((org) => <OrgCard key={org.id} org={org} variant="secondary" />)
-                                ) : (
-                                    <EmptyState icon={Clock} title="No recent opportunities" subtitle="Check back for newly added organizations" />
-                                )}
-                            </Section>
-
-                            <Section
-                                title="Saved Organizations"
-                                icon={Star}
-                                iconBg="bg-amber-500"
-                                action={{ label: "View saved", href: "/shortlist" }}
-                            >
-                                {savedOrgs.length > 0 ? (
-                                    savedOrgs.map((org) => <OrgCard key={org.id} org={org} />)
-                                ) : (
-                                    <EmptyState icon={Star} title="Nothing saved yet" subtitle="Save organizations you want to revisit" action={{ label: "Find Organizations", href: "/explore" }} />
-                                )}
-                            </Section>
-
-                            <Section
-                                title="Low Priority"
-                                icon={AlertCircle}
-                                iconBg="bg-slate-400"
-                            >
-                                {lowPriorityOrgs.length > 0 ? (
-                                    lowPriorityOrgs.map((org) => <OrgCard key={org.id} org={org} variant="secondary" />)
-                                ) : (
-                                    <EmptyState icon={AlertCircle} title="All caught up!" subtitle="No low-priority items to review" />
-                                )}
-                            </Section>
-                        </div>
-
-                        {/* Bottom CTA */}
-                        <div className="mt-6 text-center">
-                            <Link href="/explore">
-                                <Button variant="outline" className="gap-2 rounded-xl font-semibold">
-                                    See all matches <ArrowRight className="w-4 h-4" />
-                                </Button>
-                            </Link>
-                        </div>
-                    </>
-                )}
+                {/* Footer */}
+                <footer className="p-8 text-center text-[10px] uppercase tracking-[0.3em]" style={{ color: "rgba(13,27,42,0.2)" }}>
+                    Drivya Platform © 2026 | Verified Partnerships
+                </footer>
             </main>
 
-            <Footer />
+            {/* Upgrade Modal */}
+            {showModal && <UpgradeModal onClose={() => setShowModal(false)} />}
         </div>
     );
 }

@@ -1,0 +1,239 @@
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Playfair+Display:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d4af40",
+                        "background-light": "#FAF7F2",
+                        "background-dark": "#0D1B2A",
+                        "navy": "#0D1B2A",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "serif": ["Playfair Display", "serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav {
+            background-color: rgba(212, 175, 64, 0.1);
+            border-left: 4px solid #d4af40;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light font-display text-navy overflow-x-hidden">
+<div class="flex min-h-screen">
+<!-- Sidebar (Hidden on mobile by default, but following prompt description) -->
+<aside class="hidden md:flex flex-col w-64 bg-navy text-slate-100 p-6 fixed h-full z-50">
+<div class="mb-10 flex items-center gap-3">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-navy font-bold">handshake</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight">Alliance</h1>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg active-nav text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-medium">Browse All</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="font-medium">Saved</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-medium">Messages</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-medium">My Profile</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-white/10">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/30">
+<img alt="User" class="w-full h-full object-cover" data-alt="Portrait of a professional male executive" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClSXOaSpfeVzPraPlCcgZPQNRzsSHa5_EosO3o1zFa-leoCDrnlltSyYRJGYRb_BF57UoeX4DM5nUxnz13v34VT9XvRdKEp_PWtnGdcNTm6ClPr81YqelKboON7JK71q9ibN1bIsvRyA1gXeMiY2KIc2CW1fqb0IUjfH2e1Je2k5hetHC1HRX7LMaO9sob0Jfd-scSk8DgPzBDgw5LVshWTFLtJMOMI7ryo3L0Vci40ZN18otmx_u1VqAN5j2qL20-Lycn_KCvLD0"/>
+</div>
+<div>
+<p class="text-sm font-bold">Alexander West</p>
+<p class="text-xs text-slate-400">CSR Director</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 md:ml-64 pb-20">
+<!-- Header for Mobile -->
+<header class="md:hidden flex items-center justify-between p-4 bg-background-light sticky top-0 z-30 border-b border-primary/10">
+<span class="material-symbols-outlined text-navy">menu</span>
+<h2 class="font-serif text-lg font-bold text-navy">Alliance</h2>
+<span class="material-symbols-outlined text-navy">account_circle</span>
+</header>
+<div class="p-6 md:p-10 max-w-7xl mx-auto">
+<div class="mb-8">
+<h2 class="font-serif text-3xl md:text-4xl text-navy mb-6">Explore Verified Organizations</h2>
+<!-- Search and Filters -->
+<div class="flex flex-col gap-4">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary group-focus-within:text-navy">search</span>
+<input class="w-full pl-12 pr-4 py-4 rounded-xl border-none bg-white shadow-sm ring-1 ring-primary/20 focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-slate-400" placeholder="Search NGOs, CSRs, or Incubators" type="text"/>
+</div>
+<div class="flex flex-wrap gap-3">
+<button class="flex items-center gap-2 px-4 py-2 bg-white rounded-full text-sm font-medium border border-primary/20 hover:border-primary transition-colors">
+                                Focus Area <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 bg-white rounded-full text-sm font-medium border border-primary/20 hover:border-primary transition-colors">
+                                Region <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 bg-white rounded-full text-sm font-medium border border-primary/20 hover:border-primary transition-colors ml-auto">
+                                Sort By: Relevant <span class="material-symbols-outlined text-sm">swap_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Org Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 1 -->
+<div class="bg-white rounded-xl p-6 shadow-sm border border-primary/10 hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-3">
+<span class="bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/20">92% Match</span>
+</div>
+<div class="flex items-start gap-4 mb-4">
+<div class="size-14 rounded-lg bg-navy/5 flex items-center justify-center overflow-hidden border border-primary/10">
+<img alt="Logo" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Minimalist geometric logo for a non profit organization" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6GPCB-Mql-d67UmU194eoH11EzvxFGus_6iaYP_6vhH6F_zIapu8NmoUhJxWumFgrADYBtWHWexNpDCsmqWN6SdTb5USfFJmY5XT_SzY-PE9736nvSHcPe8E8vCwuUM_HYStd1PLAtFUV4lRUWzWrFaCf1baMyrAREui6U11Qx_89F4cnH-j-y8Q3ZzswAb-uy6Y3FP1TPoUfn31gQI-_YqECk8hK8g1-0swN5KNyIsHw-iourSFOwg5AAmF4Yw39TsRBvGZ5EnY"/>
+</div>
+</div>
+<h3 class="font-bold text-navy text-lg mb-1">Global Green Initiative</h3>
+<div class="flex items-center gap-1 text-slate-500 text-sm mb-4">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>Stockholm, Sweden</span>
+</div>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="px-3 py-1 bg-background-light text-[10px] font-bold uppercase tracking-wider rounded border border-primary/10">Climate Action</span>
+<span class="px-3 py-1 bg-background-light text-[10px] font-bold uppercase tracking-wider rounded border border-primary/10">Sustainable Agri</span>
+</div>
+<button class="w-full py-3 rounded-lg border border-primary/30 text-navy font-bold text-sm hover:bg-primary/10 transition-colors shadow-sm">
+                            Add to shortlist
+                        </button>
+</div>
+<!-- Card 2 -->
+<div class="bg-white rounded-xl p-6 shadow-sm border border-primary/10 hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-3">
+<span class="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">98% Match</span>
+</div>
+<div class="flex items-start gap-4 mb-4">
+<div class="size-14 rounded-lg bg-navy/5 flex items-center justify-center overflow-hidden border border-primary/10">
+<img alt="Logo" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Modern abstract circular logo for tech incubator" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6bqJ8mE_qi93UBQDHIN1XSsJRQ8qXTr1jZ0Cp4oIw4GNBe7Z9B8ElZgBTgm1p91GKw55xGg30BCGsVYckQvC0zVw0RT2qJI7xepAWEipx4vpnXdXhA1D52_1d8s706EhiCWgiQrrOjTPcC8bjBeRZWz3lSFB2TsLYu7TJI4gN9Wn-P8RbOqc3k-c2Qy8fXzm1qtdltvYmiw_DuKgggh-hPqQeR02TxXbnFXjEKyZMI4ibWXstOpLHvhwiSXJdk1D-Nok8aVR1Tug"/>
+</div>
+</div>
+<h3 class="font-bold text-navy text-lg mb-1">Nexus Tech Incubator</h3>
+<div class="flex items-center gap-1 text-slate-500 text-sm mb-4">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>San Francisco, USA</span>
+</div>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="px-3 py-1 bg-background-light text-[10px] font-bold uppercase tracking-wider rounded border border-primary/10">Social Innovation</span>
+<span class="px-3 py-1 bg-background-light text-[10px] font-bold uppercase tracking-wider rounded border border-primary/10">EdTech</span>
+</div>
+<button class="w-full py-3 rounded-lg border border-primary/30 text-navy font-bold text-sm hover:bg-primary/10 transition-colors shadow-sm">
+                            Add to shortlist
+                        </button>
+</div>
+<!-- Card 3 -->
+<div class="bg-white rounded-xl p-6 shadow-sm border border-primary/10 hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-3">
+<span class="bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/20">85% Match</span>
+</div>
+<div class="flex items-start gap-4 mb-4">
+<div class="size-14 rounded-lg bg-navy/5 flex items-center justify-center overflow-hidden border border-primary/10">
+<img alt="Logo" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Clean minimal typography based organization logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaDjn-AHp8q7HpSIe8cvHLrTDvDrDeDgTyYgdwbuXVYx8LIkr4JQpwTPGlHAYqDAEA9yha81QCyGejrXFWWYsjDMaU9XvQeMz2MAVKH5le4rKhu1kRfGd9BcwEnPHZLg-QnjJ2tgnVvdrXyDGeczIY9XYtIWBq4Jlh1ZhUluHVEyDWwuO88JHg8_JRhpegflBJaeu3cEqYKh3PCATXI4zlX6DpWIEiq4mzzNzj7gZuYlFob_WrMwFT6NxnGGTYnOvyH0Sar6SWjMY"/>
+</div>
+</div>
+<h3 class="font-bold text-navy text-lg mb-1">WaterWays NGO</h3>
+<div class="flex items-center gap-1 text-slate-500 text-sm mb-4">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>Nairobi, Kenya</span>
+</div>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="px-3 py-1 bg-background-light text-[10px] font-bold uppercase tracking-wider rounded border border-primary/10">Clean Water</span>
+<span class="px-3 py-1 bg-background-light text-[10px] font-bold uppercase tracking-wider rounded border border-primary/10">Health</span>
+</div>
+<button class="w-full py-3 rounded-lg border border-primary/30 text-navy font-bold text-sm hover:bg-primary/10 transition-colors shadow-sm">
+                            Add to shortlist
+                        </button>
+</div>
+<!-- Card 4 (Phone View Scrolling) -->
+<div class="bg-white rounded-xl p-6 shadow-sm border border-primary/10 hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-3">
+<span class="bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/20">89% Match</span>
+</div>
+<div class="flex items-start gap-4 mb-4">
+<div class="size-14 rounded-lg bg-navy/5 flex items-center justify-center overflow-hidden border border-primary/10">
+<img alt="Logo" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Professional corporate style logo for CSR fund" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-TpLWJnei_AYvteQcx2z2EDW-cIk4J-uRirv6RdLPA1eKJs3aEOid58ka1_1TezdBr2cBLhEJ257T8Ji-xVGn-GpvC8yH2cDMD6ZB0ADk8EXMiIn8xqTMpC-AMT-ZQu7L0dANz1T0jU4wgN_OA97B-1YrkkPOkZ1u4tURiAIR4CgtFu2sV08W6oeUWxbjufaC5pXJoa1nIb2U55GeS-DyiUgkIycab2wmS2EaJ5BN7YozOJwAgy_V0QKQxO4sBD4e7Q7NDD18Wys"/>
+</div>
+</div>
+<h3 class="font-bold text-navy text-lg mb-1">Artemis CSR Fund</h3>
+<div class="flex items-center gap-1 text-slate-500 text-sm mb-4">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>London, UK</span>
+</div>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="px-3 py-1 bg-background-light text-[10px] font-bold uppercase tracking-wider rounded border border-primary/10">Corporate Philanthropy</span>
+</div>
+<button class="w-full py-3 rounded-lg border border-primary/30 text-navy font-bold text-sm hover:bg-primary/10 transition-colors shadow-sm">
+                            Add to shortlist
+                        </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile) -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 border-t border-primary/10 bg-white px-4 pb-6 pt-2 z-40">
+<div class="flex gap-2">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<p class="text-[10px] font-medium leading-normal tracking-[0.015em]">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
+<p class="text-[10px] font-medium leading-normal tracking-[0.015em]">Browse</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<p class="text-[10px] font-medium leading-normal tracking-[0.015em]">Saved</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<p class="text-[10px] font-medium leading-normal tracking-[0.015em]">Chat</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<p class="text-[10px] font-medium leading-normal tracking-[0.015em]">Profile</p>
+</a>
+</div>
+</div>
+</div>
+</body></html>
