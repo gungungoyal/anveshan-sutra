@@ -53,8 +53,8 @@ export async function getSavedOrganizations(userId: string): Promise<{
         }
 
         // Fetch focus areas for each organization
-        const orgIds = shortlistData
-            .map(item => item.organizations?.id)
+        const orgIds = (shortlistData as any[])
+            .map((item: any) => item.organizations?.id)
             .filter(Boolean) as string[];
 
         // Handle edge case: no valid org IDs
@@ -76,9 +76,9 @@ export async function getSavedOrganizations(userId: string): Promise<{
         });
 
         // Transform to SearchResult format
-        const organizations: SearchResult[] = shortlistData
-            .filter(item => item.organizations)
-            .map(item => {
+        const organizations: SearchResult[] = (shortlistData as any[])
+            .filter((item: any) => item.organizations)
+            .map((item: any) => {
                 const org = item.organizations!;
                 return {
                     id: org.id,

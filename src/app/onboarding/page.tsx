@@ -265,32 +265,21 @@ export default function OnboardingPage() {
 
     return (
         <AuthLayout>
-            <div className="flex-1 container mx-auto px-4 py-12 max-w-xl">
-                {/* Welcome Message */}
+            <div className="flex-1 max-w-xl mx-auto w-full px-4 py-10">
+                {/* Welcome Header */}
                 <div className="text-center mb-8">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full mb-6"
-                    >
-                        <CheckCircle className="w-5 h-5" />
-                        <span className="font-medium">Account Created!</span>
-                    </motion.div>
-
-                    <h1 className="text-3xl font-bold text-foreground mb-2">
-                        Quick Setup
-                    </h1>
-                    <p className="text-muted-foreground">
-                        Tell us about yourself to get started (takes 30 seconds)
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full gradient-bg text-white text-sm font-semibold mb-5 shadow-blue">
+                        <CheckCircle className="w-4 h-4" />
+                        Account Created!
+                    </div>
+                    <h1 className="text-3xl font-extrabold text-foreground mb-2">Quick Setup</h1>
+                    <p className="text-muted-foreground text-sm">
+                        Tell us about yourself to personalize your experience (takes 30 seconds)
                     </p>
                 </div>
 
-                {/* Single Form Card */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-card border border-border rounded-2xl p-8 shadow-lg"
-                >
+                {/* Form Card */}
+                <div className="drivya-card p-6 sm:p-8 animate-fade-in-up">
                     <div className="space-y-6">
                         {/* Organization Name */}
                         <div className="space-y-2">
@@ -315,15 +304,14 @@ export default function OnboardingPage() {
                                 {roles.map((role) => {
                                     const Icon = role.icon;
                                     const isSelected = selectedRole === role.id;
-
                                     return (
                                         <button
                                             key={role.id}
                                             type="button"
                                             onClick={() => setSelectedRole(role.id)}
                                             className={`p-4 rounded-xl border-2 text-center transition-all ${isSelected
-                                                ? "border-primary bg-primary/5 shadow-md"
-                                                : "border-border hover:border-primary/30"
+                                                ? "border-primary bg-primary/8 shadow-blue"
+                                                : "border-border hover:border-primary/40 hover:bg-secondary/40"
                                                 }`}
                                         >
                                             <div className={`w-10 h-10 ${role.color} rounded-lg flex items-center justify-center mx-auto mb-2`}>
@@ -395,23 +383,22 @@ export default function OnboardingPage() {
                         <Button
                             onClick={handleSubmit}
                             disabled={isLoading || !organizationName || !selectedRole || !primaryGoal || !country}
-                            className="w-full h-12 rounded-xl text-base"
+                            className="w-full h-12 rounded-xl text-base font-semibold gradient-bg border-0 text-white shadow-blue hover:shadow-blue-lg disabled:opacity-50"
                         >
                             {isLoading ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />
                             ) : (
                                 <>
-                                    Get Started
-                                    <CheckCircle className="w-5 h-5 ml-2" />
+                                    Get Started <CheckCircle className="w-4 h-4 ml-2" />
                                 </>
                             )}
                         </Button>
 
                         <p className="text-xs text-center text-muted-foreground">
-                            You can update these details anytime from settings
+                            You can update these details anytime from Settings
                         </p>
                     </div>
-                </motion.div>
+                </div>
             </div>
         </AuthLayout>
     );

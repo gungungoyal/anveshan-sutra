@@ -1,5 +1,5 @@
-/** @import must precede all other statements */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+/* Drivya design system fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,128 +8,116 @@
 @layer base {
 
     /**
-   * Drivya.AI Color System
+   * Drivya.AI Color System (Stitch Design)
    * 
-   * NEUTRAL BASE:
-   * Background: #F8FAFC (light) / #0F172A (dark)
-   * Primary Text: #0F172A (light) / #F8FAFC (dark)
-   * Secondary Text: #475569 (light) / #94A3B8 (dark)
+   * PRIMARY: #137fec (Stitch custom blue, HSL ≈ 211 86% 50%)
+   * FONT: Manrope (variable weight: 400, 500, 600, 700, 800)
+   * RADIUS: 8px (ROUND_EIGHT)
+   * MODE: Light (Stitch LIGHT mode)
    * 
-   * PRIMARY ACTION: #2563EB (blue-600)
-   * Used for: Main CTA buttons, active states, key highlights
-   * 
-   * ROLE ACCENTS (via Tailwind classes):
+   * ROLE ACCENTS:
    * NGO: #16A34A (green-600)
    * Incubator: #0EA5E9 (sky-500)
    * CSR: #F97316 (orange-500)
    * 
-   * MATCH SCORE COLORS:
+   * MATCH SCORE:
    * <50%: #EF4444 (red-500)
-   * 50-69%: #F59E0B (amber-500)
+   * 50-69%: #F59E0B (amber-500) 
    * ≥70%: #16A34A (green-600)
    */
+
     :root {
-        /* Neutral Base - Light Mode */
-        --background: 210 40% 98%;
-        /* #F8FAFC */
-        --foreground: 222 47% 11%;
-        /* #0F172A */
+        /* --- Base --- */
+        --background: 210 40% 98%;       /* #F8FAFC */
+        --foreground: 222 47% 11%;       /* #0F172A */
 
-        --card: 0 0% 100%;
-        /* white */
+        /* --- Surface --- */
+        --card: 0 0% 100%;               /* white */
         --card-foreground: 222 47% 11%;
-        /* #0F172A */
-
         --popover: 0 0% 100%;
         --popover-foreground: 222 47% 11%;
 
-        /* Primary: Blue #2563EB */
-        --primary: 217 91% 60%;
+        /* --- Primary: Stitch Blue #137fec --- */
+        --primary: 211 86% 50%;
         --primary-foreground: 0 0% 100%;
 
-        /* Secondary: Neutral gray for secondary actions */
+        /* --- Secondary --- */
         --secondary: 210 40% 96%;
         --secondary-foreground: 215 16% 47%;
-        /* #64748B */
 
-        /* Muted: Subtle backgrounds */
+        /* --- Muted --- */
         --muted: 210 40% 96%;
         --muted-foreground: 215 16% 47%;
-        /* #475569 muted text */
 
-        /* Accent: For highlights (uses primary by default) */
-        --accent: 210 40% 96%;
-        --accent-foreground: 217 91% 60%;
+        /* --- Accent --- */
+        --accent: 211 86% 96%;
+        --accent-foreground: 211 86% 40%;
 
+        /* --- Destructive --- */
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 100%;
 
-        --border: 214 32% 91%;
-        /* #E2E8F0 */
+        /* --- Border / Input --- */
+        --border: 214 32% 91%;           /* #E2E8F0 */
         --input: 214 32% 91%;
-        --ring: 217 91% 60%;
+        --ring: 211 86% 50%;
 
-        --radius: 0.625rem;
+        /* --- Radius (8px = ROUND_EIGHT) --- */
+        --radius: 0.5rem;
 
-        /* Sidebar - Dark sidebar for contrast */
+        /* --- Sidebar --- */
         --sidebar-background: 222 47% 11%;
         --sidebar-foreground: 210 40% 98%;
-        --sidebar-primary: 217 91% 60%;
+        --sidebar-primary: 211 86% 50%;
         --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 217 91% 60%;
+        --sidebar-accent: 211 86% 50%;
         --sidebar-accent-foreground: 0 0% 100%;
         --sidebar-border: 217 33% 17%;
-        --sidebar-ring: 217 91% 60%;
+        --sidebar-ring: 211 86% 50%;
+
+        /* --- Drivya Custom Tokens --- */
+        --drivya-blue: 211 86% 50%;
+        --drivya-blue-light: 211 86% 96%;
+        --drivya-gradient-from: #137fec;
+        --drivya-gradient-to: #0ea5e9;
+        --card-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(19,127,236,0.06);
+        --card-shadow-hover: 0 4px 16px rgba(0,0,0,0.10), 0 8px 24px rgba(19,127,236,0.12);
+        --glass-bg: rgba(255,255,255,0.85);
+        --glass-border: rgba(255,255,255,0.5);
     }
 
     .dark {
-        /* Neutral Base - Dark Mode */
-        --background: 222 47% 11%;
-        /* #0F172A */
+        --background: 222 47% 8%;
         --foreground: 210 40% 98%;
-        /* #F8FAFC */
-
-        --card: 217 33% 17%;
-        /* #1E293B */
+        --card: 217 33% 13%;
         --card-foreground: 210 40% 98%;
-
-        --popover: 217 33% 17%;
+        --popover: 217 33% 13%;
         --popover-foreground: 210 40% 98%;
-
-        /* Primary: Slightly brighter blue for dark mode */
-        --primary: 217 91% 65%;
+        --primary: 211 86% 56%;
         --primary-foreground: 222 47% 11%;
-
-        /* Secondary */
         --secondary: 217 33% 17%;
         --secondary-foreground: 215 20% 65%;
-
-        /* Muted */
         --muted: 217 33% 17%;
         --muted-foreground: 215 20% 65%;
-        /* #94A3B8 */
-
-        /* Accent */
         --accent: 217 33% 22%;
-        --accent-foreground: 217 91% 65%;
-
+        --accent-foreground: 211 86% 65%;
         --destructive: 0 62% 50%;
         --destructive-foreground: 0 0% 100%;
-
-        --border: 217 33% 22%;
-        /* #334155 */
-        --input: 217 33% 22%;
-        --ring: 217 91% 65%;
-
-        /* Sidebar - Dark mode sidebar */
-        --sidebar-background: 222 47% 8%;
+        --border: 217 33% 20%;
+        --input: 217 33% 20%;
+        --ring: 211 86% 56%;
+        --sidebar-background: 222 47% 6%;
         --sidebar-foreground: 210 40% 98%;
-        --sidebar-primary: 217 91% 65%;
+        --sidebar-primary: 211 86% 56%;
         --sidebar-primary-foreground: 222 47% 11%;
-        --sidebar-accent: 217 91% 65%;
+        --sidebar-accent: 211 86% 56%;
         --sidebar-accent-foreground: 222 47% 11%;
-        --sidebar-border: 217 33% 17%;
-        --sidebar-ring: 217 91% 65%;
+        --sidebar-border: 217 33% 15%;
+        --sidebar-ring: 211 86% 56%;
+        --glass-bg: rgba(15, 23, 42, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --card-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 4px 12px rgba(19,127,236,0.08);
+        --card-shadow-hover: 0 4px 16px rgba(0,0,0,0.3), 0 8px 24px rgba(19,127,236,0.15);
     }
 }
 
@@ -144,44 +132,184 @@
 
     body {
         @apply bg-background text-foreground;
-        font-feature-settings:
-            "rlig" 1,
-            "calt" 1;
+        font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+        font-feature-settings: "rlig" 1, "calt" 1;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
+    h1, h2, h3, h4, h5, h6 {
         @apply font-semibold tracking-tight;
     }
 
-    h1 {
-        @apply text-display-lg;
-    }
-
-    h2 {
-        @apply text-display-md;
-    }
-
-    h3 {
-        @apply text-heading-lg;
-    }
-
-    h4 {
-        @apply text-heading-md;
-    }
+    h1 { @apply text-4xl font-bold leading-tight; }
+    h2 { @apply text-3xl font-bold leading-snug; }
+    h3 { @apply text-2xl font-semibold leading-snug; }
+    h4 { @apply text-xl font-semibold; }
+    h5 { @apply text-lg font-semibold; }
+    h6 { @apply text-base font-semibold; }
 
     :where(p, span, li, a, button, label, td, th) {
         overflow-wrap: anywhere;
         word-break: break-word;
     }
 
-    pre,
-    code {
+    pre, code {
         overflow-x: auto;
         white-space: pre;
     }
+
+    /* Focus ring - consistent across all interactive elements */
+    :focus-visible {
+        @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+    }
+}
+
+@layer components {
+    /* Glassmorphism card */
+    .glass-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+    }
+
+    /* Drivya gradient text */
+    .gradient-text {
+        background: linear-gradient(135deg, var(--drivya-gradient-from), var(--drivya-gradient-to));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Drivya gradient background */
+    .gradient-bg {
+        background: linear-gradient(135deg, var(--drivya-gradient-from), var(--drivya-gradient-to));
+    }
+
+    /* Premium card with shadow */
+    .drivya-card {
+        background: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        box-shadow: var(--card-shadow);
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .drivya-card:hover {
+        box-shadow: var(--card-shadow-hover);
+        transform: translateY(-1px);
+    }
+
+    /* Score ring - used for match scores */
+    .score-ring {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Pill badge */
+    .pill {
+        @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold;
+    }
+
+    /* Input with icon */
+    .input-with-icon {
+        @apply relative;
+    }
+
+    .input-with-icon input {
+        @apply pl-10;
+    }
+
+    .input-with-icon .icon {
+        @apply absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground;
+    }
+
+    /* Section header */
+    .section-header {
+        @apply flex items-center justify-between mb-4;
+    }
+
+    .section-title {
+        @apply text-lg font-bold text-foreground;
+    }
+
+    /* Bottom nav bar (mobile) */
+    .bottom-nav {
+        @apply fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border;
+        @apply flex items-stretch justify-around;
+        @apply pb-safe;
+        padding-bottom: max(env(safe-area-inset-bottom), 8px);
+    }
+
+    .bottom-nav-item {
+        @apply flex flex-col items-center justify-center gap-0.5 px-3 py-2 flex-1;
+        @apply text-muted-foreground text-[10px] font-medium transition-colors;
+    }
+
+    .bottom-nav-item.active {
+        @apply text-primary;
+    }
+
+    .bottom-nav-item .nav-icon {
+        @apply w-5 h-5;
+    }
+
+    /* Stat card */
+    .stat-card {
+        @apply drivya-card p-4 flex flex-col gap-1;
+    }
+
+    .stat-value {
+        @apply text-2xl font-bold text-foreground;
+    }
+
+    .stat-label {
+        @apply text-sm text-muted-foreground;
+    }
+
+    /* Animated gradient border */
+    .gradient-border {
+        position: relative;
+        background: hsl(var(--card));
+        border-radius: var(--radius);
+    }
+
+    .gradient-border::before {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: calc(var(--radius) + 1px);
+        background: linear-gradient(135deg, var(--drivya-gradient-from), var(--drivya-gradient-to));
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .gradient-border:hover::before {
+        opacity: 1;
+    }
+
+    /* Tag / focus area chip */
+    .tag-chip {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+        @apply bg-accent text-accent-foreground border border-primary/20;
+    }
+
+    /* Match score badge colors */
+    .match-strong {
+        @apply bg-green-100 text-green-800 border border-green-200;
+    }
+    .match-risky {
+        @apply bg-amber-100 text-amber-800 border border-amber-200;
+    }
+    .match-avoid {
+        @apply bg-red-100 text-red-800 border border-red-200;
+    }
+
+    .dark .match-strong  { @apply bg-green-900/40 text-green-300 border-green-800; }
+    .dark .match-risky   { @apply bg-amber-900/40 text-amber-300 border-amber-800; }
+    .dark .match-avoid   { @apply bg-red-900/40 text-red-300 border-red-800; }
 }

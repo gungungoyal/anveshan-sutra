@@ -30,6 +30,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["School Children 6-18", "Rural Teachers"],
     partnerHistory: ["UNICEF", "Global Fund for Education"],
     confidence: 92,
+    // Capacity fields
+    maxBeneficiaries: 2500,
+    geographyTypes: ["rural", "remote"],
+    reportingCapability: "moderate",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [800, 1200],
+    teamSize: "medium",
   },
   {
     id: "org-002",
@@ -60,6 +67,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Rural Communities", "Women & Children"],
     partnerHistory: ["WHO", "Gates Foundation"],
     confidence: 88,
+    // Capacity fields
+    maxBeneficiaries: 10000,
+    geographyTypes: ["rural", "urban"],
+    reportingCapability: "heavy",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [1500, 2500],
+    teamSize: "large",
   },
   {
     id: "org-003",
@@ -90,6 +104,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Farmers", "Forest Communities"],
     partnerHistory: ["IUCN", "Rainforest Alliance"],
     confidence: 85,
+    // Capacity fields
+    maxBeneficiaries: 500,
+    geographyTypes: ["rural", "remote"],
+    reportingCapability: "simple",
+    hasJobPlacement: true,
+    costPerBeneficiaryRange: [600, 900],
+    teamSize: "small",
   },
   {
     id: "org-004",
@@ -120,6 +141,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Youth 18-30", "Women Developers"],
     partnerHistory: ["Google", "Microsoft"],
     confidence: 90,
+    // Capacity fields
+    maxBeneficiaries: 2000,
+    geographyTypes: ["urban"],
+    reportingCapability: "heavy",
+    hasJobPlacement: true,
+    costPerBeneficiaryRange: [3000, 5000],
+    teamSize: "medium",
   },
   {
     id: "org-005",
@@ -150,6 +178,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Social Entrepreneurs", "Startups"],
     partnerHistory: ["Omidyar Network", "World Economic Forum"],
     confidence: 91,
+    // Capacity fields
+    maxBeneficiaries: 200,
+    geographyTypes: ["urban"],
+    reportingCapability: "heavy",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [5000, 10000],
+    teamSize: "medium",
   },
   {
     id: "org-006",
@@ -180,6 +215,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Youth 16-30", "Rural Communities"],
     partnerHistory: ["NITI Aayog"],
     confidence: 72,
+    // Capacity fields
+    maxBeneficiaries: 1500,
+    geographyTypes: ["rural", "urban"],
+    reportingCapability: "simple",
+    hasJobPlacement: true,
+    costPerBeneficiaryRange: [900, 1400],
+    teamSize: "medium",
   },
   {
     id: "org-007",
@@ -210,6 +252,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Rural Women", "Entrepreneurs"],
     partnerHistory: ["NABARD", "Acumen Fund"],
     confidence: 87,
+    // Capacity fields
+    maxBeneficiaries: 5000,
+    geographyTypes: ["rural"],
+    reportingCapability: "moderate",
+    hasJobPlacement: true,
+    costPerBeneficiaryRange: [700, 1100],
+    teamSize: "large",
   },
   {
     id: "org-008",
@@ -240,6 +289,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Youth 12-25", "Students"],
     partnerHistory: ["India Together", "Ashoka"],
     confidence: 84,
+    // Capacity fields
+    maxBeneficiaries: 12000,
+    geographyTypes: ["urban", "rural"],
+    reportingCapability: "moderate",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [400, 700],
+    teamSize: "medium",
   },
   {
     id: "org-009",
@@ -270,6 +326,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Rural Communities", "Women & Children"],
     partnerHistory: ["Water Aid", "USAID"],
     confidence: 89,
+    // Capacity fields
+    maxBeneficiaries: 50000,
+    geographyTypes: ["rural", "remote"],
+    reportingCapability: "heavy",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [500, 800],
+    teamSize: "large",
   },
   {
     id: "org-010",
@@ -300,8 +363,14 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Social Entrepreneurs", "Communities"],
     partnerHistory: ["Google.org", "Facebook Social Impact"],
     confidence: 79,
+    // Capacity fields
+    maxBeneficiaries: 300,
+    geographyTypes: ["urban"],
+    reportingCapability: "moderate",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [4000, 8000],
+    teamSize: "small",
   },
-  // Adding more organizations for comprehensive demo data
   {
     id: "org-011",
     name: "Rural Health Outreach Trust",
@@ -321,6 +390,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Tribal Communities", "Women & Children"],
     partnerHistory: ["Care India", "UNDP"],
     confidence: 86,
+    // Capacity fields
+    maxBeneficiaries: 15000,
+    geographyTypes: ["tribal", "remote"],
+    reportingCapability: "moderate",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [1200, 2000],
+    teamSize: "medium",
   },
   {
     id: "org-012",
@@ -341,6 +417,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Youth 16-28", "First-time Job Seekers"],
     partnerHistory: ["NSDC", "Amazon Cares"],
     confidence: 90,
+    // Capacity fields
+    maxBeneficiaries: 2000,
+    geographyTypes: ["rural", "urban"],
+    reportingCapability: "moderate",
+    hasJobPlacement: true,
+    costPerBeneficiaryRange: [1100, 1800],
+    teamSize: "medium",
   },
   {
     id: "org-013",
@@ -361,6 +444,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Farmers", "Rural Citizens"],
     partnerHistory: ["NIC", "TCS Foundation"],
     confidence: 78,
+    // Capacity fields
+    maxBeneficiaries: 4000,
+    geographyTypes: ["rural", "tribal", "remote"],
+    reportingCapability: "simple",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [800, 1300],
+    teamSize: "small",
   },
   {
     id: "org-014",
@@ -381,6 +471,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Indigenous Communities", "Forest Villages"],
     partnerHistory: ["WWF India", "UNEP"],
     confidence: 83,
+    // Capacity fields
+    maxBeneficiaries: 800,
+    geographyTypes: ["tribal", "remote"],
+    reportingCapability: "simple",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [1000, 1600],
+    teamSize: "small",
   },
   {
     id: "org-015",
@@ -401,6 +498,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Startups", "Students"],
     partnerHistory: ["Infosys Foundation", "Google.org"],
     confidence: 92,
+    // Capacity fields
+    maxBeneficiaries: 5000,
+    geographyTypes: ["urban"],
+    reportingCapability: "heavy",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [2000, 4000],
+    teamSize: "medium",
   },
   {
     id: "org-016",
@@ -421,6 +525,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Hill Communities", "Women"],
     partnerHistory: ["Red Cross India"],
     confidence: 71,
+    // Capacity fields
+    maxBeneficiaries: 7000,
+    geographyTypes: ["rural", "remote"],
+    reportingCapability: "simple",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [500, 900],
+    teamSize: "small",
   },
   {
     id: "org-017",
@@ -441,6 +552,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Women Developers", "Students"],
     partnerHistory: ["Adobe", "GitHub"],
     confidence: 89,
+    // Capacity fields
+    maxBeneficiaries: 2000,
+    geographyTypes: ["urban"],
+    reportingCapability: "moderate",
+    hasJobPlacement: true,
+    costPerBeneficiaryRange: [2500, 4000],
+    teamSize: "medium",
   },
   {
     id: "org-018",
@@ -461,6 +579,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Panchayats", "Rural Artisans"],
     partnerHistory: ["Ministry of Rural Development"],
     confidence: 76,
+    // Capacity fields
+    maxBeneficiaries: 3000,
+    geographyTypes: ["rural"],
+    reportingCapability: "simple",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [600, 1000],
+    teamSize: "medium",
   },
   {
     id: "org-019",
@@ -481,6 +606,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Startups", "Urban Communities"],
     partnerHistory: ["Smart City Mission", "World Bank"],
     confidence: 88,
+    // Capacity fields
+    maxBeneficiaries: 500,
+    geographyTypes: ["urban"],
+    reportingCapability: "heavy",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [5000, 9000],
+    teamSize: "medium",
   },
   {
     id: "org-020",
@@ -501,6 +633,13 @@ export const mockOrganizations: Organization[] = [
     targetBeneficiaries: ["Students", "Teachers"],
     partnerHistory: ["Azim Premji Foundation"],
     confidence: 91,
+    // Capacity fields
+    maxBeneficiaries: 40000,
+    geographyTypes: ["urban", "rural"],
+    reportingCapability: "moderate",
+    hasJobPlacement: false,
+    costPerBeneficiaryRange: [300, 600],
+    teamSize: "large",
   },
 ];
 

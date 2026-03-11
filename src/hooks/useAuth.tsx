@@ -53,41 +53,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // We already checked supabase above, so it's safe to use here
         const sb = supabase!;
 
-        // Initial session check - this is the ONLY place we set isLoading to false initially
+        // Initial session check
         const initializeAuth = async () => {
             try {
-                // ✅ PERFORMANCE FIX: Reduced timeout from 10s to 4s for faster fallback
-                const timeoutMs = 4000;
-                const timeoutPromise = new Promise<null>((_, reject) => {
-                    setTimeout(() => reject(new Error('Auth initialization timed out')), timeoutMs);
-                });
-
-                const authPromise = (async () => {
-                    // First, try to get the current session
-                    const { data: { session }, error } = await sb.auth.getSession();
-
-                    if (error) {
-                        return null;
-                    }
-
-                    if (session?.user) {
-                        return await fetchUser();
-                    } else {
-                        return null;
-                    }
-                })();
-
-                // Race between auth and timeout
-                try {
-                    await Promise.race([authPromise, timeoutPromise]);
-                } catch (timeoutError) {
-                    // Timeout - set error and proceed without user
-                    setError('Connection is slow. Some features may be limited.');
+                const { data: { session }, error } = await sb.auth.getSession();
+                if (error || !session?.user) {
+                    return;
                 }
+                await fetchUser();
             } catch {
                 // Auth error - proceed without user
             } finally {
-                // CRITICAL: Only set loading false after we've checked everything
                 if (mounted) {
                     setIsLoading(false);
                 }

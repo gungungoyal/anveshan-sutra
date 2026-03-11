@@ -80,6 +80,31 @@ function getEmailTemplate(otp: string, purpose: 'signup' | 'login' | 'password_r
   };
 }
 
+/**
+ * Send email asynchronously without blocking the API response
+ * This prevents timeout issues when Gmail SMTP is slow (20-40s)
+ */
+async function sendEmailAsync(email: string, otp: string, purpose: 'signup' | 'login' | 'password_reset') {
+  try {
+    const transporter = createTransporter();
+    const { subject, html } = getEmailTemplate(otp, purpose);
+
+    const startTime = Date.now();
+    await transporter.sendMail({
+      from: `\"Drivya.AI\" <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject,
+      html,
+    });
+    const duration = Date.now() - startTime;
+
+    console.log(`[Email Success] OTP sent to ${email} in ${duration}ms`);
+  } catch (error: any) {
+    console.error(`[Email Error] Failed to send to ${email}:`, error.message);
+    // Don't throw - this is fire-and-forget
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { email, purpose = 'signup' } = await request.json();
@@ -137,17 +162,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Failed to generate verification code' }, { status: 500 });
     }
 
-    // Send email
-    const transporter = createTransporter();
-    const { subject, html } = getEmailTemplate(otp, purpose as any);
-
-    await transporter.sendMail({
-      from: `"Drivya.AI" <${process.env.GMAIL_USER}>`,
-      to: email,
-      subject,
-      html,
+    // ✅ CRITICAL FIX: Send email asynchronously (fire and forget)
+    // This prevents timeout issues when Gmail SMTP is slow (20-40 seconds)
+    // The user gets immediate feedback and can proceed to OTP entry screen
+    sendEmailAsync(email, otp, purpose as any).catch(err => {
+      console.error('[Email Error] Failed to send OTP email:', err);
+      // Don't fail the request - OTP is already in database
     });
 
+    // Return immediately - user can proceed to OTP entry screen
+    console.log(`[OTP] Generated for ${email}, sending email in background...`);
     return NextResponse.json({
       success: true,
       message: 'Verification code sent to your email',

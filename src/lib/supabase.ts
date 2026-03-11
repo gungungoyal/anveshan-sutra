@@ -9,12 +9,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('For local development, create .env.local with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY')
 }
 
+// Create Supabase client with proper configuration to avoid timeouts
 export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true, // Important for OAuth callbacks
+      detectSessionInUrl: false,
     },
   })
   : null
+
+

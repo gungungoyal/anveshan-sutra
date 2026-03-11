@@ -1,426 +1,482 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import {
-    ArrowRight,
-    Loader2,
-    Target,
-    Clock,
-    Star,
-    AlertCircle,
-    Building2,
-    Sparkles,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { searchOrganizations } from "@/lib/services/organizations";
-import { SearchResult } from "@shared/api";
+import { signOut } from "@/lib/services/auth";
 
-// ============================================================================
-// TYPES
-// ============================================================================
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-interface DashboardOrg {
-    id: string;
+interface MatchOrg {
+    initials: string;
     name: string;
     type: string;
-    region: string;
-    fitScore: number;
-    reason: string;
-    addedAt?: string;
-    isSaved?: boolean;
+    focus: string[];
+    geo: string;
+    score: number;
+    bars: { focus: number; geo: number; past: number };
+    locked: boolean;
 }
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
+// ─── Static Data (will be replaced with real DB fetch later) ─────────────────
 
-function getScoreColor(score: number): string {
-    if (score >= 70) return "text-green-600 bg-green-100 dark:bg-green-900/30";
-    if (score >= 50) return "text-orange-600 bg-orange-100 dark:bg-orange-900/30";
-    return "text-red-600 bg-red-100 dark:bg-red-900/30";
+const FREE_MATCHES: MatchOrg[] = [
+    {
+        initials: "AS", name: "Aryan Social Foundation", type: "CSR Partner",
+        focus: ["Education", "Skill Development"], geo: "Uttar Pradesh, Pan India",
+        score: 91, bars: { focus: 95, geo: 90, past: 88 }, locked: false,
+    },
+    {
+        initials: "MI", name: "Meridian Impact Trust", type: "NGO",
+        focus: ["Rural Development", "Women Empowerment"], geo: "Maharashtra, Rajasthan",
+        score: 84, bars: { focus: 88, geo: 82, past: 79 }, locked: false,
+    },
+];
+
+const LOCKED_MATCHES: MatchOrg[] = [
+    { initials: "GR", name: "GreenRoots Foundation", type: "CSR Partner", focus: ["Environment"], geo: "Pan India", score: 81, bars: { focus: 85, geo: 80, past: 78 }, locked: true },
+    { initials: "HW", name: "Horizon Welfare Society", type: "NGO", focus: ["Healthcare"], geo: "North India", score: 78, bars: { focus: 82, geo: 75, past: 77 }, locked: true },
+    { initials: "CT", name: "Catalyst India Trust", type: "CSR Partner", focus: ["Technology"], geo: "Delhi NCR", score: 76, bars: { focus: 80, geo: 72, past: 76 }, locked: true },
+    { initials: "PI", name: "Prayas Social Initiative", type: "NGO", focus: ["Livelihood"], geo: "Rajasthan", score: 73, bars: { focus: 78, geo: 70, past: 71 }, locked: true },
+    { initials: "SF", name: "Samridhi Foundation", type: "CSR Partner", focus: ["Agriculture"], geo: "South India", score: 70, bars: { focus: 75, geo: 68, past: 67 }, locked: true },
+];
+
+const SAVED_ORGS = [
+    { initials: "R", name: "Reliance Foundation", type: "CSR Partner" },
+    { initials: "G", name: "Goonj", type: "NGO" },
+    { initials: "S", name: "Social Alpha", type: "Incubator" },
+];
+
+const ALL_TYPES = ["All", "CSR Partner", "NGO", "Incubator"];
+
+// ─── Count-up Hook ────────────────────────────────────────────────────────────
+
+function useCountUp(target: number, duration = 1500, suffix = "") {
+    const [value, setValue] = useState(0);
+    const started = useRef(false);
+    useEffect(() => {
+        if (started.current) return;
+        started.current = true;
+        const step = (target / duration) * 10;
+        let current = 0;
+        const timer = setInterval(() => {
+            current += step;
+            if (current >= target) { setValue(target); clearInterval(timer); }
+            else setValue(Math.floor(current));
+        }, 10);
+        return () => clearInterval(timer);
+    }, [target, duration]);
+    return `${value}${suffix}`;
 }
 
-function generateMatchReason(org: SearchResult): string {
-    // Generate a contextual reason based on org attributes
-    if (org.focusAreas && org.focusAreas.length > 0) {
-        return `Focus area: ${org.focusAreas[0]}`;
-    }
-    if (org.region) {
-        return `Active in ${org.region}`;
-    }
-    return `${org.type} organization`;
-}
+// ─── Components ───────────────────────────────────────────────────────────────
 
-function mapToDisplayOrg(org: SearchResult): DashboardOrg {
-    return {
-        id: org.id,
-        name: org.name,
-        type: org.type,
-        region: org.region || "India",
-        fitScore: org.alignmentScore || org.confidence || 0,
-        reason: generateMatchReason(org),
-        isSaved: false, // TODO: Check against user's shortlist
-    };
-}
-
-// ============================================================================
-// COMPONENTS
-// ============================================================================
-
-/**
- * Organization Card - Links to /org/[id]
- * @param variant - 'primary' for high-fit (full emphasis), 'secondary' for recently added (de-emphasized)
- */
-function OrgCard({ org, variant = "primary" }: { org: DashboardOrg; variant?: "primary" | "secondary" }) {
-    const isSecondary = variant === "secondary";
-
+function StatCard({ label, value, isGold = false, bar }: { label: string; value: string | number; isGold?: boolean; bar?: number }) {
     return (
-        <Link href={`/org/${org.id}`} className="block">
-            <div className={`flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer group ${isSecondary
-                ? "border-border/60 bg-muted/30 hover:bg-muted/50"
-                : "border-border hover:bg-muted/50"
-                }`}>
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                    {/* Icon - slightly smaller for secondary */}
-                    <div className={`rounded-lg flex items-center justify-center flex-shrink-0 ${isSecondary
-                        ? "w-8 h-8 bg-muted"
-                        : "w-9 h-9 bg-gradient-to-br from-primary/80 to-primary"
-                        }`}>
-                        <Building2 className={`${isSecondary
-                            ? "w-4 h-4 text-muted-foreground"
-                            : "w-4.5 h-4.5 text-primary-foreground"
-                            }`} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                        {/* Name - reduced from font-medium to text-sm font-medium */}
-                        <div className="flex items-center gap-2">
-                            <h3 className={`text-sm font-medium truncate transition-colors ${isSecondary
-                                ? "text-foreground/80 group-hover:text-foreground"
-                                : "text-foreground group-hover:text-primary"
-                                }`}>
-                                {org.name}
-                            </h3>
-                            {/* "New" indicator for secondary variant */}
-                            {isSecondary && (
-                                <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400 flex-shrink-0">
-                                    New
-                                </span>
-                            )}
-                        </div>
-                        {/* Metadata - reduced contrast */}
-                        <p className={`text-xs truncate ${isSecondary
-                            ? "text-muted-foreground/60"
-                            : "text-muted-foreground/80"
-                            }`}>
-                            {org.type} • {org.region}
-                        </p>
-                        {/* Reason - further reduced contrast */}
-                        <p className={`text-xs mt-0.5 truncate ${isSecondary
-                            ? "text-muted-foreground/50"
-                            : "text-muted-foreground/70"
-                            }`}>
-                            {org.reason}
-                        </p>
+        <div className="bg-white p-8 rounded-sm border border-navy/5 shadow-sm" style={{ animation: "countUp 0.6s ease forwards" }}>
+            <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-3" style={{ color: "rgba(13,27,42,0.4)" }}>{label}</p>
+            {bar !== undefined ? (
+                <div className="flex items-end gap-3">
+                    <h3 className="text-4xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#0D1B2A" }}>{value}</h3>
+                    <div className="flex-1 h-2 rounded-full overflow-hidden mb-2" style={{ background: "rgba(13,27,42,0.05)" }}>
+                        <div className="bg-[#C9A84C] h-full rounded-full transition-all duration-1000" style={{ width: `${bar}%` }} />
                     </div>
                 </div>
-                <div className="flex items-center gap-2.5 flex-shrink-0 ml-2">
-                    {/* Score badge - slightly smaller */}
-                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${isSecondary
-                        ? "opacity-70 " + getScoreColor(org.fitScore)
-                        : getScoreColor(org.fitScore)
-                        }`}>
-                        {org.fitScore}%
-                    </span>
-                    <ArrowRight className={`w-3.5 h-3.5 transition-colors ${isSecondary
-                        ? "text-muted-foreground/50 group-hover:text-muted-foreground"
-                        : "text-muted-foreground group-hover:text-primary"
-                        }`} />
-                </div>
-            </div>
-        </Link>
-    );
-}
-
-/**
- * Empty State - Shown when no organizations in a section
- */
-function EmptyState({
-    icon: Icon,
-    title,
-    subtitle,
-    action,
-}: {
-    icon: typeof Target;
-    title: string;
-    subtitle: string;
-    action?: { label: string; href: string };
-}) {
-    return (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                <Icon className="w-6 h-6 text-muted-foreground" />
-            </div>
-            <p className="font-medium text-foreground mb-1">{title}</p>
-            <p className="text-sm text-muted-foreground mb-4">{subtitle}</p>
-            {action && (
-                <Link href={action.href}>
-                    <Button variant="outline" size="sm">
-                        {action.label}
-                    </Button>
-                </Link>
+            ) : (
+                <h3 className="text-4xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif", color: isGold ? "#C9A84C" : "#0D1B2A" }}>{value}</h3>
             )}
         </div>
     );
 }
 
-/**
- * Section - Wrapper for each decision category
- */
-function Section({
-    title,
-    icon: Icon,
-    iconColor,
-    children,
-}: {
-    title: string;
-    icon: typeof Target;
-    iconColor: string;
-    children: React.ReactNode;
-}) {
+function MiniScoreBars({ bars }: { bars: { focus: number; geo: number; past: number } }) {
     return (
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
-                <Icon className={`w-5 h-5 ${iconColor}`} />
-                <h2 className="font-semibold text-foreground">{title}</h2>
-            </div>
-            <div className="p-4">{children}</div>
+        <div className="flex flex-col gap-1 w-24">
+            {[bars.focus, bars.geo, bars.past].map((w, i) => (
+                <div key={i} className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(13,27,42,0.05)" }}>
+                    <div className="h-full rounded-full" style={{ width: `${w}%`, background: "#C9A84C" }} />
+                </div>
+            ))}
         </div>
     );
 }
 
-// ============================================================================
-// MAIN DASHBOARD PAGE
-// ============================================================================
+function FreeMatchCard({ org, onSave, saved }: { org: MatchOrg; onSave: () => void; saved: boolean }) {
+    return (
+        <div className="bg-white p-8 rounded-sm border border-navy/5 shadow-sm hover:border-gold/30 hover:shadow-md transition-all flex flex-col lg:flex-row items-center gap-12"
+            style={{ '--gold-border': 'rgba(201,168,76,0.3)' } as any}>
+            <div className="w-20 h-20 rounded-sm shrink-0 flex items-center justify-center text-3xl font-bold"
+                style={{ background: "#0D1B2A", color: "#C9A84C", fontFamily: "'Cormorant Garamond', serif" }}>
+                {org.initials}
+            </div>
+            <div className="flex-1 text-center lg:text-left space-y-4 w-full">
+                <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+                    <h4 className="text-2xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{org.name}</h4>
+                    <span className="w-fit mx-auto lg:mx-0 text-[9px] uppercase tracking-[0.2em] font-bold px-2.5 py-1 rounded-sm"
+                        style={{ color: "rgba(13,27,42,0.4)", border: "1px solid rgba(13,27,42,0.1)" }}>{org.type}</span>
+                </div>
+                <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-xs font-bold">
+                    {org.focus.map(f => (
+                        <span key={f} className="px-2 py-1 rounded-sm" style={{ background: "rgba(13,27,42,0.05)", color: "rgba(13,27,42,0.6)" }}>{f}</span>
+                    ))}
+                    <span style={{ color: "rgba(13,27,42,0.4)" }}>📍 {org.geo}</span>
+                </div>
+            </div>
+            <div className="flex items-center gap-12 shrink-0 w-full lg:w-auto justify-center">
+                <div className="text-center space-y-4">
+                    <div className="text-5xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#C9A84C" }}>{org.score}</div>
+                    <MiniScoreBars bars={org.bars} />
+                </div>
+                <div className="flex flex-col gap-3">
+                    <button onClick={onSave}
+                        className="p-4 border rounded-sm transition-all"
+                        style={{ borderColor: saved ? "#C9A84C" : "rgba(13,27,42,0.1)", color: saved ? "#C9A84C" : "inherit" }}>
+                        {saved ? "📌" : "🔖"}
+                    </button>
+                    <button className="px-8 py-4 text-white text-[11px] font-bold uppercase tracking-widest rounded-sm hover:opacity-90 transition-all"
+                        style={{ background: "#0D1B2A" }}>
+                        View Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
-/**
- * Dashboard - Decision Workspace
- *
- * Answers: "What should I look at today?"
- * Shows prioritized organization lists, NOT a navigation hub.
- */
+function LockedMatchCard({ org, onUnlock }: { org: MatchOrg; onUnlock: () => void }) {
+    return (
+        <div className="relative bg-white p-8 rounded-sm border border-navy/5 shadow-sm overflow-hidden group cursor-pointer" onClick={onUnlock}>
+            {/* Blurred content */}
+            <div className="w-full flex flex-col lg:flex-row items-center gap-12 transition-all" style={{ filter: "blur(6px)", opacity: 0.4 }}>
+                <div className="w-20 h-20 rounded-sm shrink-0 flex items-center justify-center text-3xl font-bold"
+                    style={{ background: "#0D1B2A", color: "#C9A84C", fontFamily: "'Cormorant Garamond', serif" }}>
+                    {org.initials}
+                </div>
+                <div className="flex-1 text-center lg:text-left space-y-4">
+                    <h4 className="text-2xl font-bold uppercase tracking-wider" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{org.name}</h4>
+                    <div className="flex gap-4 text-xs font-bold">
+                        <span className="px-2 py-1 rounded-sm" style={{ background: "rgba(13,27,42,0.05)" }}>••••••••</span>
+                        <span className="px-2 py-1 rounded-sm" style={{ background: "rgba(13,27,42,0.05)" }}>••••••••</span>
+                    </div>
+                </div>
+                <div className="text-5xl font-bold opacity-50" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#C9A84C" }}>{org.score}</div>
+            </div>
+            {/* Lock overlay */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4"
+                style={{ background: "rgba(13,27,42,0.05)", backdropFilter: "blur(2px)" }}>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"
+                    style={{ background: "rgba(255,255,255,0.9)", border: "1px solid #C9A84C", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", color: "#C9A84C" }}>
+                    🔒
+                </div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.25em] group-hover:text-navy transition-colors"
+                    style={{ color: "rgba(13,27,42,0.6)" }}>Unlock to View Full Profile</p>
+            </div>
+        </div>
+    );
+}
+
+// ─── Upgrade Modal ────────────────────────────────────────────────────────────
+
+function UpgradeModal({ onClose }: { onClose: () => void }) {
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <div className="absolute inset-0" onClick={onClose} style={{ background: "rgba(13,27,42,0.8)", backdropFilter: "blur(4px)" }} />
+            <div className="relative bg-white w-full max-w-4xl rounded-sm shadow-2xl overflow-hidden animate-scale-in">
+                <button onClick={onClose} className="absolute top-6 right-6 text-2xl transition-colors hover:opacity-60" style={{ color: "rgba(13,27,42,0.2)" }}>✕</button>
+                <div className="p-12 text-center space-y-12">
+                    <div className="space-y-4">
+                        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: "rgba(201,168,76,0.1)" }}>
+                            <svg className="w-10 h-10" fill="none" stroke="#C9A84C" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h2 className="text-4xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Unlock this profile</h2>
+                        <p className="max-w-xl mx-auto text-sm leading-relaxed" style={{ color: "rgba(13,27,42,0.6)" }}>
+                            Get full access to org details, past projects, contact information and direct messaging to accelerate your partnerships.
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                        {/* Tier 1 */}
+                        <div className="p-10 border border-navy/5 rounded-sm flex flex-col space-y-8 hover:border-gold/30 transition-all group">
+                            <div className="space-y-2">
+                                <h4 className="text-xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Tier 1 — Profile Unlock</h4>
+                                <p className="text-3xl font-bold">₹999<span className="text-sm font-normal" style={{ color: "rgba(13,27,42,0.4)" }}>/month</span></p>
+                            </div>
+                            <ul className="space-y-4 text-xs font-bold" style={{ color: "rgba(13,27,42,0.6)" }}>
+                                {["Full org profiles", "Past project history", "Contact details"].map(f => (
+                                    <li key={f} className="flex items-center gap-3"><span>✓</span> {f}</li>
+                                ))}
+                            </ul>
+                            <button className="w-full border-2 py-4 text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-gold hover:text-navy"
+                                style={{ borderColor: "#C9A84C", color: "#C9A84C" }}>
+                                Choose Tier 1
+                            </button>
+                        </div>
+                        {/* Tier 2 */}
+                        <div className="p-10 border-2 rounded-sm flex flex-col space-y-8 relative overflow-hidden"
+                            style={{ borderColor: "#C9A84C", background: "rgba(201,168,76,0.02)" }}>
+                            <div className="absolute top-0 right-0 text-[8px] font-bold uppercase tracking-widest px-4 py-1"
+                                style={{ background: "#C9A84C", color: "#0D1B2A" }}>Recommended</div>
+                            <div className="space-y-2">
+                                <h4 className="text-xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Tier 2 — Full Access</h4>
+                                <p className="text-3xl font-bold">₹2,499<span className="text-sm font-normal" style={{ color: "rgba(13,27,42,0.4)" }}>/month</span></p>
+                            </div>
+                            <ul className="space-y-4 text-xs font-bold" style={{ color: "rgba(13,27,42,0.8)" }}>
+                                {[{ text: "Everything in Tier 1", gold: true }, { text: "Direct messaging" }, { text: "Collaboration requests" }, { text: "Priority support" }].map(f => (
+                                    <li key={f.text} className="flex items-center gap-3" style={{ color: f.gold ? "#C9A84C" : undefined }}><span>✓</span> {f.text}</li>
+                                ))}
+                            </ul>
+                            <button className="w-full py-4 text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all"
+                                style={{ background: "#C9A84C", color: "#0D1B2A", boxShadow: "0 8px 24px rgba(201,168,76,0.2)" }}>
+                                Choose Tier 2
+                            </button>
+                        </div>
+                    </div>
+                    <p className="text-[10px] uppercase font-bold tracking-[0.2em]" style={{ color: "rgba(13,27,42,0.2)" }}>Cancel anytime. No hidden fees.</p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ─── Main Dashboard Page ──────────────────────────────────────────────────────
+
 export default function DashboardPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
-    const [organizations, setOrganizations] = useState<DashboardOrg[]>([]);
-    const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [filter, setFilter] = useState("All");
+    const [sortBy, setSortBy] = useState("score");
+    const [savedOrgs, setSavedOrgs] = useState<string[]>([]);
+    const [showModal, setShowModal] = useState(false);
+    const [profileStrength] = useState(72);
 
-    // Redirect to auth if not authenticated
+    const totalMatches = useCountUp(FREE_MATCHES.length + LOCKED_MATCHES.length);
+    const highCompat = useCountUp(FREE_MATCHES.filter(m => m.score >= 80).length);
+    const savedCount = useCountUp(savedOrgs.length);
+    const profileStr = useCountUp(profileStrength, 1500, "%");
+
+    // Auth + profile guard
     useEffect(() => {
-        if (!authLoading && !isAuthenticated) {
-            router.push("/auth?returnTo=/dashboard");
-        }
-    }, [authLoading, isAuthenticated, router]);
+        if (authLoading) return;
+        if (!isAuthenticated) { router.push("/auth?returnTo=/dashboard"); return; }
+        if (user && !user.form_filled) { window.location.href = "/org-profile"; }
+    }, [authLoading, isAuthenticated, user, router]);
 
-    // Fetch organizations when authenticated
-    const fetchOrgs = async () => {
-        if (!isAuthenticated) return;
-
-        try {
-            setIsLoadingOrgs(true);
-            setError(null);
-            const result = await searchOrganizations({});
-
-            if (result.success && result.results) {
-                const mapped = result.results.map(mapToDisplayOrg);
-                setOrganizations(mapped);
-            } else {
-                // Handle API error
-                setError('Unable to load organizations. Please try again.');
-            }
-        } catch (error) {
-            console.error("Failed to fetch organizations:", error);
-            setError('An unexpected error occurred. Please check your connection and try again.');
-        } finally {
-            setIsLoadingOrgs(false);
-        }
+    const handleSignOut = async () => {
+        await signOut();
+        router.push("/auth");
     };
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            fetchOrgs();
-        }
-    }, [isAuthenticated]);
+    const allMatches = [...FREE_MATCHES, ...LOCKED_MATCHES];
+    const filtered = filter === "All" ? allMatches : allMatches.filter(m => m.type === filter);
+    const sorted = [...filtered].sort((a, b) => sortBy === "score" ? b.score - a.score : 0);
 
-    // Loading state
+    const firstName = user?.name?.split(" ")[0] || "there";
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    const initials = user?.name?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() || "U";
+
+    const navItems = [
+        { icon: "🏠", label: "Dashboard", active: true, href: "/dashboard" },
+        { icon: "🔍", label: "Browse All", active: false, href: "/explore" },
+        { icon: "💾", label: "Saved", active: false, href: "#" },
+        { icon: "💬", label: "Messages", active: false, href: "#", locked: true },
+        { icon: "👤", label: "My Profile", active: false, href: "/profile" },
+    ];
+
+    const roleLabels: Record<string, string> = { csr: "CSR", ngo: "NGO", incubator: "Incubator" };
+    const roleLabel = roleLabels[user?.role || ""] || "Member";
+
     if (authLoading || !isAuthenticated) {
-        return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
+        return <div className="min-h-screen flex items-center justify-center" style={{ background: "#FAF7F2" }}><Loader2 className="w-8 h-8 animate-spin" style={{ color: "#C9A84C" }} /></div>;
     }
 
-    // Derive High-fit Organizations: sort by fitScore (descending), take top 5
-    const highFitOrgs = [...organizations]
-        .sort((a, b) => b.fitScore - a.fitScore)
-        .slice(0, 5);
-
-    // Build a Set of high-fit org IDs for O(1) exclusion lookup
-    const highFitIds = new Set(highFitOrgs.map((org) => org.id));
-
-    // Derive Recently Added: exclude high-fit orgs, sort by addedAt (descending), take top 5
-    // Note: If addedAt is unavailable, we preserve the original order (assumed to be by recency)
-    const recentOrgs = [...organizations]
-        .filter((org) => !highFitIds.has(org.id))
-        .sort((a, b) => {
-            // Sort by addedAt if available, otherwise preserve order
-            if (a.addedAt && b.addedAt) {
-                return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
-            }
-            return 0;
-        })
-        .slice(0, 5);
-    const savedOrgs = organizations.filter((o) => o.isSaved).slice(0, 5);
-    const lowPriorityOrgs = organizations.filter((o) => o.fitScore < 50).slice(0, 5);
-
     return (
-        <div className="min-h-screen bg-background flex flex-col">
-            <Header />
+        <div className="min-h-screen" style={{ background: "#FAF7F2", color: "#0D1B2A", fontFamily: "'DM Sans', sans-serif", WebkitFontSmoothing: "antialiased" }}>
+            <style>{`
+                @keyframes countUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+                .sidebar { width: 240px; height: 100vh; position: fixed; left: 0; top: 0; z-index: 50; }
+                .main-content { margin-left: 240px; min-height: 100vh; }
+                .nav-link-active { color: #C9A84C; border-left: 3px solid #C9A84C; background: rgba(201,168,76,0.05); }
+                ::-webkit-scrollbar { width: 6px; }
+                ::-webkit-scrollbar-track { background: #f1f1f1; }
+                ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+                ::-webkit-scrollbar-thumb:hover { background: #C9A84C; }
+                @media (max-width: 768px) {
+                    .sidebar { width:100%; height:60px; bottom:0; top:auto; left:0; flex-direction:row; padding:0; }
+                    .sidebar-logo,.sidebar-user,.sidebar-upgrade { display:none; }
+                    .sidebar-nav { width:100%; flex-direction:row !important; justify-content:space-around; align-items:center; height:100%; }
+                    .main-content { margin-left:0; padding-bottom:80px; }
+                }
+            `}</style>
 
-            <main className="flex-1 container mx-auto px-4 py-8">
-                {/* Page Header */}
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-foreground mb-2">
-                        What should I look at today?
+            {/* ─── SIDEBAR ─── */}
+            <aside className="sidebar bg-navy text-white flex flex-col p-6 shadow-2xl" style={{ background: "#0D1B2A" }}>
+                {/* Logo */}
+                <div className="sidebar-logo mb-10 cursor-pointer" onClick={() => router.push("/")}>
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                        Driv<span style={{ color: "#C9A84C" }}>ya</span>
                     </h1>
-                    <p className="text-muted-foreground">
-                        Your prioritized list of organizations to review
-                    </p>
                 </div>
 
-                {/* Error state */}
-                {error && !isLoadingOrgs && (
-                    <div className="mb-6 p-4 rounded-lg border border-destructive/50 bg-destructive/10">
-                        <div className="flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                            <div className="flex-1">
-                                <p className="font-medium text-destructive mb-1">Failed to load organizations</p>
-                                <p className="text-sm text-destructive/80">{error}</p>
+                {/* User Info */}
+                <div className="sidebar-user mb-12 flex flex-col items-center text-center space-y-4">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center font-bold text-xl border-4"
+                        style={{ background: "#C9A84C", color: "#0D1B2A", borderColor: "#0D1B2A", boxShadow: "0 4px 14px rgba(0,0,0,0.2)" }}>
+                        {initials}
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-sm text-white">{user?.name || "User"}</h4>
+                        <span className="text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-sm"
+                            style={{ background: "rgba(201,168,76,0.2)", color: "#C9A84C" }}>{roleLabel}</span>
+                    </div>
+                </div>
+
+                {/* Nav */}
+                <nav className="sidebar-nav flex-1 flex flex-col space-y-2 -mx-6">
+                    {navItems.map(item => (
+                        <a key={item.label} href={item.href}
+                            className={`px-6 py-4 flex items-center space-x-4 text-xs font-bold uppercase tracking-widest transition-colors hover:text-gold ${item.active ? "nav-link-active" : ""}`}
+                            style={{ color: item.active ? "#C9A84C" : "rgba(255,255,255,0.4)" }}>
+                            <span>{item.icon}</span>
+                            <span className="md:block hidden">{item.label}</span>
+                            {item.locked && <span className="ml-auto">🔒</span>}
+                        </a>
+                    ))}
+                    <button onClick={handleSignOut}
+                        className="px-6 py-4 flex items-center space-x-4 text-xs font-bold uppercase tracking-widest transition-colors hover:text-gold w-full text-left"
+                        style={{ color: "rgba(255,255,255,0.4)" }}>
+                        <span>🚪</span>
+                        <span className="md:block hidden">Log Out</span>
+                    </button>
+                </nav>
+
+                {/* Upgrade Card */}
+                <div className="sidebar-upgrade mt-auto pt-8">
+                    <div className="p-4 rounded-sm space-y-4 text-center"
+                        style={{ background: "#0D1B2A", border: "1px solid rgba(201,168,76,0.3)" }}>
+                        <p className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>Unlock full profiles & messaging</p>
+                        <button onClick={() => setShowModal(true)}
+                            className="w-full text-navy font-bold text-[10px] uppercase tracking-widest py-2.5 rounded-sm hover:brightness-110 transition-all"
+                            style={{ background: "#C9A84C", color: "#0D1B2A" }}>
+                            Upgrade Now
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            {/* ─── MAIN CONTENT ─── */}
+            <main className="main-content">
+
+                {/* Header */}
+                <header className="sticky top-0 z-40 px-8 py-6 flex items-center justify-between"
+                    style={{ background: "rgba(255,255,255,0.8)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(13,27,42,0.05)" }}>
+                    <h2 className="text-3xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                        {greeting}, {firstName} 👋
+                    </h2>
+                    <div className="flex items-center space-x-6">
+                        <button className="relative p-2 transition-colors hover:text-gold" style={{ color: "rgba(13,27,42,0.4)" }}>
+                            <span>🔔</span>
+                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full border-2 border-white" style={{ background: "#C9A84C" }} />
+                        </button>
+                        <div className="w-10 h-10 rounded-full overflow-hidden cursor-pointer hover:border-gold transition-all flex items-center justify-center font-bold text-xs"
+                            style={{ background: "rgba(13,27,42,0.05)", border: "1px solid rgba(13,27,42,0.1)", color: "rgba(13,27,42,0.4)" }}>
+                            {initials}
+                        </div>
+                    </div>
+                </header>
+
+                {/* Dashboard Content */}
+                <div className="p-8 space-y-12 max-w-7xl mx-auto">
+
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                        <StatCard label="Total Matches" value={totalMatches} isGold />
+                        <StatCard label="High Compatibility (80%+)" value={highCompat} />
+                        <StatCard label="Saved Partners" value={savedCount} />
+                        <StatCard label="Profile Strength" value={profileStr} bar={profileStrength} />
+                    </div>
+
+                    {/* Match Section */}
+                    <div className="space-y-8">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                            <div className="space-y-4">
+                                <h2 className="text-4xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Your Top Matches</h2>
+                                <div className="flex flex-wrap gap-2">
+                                    {ALL_TYPES.map(t => (
+                                        <button key={t} onClick={() => setFilter(t)}
+                                            className="px-6 py-2 rounded-full border text-[11px] font-bold uppercase tracking-widest transition-all"
+                                            style={{
+                                                background: filter === t ? "#C9A84C" : "#fff",
+                                                borderColor: filter === t ? "#C9A84C" : "rgba(13,27,42,0.1)",
+                                                color: filter === t ? "#0D1B2A" : "rgba(13,27,42,0.6)",
+                                            }}>
+                                            {t}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={fetchOrgs}
-                                className="flex-shrink-0"
-                            >
-                                Try Again
-                            </Button>
+                            <div className="flex items-center space-x-6">
+                                <div className="text-right space-y-1">
+                                    <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "rgba(13,27,42,0.4)" }}>{sorted.length} matches found</p>
+                                    <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+                                        className="bg-transparent border-none text-xs font-bold focus:ring-0 p-0 cursor-pointer outline-none" style={{ color: "#0D1B2A" }}>
+                                        <option value="score">Sort by: Match Score ↓</option>
+                                        <option value="recent">Sort by: Recent</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Match List */}
+                        <div className="space-y-4">
+                            {sorted.map((org, i) =>
+                                org.locked ? (
+                                    <LockedMatchCard key={i} org={org} onUnlock={() => setShowModal(true)} />
+                                ) : (
+                                    <FreeMatchCard key={i} org={org}
+                                        saved={savedOrgs.includes(org.name)}
+                                        onSave={() => setSavedOrgs(p => p.includes(org.name) ? p.filter(n => n !== org.name) : [...p, org.name])} />
+                                )
+                            )}
                         </div>
                     </div>
-                )}
 
-                {/* Loading state for organizations */}
-                {isLoadingOrgs ? (
-                    <div className="flex items-center justify-center py-16">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                        <span className="ml-3 text-muted-foreground">Loading organizations...</span>
+                    {/* Recently Saved */}
+                    <div className="pt-12 space-y-8" style={{ borderTop: "1px solid rgba(13,27,42,0.05)" }}>
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-2xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Recently Saved</h2>
+                            <a href="#" className="text-[11px] font-bold uppercase tracking-widest inline-block hover:translate-x-1 transition-transform"
+                                style={{ color: "#C9A84C" }}>View All Saved →</a>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {SAVED_ORGS.map(org => (
+                                <div key={org.name} className="bg-white p-6 rounded-sm border border-navy/5 flex items-center gap-6 group cursor-pointer hover:border-gold/30 transition-all"
+                                    style={{ borderColor: "rgba(13,27,42,0.05)" }}>
+                                    <div className="w-12 h-12 rounded-sm shrink-0 flex items-center justify-center font-bold text-lg"
+                                        style={{ background: "#0D1B2A", color: "#C9A84C", fontFamily: "'Cormorant Garamond', serif" }}>
+                                        {org.initials}
+                                    </div>
+                                    <div>
+                                        <h5 className="font-bold text-lg" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{org.name}</h5>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(13,27,42,0.4)" }}>{org.type}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                ) : !error && (
-                    <>
-                        {/* Dashboard Grid */}
-                        <div className="grid gap-6 lg:grid-cols-2">
-                            {/* High-fit Organizations */}
-                            <Section title="High-fit Organizations" icon={Target} iconColor="text-green-600">
-                                {highFitOrgs.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {highFitOrgs.map((org) => (
-                                            <OrgCard key={org.id} org={org} variant="primary" />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <EmptyState
-                                        icon={Sparkles}
-                                        title="No high-fit matches yet"
-                                        subtitle="We're analyzing organizations for you"
-                                        action={{ label: "Browse All", href: "/explore" }}
-                                    />
-                                )}
-                            </Section>
+                </div>
 
-                            {/* Recently Added */}
-                            <Section title="Recently Added" icon={Clock} iconColor="text-blue-600">
-                                {recentOrgs.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {recentOrgs.map((org) => (
-                                            <OrgCard key={org.id} org={org} variant="secondary" />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <EmptyState
-                                        icon={Clock}
-                                        title="No recent opportunities"
-                                        subtitle="Check back for newly added organizations"
-                                    />
-                                )}
-                            </Section>
-
-                            {/* Saved Organizations */}
-                            <Section title="Saved Organizations" icon={Star} iconColor="text-amber-500">
-                                {savedOrgs.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {savedOrgs.map((org) => (
-                                            <OrgCard key={org.id} org={org} />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <EmptyState
-                                        icon={Star}
-                                        title="Nothing saved yet"
-                                        subtitle="Save organizations you want to revisit"
-                                        action={{ label: "Find Organizations", href: "/explore" }}
-                                    />
-                                )}
-                            </Section>
-
-                            {/* Low Priority */}
-                            <Section title="Low Priority" icon={AlertCircle} iconColor="text-muted-foreground">
-                                {lowPriorityOrgs.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {lowPriorityOrgs.map((org) => (
-                                            <OrgCard key={org.id} org={org} />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <EmptyState
-                                        icon={AlertCircle}
-                                        title="All caught up!"
-                                        subtitle="No low-priority items to review"
-                                    />
-                                )}
-                            </Section>
-                        </div>
-
-                        {/* See All Matches Link */}
-                        <div className="mt-8 text-center">
-                            <Link href="/explore">
-                                <Button variant="outline" className="gap-2">
-                                    See all matches
-                                    <ArrowRight className="w-4 h-4" />
-                                </Button>
-                            </Link>
-                        </div>
-                    </>
-                )}
+                {/* Footer */}
+                <footer className="p-8 text-center text-[10px] uppercase tracking-[0.3em]" style={{ color: "rgba(13,27,42,0.2)" }}>
+                    Drivya Platform © 2026 | Verified Partnerships
+                </footer>
             </main>
 
-            <Footer />
+            {/* Upgrade Modal */}
+            {showModal && <UpgradeModal onClose={() => setShowModal(false)} />}
         </div>
     );
 }

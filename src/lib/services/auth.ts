@@ -35,7 +35,7 @@ export async function sendOtp(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, purpose }),
-        });
+        }, 30000); // 30 second timeout for OTP sending
 
         const data = await response.json();
 
@@ -62,7 +62,7 @@ export async function verifyOtp(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, otp }),
-        });
+        }, 30000); // 30 second timeout for OTP verification
 
         const data = await response.json();
 
@@ -84,7 +84,8 @@ export async function verifyOtp(
 export async function signUpWithPassword(
     email: string,
     password: string,
-    name: string
+    name: string,
+    role: 'csr' | 'ngo' | 'incubator'
 ): Promise<{ user: AuthUser | null; error: string | null; errorCode?: string }> {
     try {
         if (!supabase) {
@@ -164,7 +165,7 @@ export async function signUpWithPassword(
                 id: data.user.id,
                 email: data.user.email,
                 name,
-                role: 'ngo', // Default role, will be updated during onboarding
+                role, // User-selected role during signup
                 email_verified: true, // OTP was verified before signup
                 profile_complete: false,
                 verified: false,
@@ -179,12 +180,14 @@ export async function signUpWithPassword(
             id: data.user.id,
             email: data.user.email || '',
             name,
-            role: 'ngo',
+            role,
             profile_complete: false,
+            form_filled: false,
             verified: false,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
         };
+
 
         return { user: authUser, error: null };
     } catch (error: any) {
@@ -205,13 +208,21 @@ export async function signInWithPassword(
             return { user: null, error: 'Supabase not configured' };
         }
 
+        console.log('[Auth] Starting login for:', email);
+
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
 
         if (error) {
-            console.error('Signin error:', error);
+            console.error('[Auth] Signin error:', error);
+            if (error.message.includes('Invalid login credentials')) {
+                return { user: null, error: 'Invalid email or password. Please check your credentials.' };
+            }
+            if (error.message.includes('Email not confirmed')) {
+                return { user: null, error: 'EMAIL_NOT_CONFIRMED' };
+            }
             return { user: null, error: error.message };
         }
 
@@ -219,14 +230,17 @@ export async function signInWithPassword(
             return { user: null, error: 'Invalid credentials' };
         }
 
-        // Get the full user profile
+        console.log('[Auth] Login successful, fetching profile...');
         const { user } = await getCurrentUser();
+
+        console.log('[Auth] Profile loaded successfully');
         return { user, error: null };
     } catch (error: any) {
-        console.error('signInWithPassword error:', error);
+        console.error('[Auth] signInWithPassword error:', error);
         return { user: null, error: error.message || 'Failed to sign in' };
     }
 }
+
 
 /**
  * Reset password - uses server-side API to update password after OTP verification
@@ -428,7 +442,8 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
                 .from('user_profiles')
                 .select('*')
                 .eq('id', user.id)
-                .single(),
+                .maybeSingle(),
+
             supabase
                 .from('user_organizations')
                 .select('organization_id, organizations(id, name, type)')
@@ -457,6 +472,7 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
             name: profileData?.name || user.user_metadata?.name || user.email?.split('@')[0] || '',
             role: profileData?.role || user.user_metadata?.role || 'ngo',
             profile_complete: profileData?.profile_complete || false,
+            form_filled: profileData?.form_filled || false,
             verified: profileData?.verified || false,
             phone: profileData?.phone || undefined,
             avatar_url: profileData?.avatar_url || undefined,
@@ -468,6 +484,7 @@ export async function getCurrentUser(): Promise<{ user: AuthUser | null; error: 
             created_at: profileData?.created_at || new Date().toISOString(),
             updated_at: profileData?.updated_at || new Date().toISOString(),
         };
+
 
         return { user: authUser, error: null };
     } catch (error: any) {

@@ -29,8 +29,9 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: "ngo" | "funder";
+  role: "ngo" | "csr" | "incubator";
   profile_complete: boolean;
+  form_filled: boolean;
   verified: boolean;
   phone?: string;
   avatar_url?: string;
@@ -41,11 +42,12 @@ export interface User {
   updated_at: string;
 }
 
+
 export interface SignUpRequest {
   email: string;
   password: string;
   name: string;
-  role: "ngo" | "funder";
+  role: "ngo" | "csr" | "incubator";
 }
 
 export interface LoginRequest {
@@ -181,6 +183,20 @@ export interface Organization {
   targetBeneficiaries: string[];
   partnerHistory: string[];
   confidence: number;
+
+  // ==================== CAPACITY FIELDS (for CSR matching) ====================
+  /** Maximum beneficiary count this org has handled in a single project */
+  maxBeneficiaries?: number;
+  /** Geography types this org has experience in */
+  geographyTypes?: ("urban" | "rural" | "tribal" | "remote")[];
+  /** Highest reporting intensity this org can deliver */
+  reportingCapability?: "simple" | "moderate" | "heavy";
+  /** Whether org provides job placement support */
+  hasJobPlacement?: boolean;
+  /** Realistic cost-per-beneficiary range in INR [min, max] */
+  costPerBeneficiaryRange?: [number, number];
+  /** Rough team size indicator */
+  teamSize?: "small" | "medium" | "large";
 }
 
 export interface SearchParams {

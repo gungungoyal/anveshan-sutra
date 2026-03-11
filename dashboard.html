@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drivya | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700&family=DM+Sans:wght@100..1000&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: '#0D1B2A',
+                        gold: '#C9A84C',
+                        cream: '#FAF7F2',
+                    },
+                    fontFamily: {
+                        serif: ['Cormorant Garamond', 'serif'],
+                        sans: ['DM Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FAF7F2;
+            color: #0D1B2A;
+            font-family: 'DM Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Sidebar transitions */
+        .sidebar {
+            width: 240px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 50;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+
+        .nav-link.active {
+            color: #C9A84C;
+            border-left: 3px solid #C9A84C;
+            background: rgba(201, 168, 76, 0.05);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #C9A84C;
+        }
+
+        /* Modal Blur */
+        .modal-overlay {
+            background: rgba(13, 27, 42, 0.8);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Count up animation placeholder */
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-animate {
+            animation: countUp 0.6s ease forwards;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: 60px;
+                bottom: 0;
+                top: auto;
+                left: 0;
+                display: flex;
+                flex-direction: row;
+                padding: 0;
+            }
+
+            .sidebar-logo,
+            .sidebar-user,
+            .sidebar-upgrade {
+                display: none;
+            }
+
+            .sidebar-nav {
+                width: 100%;
+                flex-direction: row !important;
+                justify-content: space-around;
+                align-items: center;
+                height: 100%;
+            }
+
+            .nav-link {
+                padding: 10px !important;
+                border-left: none !important;
+                flex-direction: column;
+                font-size: 10px;
+                gap: 4px;
+            }
+
+            .nav-link span:last-child {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding-bottom: 80px;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-cream">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar bg-navy text-white flex flex-col p-6 shadow-2xl">
+        <div class="sidebar-logo mb-10">
+            <h1 class="text-2xl font-serif font-bold tracking-tight">
+                Driv<span class="text-gold">ya</span>
+            </h1>
+        </div>
+
+        <!-- User Info -->
+        <div class="sidebar-user mb-12 flex flex-col items-center text-center space-y-4">
+            <div
+                class="w-16 h-16 rounded-full bg-gold text-navy flex items-center justify-center font-bold text-xl border-4 border-navy shadow-lg">
+                PS
+            </div>
+            <div>
+                <h4 class="font-bold text-sm">Priya Sharma</h4>
+                <span
+                    class="text-[9px] uppercase tracking-widest bg-gold/20 text-gold px-2 py-0.5 rounded-sm font-bold">Incubator</span>
+            </div>
+        </div>
+
+        <!-- Nav Links -->
+        <nav class="sidebar-nav flex-1 flex flex-col space-y-2 -mx-6">
+            <a href="#"
+                class="nav-link active px-6 py-4 flex items-center space-x-4 text-xs font-bold uppercase tracking-widest transition-colors hover:text-gold">
+                <span>🏠</span>
+                <span class="md:block hidden">Dashboard</span>
+            </a>
+            <a href="#"
+                class="nav-link px-6 py-4 flex items-center space-x-4 text-xs font-bold uppercase tracking-widest transition-colors hover:text-gold text-white/40">
+                <span>🔍</span>
+                <span class="md:block hidden">Browse All</span>
+            </a>
+            <a href="#"
+                class="nav-link px-6 py-4 flex items-center space-x-4 text-xs font-bold uppercase tracking-widest transition-colors hover:text-gold text-white/40">
+                <span>💾</span>
+                <span class="md:block hidden">Saved</span>
+            </a>
+            <a href="#"
+                class="nav-link px-6 py-4 flex items-center space-x-4 text-xs font-bold uppercase tracking-widest transition-colors hover:text-gold text-white/40">
+                <span>💬</span>
+                <span class="md:block hidden">Messages</span>
+                <span class="ml-auto">🔒</span>
+            </a>
+            <a href="#"
+                class="nav-link px-6 py-4 flex items-center space-x-4 text-xs font-bold uppercase tracking-widest transition-colors hover:text-gold text-white/40">
+                <span>👤</span>
+                <span class="md:block hidden">My Profile</span>
+            </a>
+            <a href="#"
+                class="nav-link px-6 py-4 flex items-center space-x-4 text-xs font-bold uppercase tracking-widest transition-colors hover:text-gold text-white/40 text-[10px]">
+                <span>⚙️</span>
+                <span class="md:block hidden">Settings</span>
+            </a>
+        </nav>
+
+        <!-- Upgrade Card -->
+        <div class="sidebar-upgrade mt-auto pt-8">
+            <div class="bg-navy border border-gold/30 p-4 rounded-sm space-y-4 text-center">
+                <p class="text-[10px] text-white/60 leading-relaxed">Unlock full profiles & messaging</p>
+                <button onclick="openModal()"
+                    class="w-full bg-gold text-navy font-bold text-[10px] uppercase tracking-widest py-2.5 rounded-sm hover:brightness-110 transition-all">
+                    Upgrade Now
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- HEADER BAR -->
+        <header
+            class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-navy/5 px-8 py-6 flex items-center justify-between">
+            <h2 class="text-3xl font-serif font-semibold">Good morning, Priya 👋</h2>
+
+            <div class="flex items-center space-x-6">
+                <button class="relative p-2 text-navy/40 hover:text-gold transition-colors">
+                    <span>🔔</span>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-gold rounded-full border-2 border-white"></span>
+                </button>
+                <div
+                    class="w-10 h-10 rounded-full bg-navy/5 border border-navy/10 overflow-hidden cursor-pointer hover:border-gold transition-all">
+                    <div class="w-full h-full flex items-center justify-center font-bold text-xs text-navy/40">PS</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD CONTAINER -->
+        <div class="p-8 space-y-12 max-w-7xl mx-auto">
+
+            <!-- SECTION 1: STATS ROW -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-8 rounded-sm border border-navy/5 shadow-sm stat-animate"
+                    style="animation-delay: 0.1s;">
+                    <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-navy/40 mb-3">Total Matches</p>
+                    <h3 class="text-4xl font-serif font-bold text-gold" id="stat-matches">0</h3>
+                </div>
+                <div class="bg-white p-8 rounded-sm border border-navy/5 shadow-sm stat-animate"
+                    style="animation-delay: 0.2s;">
+                    <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-navy/40 mb-3">High Compatibility
+                        (80%+)</p>
+                    <h3 class="text-4xl font-serif font-bold text-navy" id="stat-high">0</h3>
+                </div>
+                <div class="bg-white p-8 rounded-sm border border-navy/5 shadow-sm stat-animate"
+                    style="animation-delay: 0.3s;">
+                    <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-navy/40 mb-3">Saved Partners</p>
+                    <h3 class="text-4xl font-serif font-bold text-navy" id="stat-saved">0</h3>
+                </div>
+                <div class="bg-white p-8 rounded-sm border border-navy/5 shadow-sm stat-animate"
+                    style="animation-delay: 0.4s;">
+                    <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-navy/40 mb-3">Profile Strength</p>
+                    <div class="flex items-end gap-3">
+                        <h3 class="text-4xl font-serif font-bold text-navy" id="stat-profile">0%</h3>
+                        <div class="flex-1 h-2 bg-navy/5 rounded-full mb-3 mb-2 overflow-hidden">
+                            <div class="bg-gold h-full rounded-full transition-all duration-1000" id="profile-bar"
+                                style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: MATCH RESULTS -->
+            <div class="space-y-8">
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div class="space-y-4">
+                        <h2 class="text-4xl font-serif font-semibold">Your Top Matches</h2>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="filterMatches('All', this)"
+                                class="filter-pill active px-6 py-2 rounded-full border border-gold bg-gold text-navy text-[11px] font-bold uppercase tracking-widest transition-all">All</button>
+                            <button onclick="filterMatches('CSR Partner', this)"
+                                class="filter-pill px-6 py-2 rounded-full border border-navy/10 bg-white text-navy/60 text-[11px] font-bold uppercase tracking-widest hover:border-navy/30 transition-all">CSR</button>
+                            <button onclick="filterMatches('NGO', this)"
+                                class="filter-pill px-6 py-2 rounded-full border border-navy/10 bg-white text-navy/60 text-[11px] font-bold uppercase tracking-widest hover:border-navy/30 transition-all">NGO</button>
+                            <button onclick="filterMatches('Incubator', this)"
+                                class="filter-pill px-6 py-2 rounded-full border border-navy/10 bg-white text-navy/60 text-[11px] font-bold uppercase tracking-widest hover:border-navy/30 transition-all">Incubator</button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-6">
+                        <div class="text-right space-y-1">
+                            <p class="text-[11px] font-bold text-navy/40 uppercase tracking-widest">24 matches found</p>
+                            <select
+                                class="bg-transparent border-none text-xs font-bold text-navy focus:ring-0 p-0 cursor-pointer">
+                                <option>Sort by: Match Score ↓</option>
+                                <option>Sort by: Recent</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MATCH LIST -->
+                <div class="space-y-4" id="match-list">
+
+                    <!-- Card 1: Free Preview -->
+                    <div class="match-card bg-white p-8 rounded-sm border border-navy/5 shadow-sm hover:border-gold/30 hover:shadow-md transition-all flex flex-col lg:flex-row items-center gap-12"
+                        data-type="CSR Partner">
+                        <div
+                            class="w-20 h-20 bg-navy rounded-sm flex items-center justify-center font-serif text-3xl text-gold shrink-0">
+                            AF</div>
+
+                        <div class="flex-1 text-center lg:text-left space-y-4 w-full">
+                            <div class="flex flex-col lg:flex-row lg:items-center gap-3">
+                                <h4 class="text-2xl font-serif font-bold">Aryan Social Foundation</h4>
+                                <span
+                                    class="w-fit mx-auto lg:mx-0 text-[9px] uppercase tracking-[0.2em] font-bold text-navy/40 border border-navy/10 px-2.5 py-1 rounded-sm">CSR
+                                    Partner</span>
+                            </div>
+                            <div class="flex flex-wrap justify-center lg:justify-start gap-4 text-xs font-bold">
+                                <span class="bg-navy/5 px-2 py-1 rounded-sm text-navy/60">Education</span>
+                                <span class="bg-navy/5 px-2 py-1 rounded-sm text-navy/60">Skill Development</span>
+                                <span class="text-navy/40">📍 Pan India, Maharashtra</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-12 shrink-0 w-full lg:w-auto justify-center">
+                            <div class="text-center space-y-4">
+                                <div class="text-5xl font-serif font-bold text-gold">87</div>
+                                <div class="flex flex-col gap-1 w-24">
+                                    <div class="h-1 bg-navy/5 rounded-full overflow-hidden">
+                                        <div class="bg-gold h-full" style="width: 92%;"></div>
+                                    </div>
+                                    <div class="h-1 bg-navy/5 rounded-full overflow-hidden">
+                                        <div class="bg-gold h-full" style="width: 85%;"></div>
+                                    </div>
+                                    <div class="h-1 bg-navy/5 rounded-full overflow-hidden">
+                                        <div class="bg-gold h-full" style="width: 78%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-3">
+                                <button onclick="toggleSave(this)"
+                                    class="p-4 border border-navy/10 rounded-sm hover:text-gold hover:border-gold transition-all">🔖</button>
+                                <button
+                                    class="px-8 py-4 bg-navy text-white text-[11px] font-bold uppercase tracking-widest rounded-sm hover:bg-navy/90 transition-all">View
+                                    Profile</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Locked Cards Placeholder (JS will generate) -->
+                    <div id="locked-cards-container" class="space-y-4"></div>
+
+                </div>
+            </div>
+
+            <!-- SECTION 3: RECENTLY SAVED -->
+            <div class="pt-12 border-t border-navy/5 space-y-8">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-serif font-semibold">Recently Saved</h2>
+                    <a href="#"
+                        class="text-[11px] font-bold uppercase tracking-widest text-gold hover:translate-x-1 transition-transform inline-block">View
+                        All Saved →</a>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div
+                        class="bg-white p-6 rounded-sm border border-navy/5 flex items-center gap-6 group hover:border-gold/30 transition-all cursor-pointer">
+                        <div
+                            class="w-12 h-12 bg-navy rounded-sm shrink-0 flex items-center justify-center font-serif text-lg text-gold">
+                            R</div>
+                        <div>
+                            <h5 class="font-serif font-bold text-lg">Reliance Foundation</h5>
+                            <p class="text-[10px] text-navy/40 font-bold uppercase tracking-widest">CSR Partner</p>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-sm border border-navy/5 flex items-center gap-6 group hover:border-gold/30 transition-all cursor-pointer">
+                        <div
+                            class="w-12 h-12 bg-navy rounded-sm shrink-0 flex items-center justify-center font-serif text-lg text-gold">
+                            G</div>
+                        <div>
+                            <h5 class="font-serif font-bold text-lg">Goonj</h5>
+                            <p class="text-[10px] text-navy/40 font-bold uppercase tracking-widest">NGO</p>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-sm border border-navy/5 flex items-center gap-6 group hover:border-gold/30 transition-all cursor-pointer">
+                        <div
+                            class="w-12 h-12 bg-navy rounded-sm shrink-0 flex items-center justify-center font-serif text-lg text-gold">
+                            S</div>
+                        <div>
+                            <h5 class="font-serif font-bold text-lg">Social Alpha</h5>
+                            <p class="text-[10px] text-navy/40 font-bold uppercase tracking-widest">Incubator</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER INFO -->
+        <footer class="p-8 text-center text-[10px] text-navy/20 uppercase tracking-[0.3em]">
+            Drivya Platform &copy; 2026 | Verified Partnerships
+        </footer>
+
+    </main>
+
+    <!-- UPGRADE MODAL -->
+    <div id="upgradeModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6">
+        <div class="modal-overlay absolute inset-0" onclick="closeModal()"></div>
+        <div class="relative bg-white w-full max-w-4xl rounded-sm shadow-2xl overflow-hidden animate-slideUp">
+
+            <!-- X Button -->
+            <button onclick="closeModal()"
+                class="absolute top-6 right-6 text-2xl text-navy/20 hover:text-navy transition-colors">✕</button>
+
+            <div class="p-12 text-center space-y-12">
+
+                <div class="space-y-4">
+                    <div class="w-20 h-20 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-10 h-10 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                    </div>
+                    <h2 class="text-4xl font-serif font-bold">Unlock this profile</h2>
+                    <p class="text-navy/60 max-w-xl mx-auto text-sm leading-relaxed">
+                        Get full access to org details, past projects, contact information and direct messaging to
+                        accelerate your partnerships.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Tier 1 -->
+                    <div
+                        class="p-10 border border-navy/5 rounded-sm flex flex-col space-y-8 hover:border-gold/30 transition-all cursor-default group">
+                        <div class="text-left space-y-2">
+                            <h4 class="text-xl font-serif font-bold">Tier 1 — Profile Unlock</h4>
+                            <p class="text-3xl font-bold">₹999<span
+                                    class="text-sm font-normal text-navy/40">/month</span></p>
+                        </div>
+                        <ul class="text-left space-y-4 text-xs font-bold text-navy/60">
+                            <li class="flex items-center gap-3"><span>✓</span> Full org profiles</li>
+                            <li class="flex items-center gap-3"><span>✓</span> Past project history</li>
+                            <li class="flex items-center gap-3"><span>✓</span> Contact details</li>
+                        </ul>
+                        <button
+                            class="w-full border-2 border-gold py-4 text-[10px] font-bold uppercase tracking-widest text-gold hover:bg-gold hover:text-white transition-all">Choose
+                            Tier 1</button>
+                    </div>
+
+                    <!-- Tier 2 -->
+                    <div
+                        class="p-10 border-2 border-gold bg-gold/[0.02] rounded-sm flex flex-col space-y-8 relative overflow-hidden group">
+                        <div
+                            class="absolute top-0 right-0 bg-gold text-navy text-[8px] font-bold uppercase tracking-widest px-4 py-1">
+                            Recommended</div>
+                        <div class="text-left space-y-2">
+                            <h4 class="text-xl font-serif font-bold">Tier 2 — Full Access</h4>
+                            <p class="text-3xl font-bold">₹2,499<span
+                                    class="text-sm font-normal text-navy/40">/month</span></p>
+                        </div>
+                        <ul class="text-left space-y-4 text-xs font-bold text-navy/80">
+                            <li class="flex items-center gap-3 text-gold"><span>✓</span> Everything in Tier 1</li>
+                            <li class="flex items-center gap-3"><span>✓</span> Direct messaging</li>
+                            <li class="flex items-center gap-3"><span>✓</span> Collaboration requests</li>
+                            <li class="flex items-center gap-3"><span>✓</span> Priority support</li>
+                        </ul>
+                        <button
+                            class="w-full bg-gold text-navy py-4 text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-gold/20">Choose
+                            Tier 2</button>
+                    </div>
+                </div>
+
+                <p class="text-[10px] text-navy/20 uppercase font-bold tracking-[0.2em]">Cancel anytime. No hidden fees.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data for locked cards
+        const lockedMatches = [
+            { initials: 'MT', name: 'Meridian Impact Trust', type: 'CSR Partner', score: 82, focus: 88, geo: 80, past: 75 },
+            { initials: 'GO', name: 'Goonj', type: 'NGO', score: 79, focus: 85, geo: 72, past: 80 },
+            { initials: 'SA', name: 'Social Alpha', type: 'Incubator', score: 74, focus: 80, geo: 68, past: 74 },
+            { initials: 'GR', name: 'GreenRoots NGO', type: 'NGO', score: 71, focus: 75, geo: 70, past: 68 }
+        ];
+
+        // Generate locked cards
+        function renderLockedCards() {
+            const container = document.getElementById('locked-cards-container');
+            lockedMatches.forEach((match, idx) => {
+                const card = `
+                    <div class="match-card relative bg-white p-8 rounded-sm border border-navy/5 shadow-sm overflow-hidden flex flex-col lg:row items-center cursor-pointer group" onclick="openModal()" data-type="${match.type}">
+                        <!-- Blurred Content -->
+                        <div class="w-full flex flex-col lg:flex-row items-center gap-12 filter blur-[6px] opacity-40 transition-all group-hover:blur-[4px] group-hover:opacity-60">
+                            <div class="w-20 h-20 bg-navy rounded-sm flex items-center justify-center font-serif text-3xl text-gold shrink-0">${match.initials}</div>
+                            <div class="flex-1 text-center lg:text-left space-y-4 w-full">
+                                <div class="flex flex-col lg:flex-row lg:items-center gap-3">
+                                    <h4 class="text-2xl font-serif font-bold uppercase tracking-wider">${match.name}</h4>
+                                    <span class="w-fit mx-auto lg:mx-0 text-[9px] uppercase tracking-[0.2em] font-bold text-navy/40 border border-navy/10 px-2.5 py-1 rounded-sm">${match.type}</span>
+                                </div>
+                                <div class="flex flex-wrap justify-center lg:justify-start gap-4 text-xs font-bold">
+                                    <span class="bg-navy/5 px-2 py-1 rounded-sm text-navy/60">••••••••••</span>
+                                    <span class="bg-navy/5 px-2 py-1 rounded-sm text-navy/60">••••••••••</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-12 shrink-0">
+                                <div class="text-center space-y-4">
+                                    <div class="text-5xl font-serif font-bold text-gold opacity-50">${match.score}</div>
+                                </div>
+                                <button class="px-8 py-4 bg-navy/10 text-transparent text-[11px] font-bold uppercase tracking-widest rounded-sm pointer-events-none">View Profile</button>
+                            </div>
+                        </div>
+
+                        <!-- Lock Overlay -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-navy/5 backdrop-blur-[2px]">
+                            <div class="w-16 h-16 rounded-full bg-white/90 border border-gold shadow-xl flex items-center justify-center text-gold text-2xl group-hover:scale-110 transition-transform">🔒</div>
+                            <p class="text-[11px] font-bold uppercase tracking-[0.25em] text-navy/60 group-hover:text-navy transition-colors">Unlock to View Full Profile</p>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        // Stats Count Up Animation
+        function animateStats() {
+            fadeInStat('stat-matches', 24);
+            fadeInStat('stat-high', 8);
+            fadeInStat('stat-saved', 3);
+            fadeInStat('stat-profile', 72, true);
+
+            setTimeout(() => {
+                document.getElementById('profile-bar').style.width = '72%';
+            }, 500);
+        }
+
+        function fadeInStat(id, target, isPercent = false) {
+            let start = 0;
+            let duration = 1500;
+            let step = (target / duration) * 10;
+            let el = document.getElementById(id);
+
+            let timer = setInterval(() => {
+                start += step;
+                if (start >= target) {
+                    el.innerText = target + (isPercent ? '%' : '');
+                    clearInterval(timer);
+                } else {
+                    el.innerText = Math.floor(start) + (isPercent ? '%' : '');
+                }
+            }, 10);
+        }
+
+        // Filter Logic
+        function filterMatches(type, btn) {
+            // UI Update
+            document.querySelectorAll('.filter-pill').forEach(b => {
+                b.classList.remove('active', 'bg-gold', 'text-navy', 'border-gold');
+                b.classList.add('bg-white', 'text-navy/60', 'border-navy/10');
+            });
+            btn.classList.add('active', 'bg-gold', 'text-navy', 'border-gold');
+            btn.classList.remove('bg-white', 'text-navy/60', 'border-navy/10');
+
+            // Logic
+            document.querySelectorAll('.match-card').forEach(card => {
+                if (type === 'All' || card.dataset.type === type) {
+                    card.style.display = 'flex';
+                    card.classList.add('stat-animate');
+                } else {
+                    card.style.display = 'none';
+                    card.classList.remove('stat-animate');
+                }
+            });
+        }
+
+        // Modal Logic
+        function openModal() {
+            const modal = document.getElementById('upgradeModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            modal.querySelector('.animate-slideUp')?.classList.remove('animate-slideUp');
+            void modal.offsetWidth; // trigger reflow
+            modal.querySelector('.relative').classList.add('slide-up');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('upgradeModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Bookmark Toggle
+        function toggleSave(btn) {
+            btn.classList.toggle('text-gold');
+            btn.classList.toggle('border-gold');
+            btn.innerHTML = btn.innerHTML === '🔖' ? '📌' : '🔖';
+        }
+
+        // Initialize
+        window.onload = () => {
+            renderLockedCards();
+            animateStats();
+        };
+    </script>
+</body>
+
+</html>

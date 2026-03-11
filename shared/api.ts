@@ -29,7 +29,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: "ngo" | "funder";
+  role: "csr" | "ngo" | "incubator";
   profile_complete: boolean;
   verified: boolean;
   phone?: string;
@@ -47,7 +47,7 @@ export interface SignUpRequest {
   email: string;
   password: string;
   name: string;
-  role: "ngo" | "funder";
+  role: "csr" | "ngo" | "incubator";
 }
 
 export interface LoginRequest {

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drivya | Organization Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: '#0D1B2A',
+                        gold: '#C9A84C',
+                        cream: '#FAF7F2',
+                    },
+                    fontFamily: {
+                        serif: ['Cormorant Garamond', 'serif'],
+                        sans: ['DM Sans', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FAF7F2;
+            font-family: 'DM Sans', sans-serif;
+            color: #0D1B2A;
+        }
+
+        .serif-heading {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .tag-chip {
+            transition: all 0.3s ease;
+        }
+
+        .tag-chip.selected {
+            background-color: #C9A84C;
+            color: #0D1B2A;
+            border-color: #C9A84C;
+        }
+
+        .size-card {
+            transition: all 0.3s ease;
+        }
+
+        .size-card.selected {
+            border-color: #C9A84C;
+            background-color: white;
+            box-shadow: 0 10px 20px rgba(201, 168, 76, 0.1);
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #C9A84C !important;
+            box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.1) !important;
+            outline: none;
+        }
+
+        .error-field {
+            border-color: #EF4444 !important;
+        }
+
+        .error-field:focus {
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+        }
+
+        @media (max-width: 1024px) {
+            .split-container {
+                flex-direction: column-reverse;
+            }
+
+            .brand-panel {
+                width: 100%;
+                padding: 4rem 2rem;
+            }
+
+            .form-panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+    <div class="flex split-container min-h-screen">
+
+        <!-- LEFT PANEL: Brand Panel (Navy) -->
+        <aside
+            class="w-[40%] bg-navy text-cream p-12 lg:p-20 flex flex-col justify-between brand-panel relative overflow-hidden">
+            <!-- Grid Overlay -->
+            <div class="absolute inset-0 opacity-[0.03]"
+                style="background-image: linear-gradient(#FAF7F2 1px, transparent 1px), linear-gradient(90deg, #FAF7F2 1px, transparent 1px); background-size: 40px 40px;">
+            </div>
+
+            <div class="relative z-10">
+                <div class="mb-20">
+                    <h1 class="text-3xl font-serif font-bold tracking-tight">
+                        Driv<span class="text-gold">ya</span>
+                    </h1>
+                </div>
+
+                <!-- Progress Indicator -->
+                <div class="space-y-12 mb-20">
+                    <div class="flex items-center gap-4 group">
+                        <div
+                            class="w-8 h-8 rounded-full border border-gold/30 flex items-center justify-center text-gold bg-gold/5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase tracking-widest font-bold opacity-40">Step 1</p>
+                            <p class="text-sm font-medium opacity-40">Your Role</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-8 h-8 rounded-full bg-gold flex items-center justify-center text-navy font-bold text-sm">
+                            2</div>
+                        <div>
+                            <p class="text-[10px] uppercase tracking-widest font-bold text-gold">Step 2</p>
+                            <p class="text-sm font-medium">Your Profile</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-8 h-8 rounded-full border border-cream/10 flex items-center justify-center text-cream/20 font-bold text-sm">
+                            3</div>
+                        <div>
+                            <p class="text-[10px] uppercase tracking-widest font-bold opacity-20">Step 3</p>
+                            <p class="text-sm font-medium opacity-20">Your Goals</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="max-w-xs">
+                    <h2 class="text-4xl lg:text-5xl serif-heading font-medium mb-6 leading-tight">Tell us about your
+                        organization.</h2>
+                    <p class="text-cream/60 leading-relaxed font-sans text-lg">
+                        The more we know, the better your matches.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tip Box -->
+            <div class="relative z-10 mt-12 p-6 border border-gold/20 bg-gold/5 rounded-sm">
+                <p class="text-sm leading-relaxed">
+                    <span class="text-gold mr-2 font-bold">💡 Tip:</span>
+                    Organizations with complete profiles get 3x more relevant matches.
+                </p>
+            </div>
+        </aside>
+
+        <!-- RIGHT PANEL: Form Panel (Cream) -->
+        <main class="w-[60%] p-12 lg:p-24 form-panel">
+            <div class="max-w-2xl mx-auto h-full flex flex-col justify-between">
+
+                <form id="orgForm" class="space-y-12">
+
+                    <!-- Field 1: Org Name -->
+                    <div class="space-y-3">
+                        <label for="orgName"
+                            class="text-[11px] uppercase tracking-[0.2em] font-bold text-navy/60">Organization
+                            Name</label>
+                        <input type="text" id="orgName" name="orgName" required
+                            placeholder="Enter your organization's full name"
+                            class="w-full px-0 py-4 border-b border-navy/10 bg-transparent text-xl font-medium transition-all placeholder:text-navy/20">
+                    </div>
+
+                    <!-- Field 2: Description -->
+                    <div class="space-y-3">
+                        <label for="description"
+                            class="text-[11px] uppercase tracking-[0.2em] font-bold text-navy/60">What does your
+                            organization do?</label>
+                        <textarea id="description" name="description" rows="3" required
+                            placeholder="Briefly describe your work and mission (2-3 sentences)"
+                            class="w-full px-0 py-4 border-b border-navy/10 bg-transparent text-lg transition-all resize-none placeholder:text-navy/20"></textarea>
+                    </div>
+
+                    <!-- Field 3: Focus Areas -->
+                    <div class="space-y-5">
+                        <label class="text-[11px] uppercase tracking-[0.2em] font-bold text-navy/60">Focus Areas</label>
+                        <div id="focusAreas" class="flex flex-wrap gap-2">
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Education</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Healthcare</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Agriculture</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Technology</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Environment</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Livelihood</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Women
+                                Empowerment</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Skill
+                                Development</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Rural
+                                Development</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Other</button>
+                        </div>
+                        <input type="hidden" id="focusAreasInput" name="focusAreas" required>
+                    </div>
+
+                    <!-- Field 4: Geography -->
+                    <div class="space-y-5">
+                        <label class="text-[11px] uppercase tracking-[0.2em] font-bold text-navy/60">Geography</label>
+                        <div id="geography" class="flex flex-wrap gap-2">
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Pan
+                                India</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">North
+                                India</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">South
+                                India</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">East
+                                India</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">West
+                                India</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Maharashtra</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Uttar
+                                Pradesh</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Delhi
+                                NCR</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">Rajasthan</button>
+                            <button type="button" onclick="toggleTag(this)"
+                                class="tag-chip px-5 py-2.5 rounded-full border border-navy/10 text-sm font-medium hover:border-navy/30">International</button>
+                        </div>
+                        <input type="hidden" id="geographyInput" name="geography" required>
+                    </div>
+
+                    <!-- Field 5: Org Size -->
+                    <div class="space-y-5">
+                        <label class="text-[11px] uppercase tracking-[0.2em] font-bold text-navy/60">Organization
+                            Size</label>
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                            <button type="button" onclick="selectSize(this)"
+                                class="size-card p-5 border border-navy/5 bg-white rounded-sm text-left">
+                                <p class="text-[10px] font-bold text-navy/40 uppercase mb-1">Small</p>
+                                <p class="text-sm font-medium">1-20</p>
+                            </button>
+                            <button type="button" onclick="selectSize(this)"
+                                class="size-card p-5 border border-navy/5 bg-white rounded-sm text-left">
+                                <p class="text-[10px] font-bold text-navy/40 uppercase mb-1">Mid</p>
+                                <p class="text-sm font-medium">21-100</p>
+                            </button>
+                            <button type="button" onclick="selectSize(this)"
+                                class="size-card p-5 border border-navy/5 bg-white rounded-sm text-left">
+                                <p class="text-[10px] font-bold text-navy/40 uppercase mb-1">Large</p>
+                                <p class="text-sm font-medium">101-500</p>
+                            </button>
+                            <button type="button" onclick="selectSize(this)"
+                                class="size-card p-5 border border-navy/5 bg-white rounded-sm text-left">
+                                <p class="text-[10px] font-bold text-navy/40 uppercase mb-1">Enterprise</p>
+                                <p class="text-sm font-medium">500+</p>
+                            </button>
+                        </div>
+                        <input type="hidden" id="orgSizeInput" name="orgSize" required>
+                    </div>
+
+                    <!-- Field 6: Website -->
+                    <div class="space-y-3">
+                        <label for="website"
+                            class="text-[11px] uppercase tracking-[0.2em] font-bold text-navy/60">Website URL
+                            (Optional)</label>
+                        <input type="url" id="website" name="website" placeholder="https://yourorganization.com"
+                            class="w-full px-0 py-4 border-b border-navy/10 bg-transparent text-lg transition-all placeholder:text-navy/20">
+                    </div>
+
+                    <!-- Bottom Nav -->
+                    <div class="pt-12 flex items-center justify-between">
+                        <a href="role-selection.html"
+                            class="text-sm font-bold uppercase tracking-widest text-navy/40 hover:text-navy transition-colors">←
+                            Back</a>
+                        <button type="button" onclick="handleSubmit()"
+                            class="px-10 py-5 bg-gold text-navy rounded-sm font-bold text-sm uppercase tracking-widest hover:bg-gold/90 active:scale-[0.98] transition-all">
+                            Continue →
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        function toggleTag(el) {
+            el.classList.toggle('selected');
+            updateHiddenInputs();
+        }
+
+        function selectSize(el) {
+            document.querySelectorAll('.size-card').forEach(card => card.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('orgSizeInput').value = el.querySelector('.text-sm').innerText;
+            el.classList.remove('error-field');
+        }
+
+        function updateHiddenInputs() {
+            const focusAreas = Array.from(document.querySelectorAll('#focusAreas .selected')).map(btn => btn.innerText);
+            document.getElementById('focusAreasInput').value = focusAreas.join(',');
+
+            const geography = Array.from(document.querySelectorAll('#geography .selected')).map(btn => btn.innerText);
+            document.getElementById('geographyInput').value = geography.join(',');
+
+            // Clear errors if content exists
+            if (focusAreas.length > 0) document.getElementById('focusAreas').classList.remove('error-border');
+            if (geography.length > 0) document.getElementById('geography').classList.remove('error-border');
+        }
+
+        function handleSubmit() {
+            const form = document.getElementById('orgForm');
+            const inputs = form.querySelectorAll('input[required], textarea[required]');
+            let firstError = null;
+
+            // Simple validation
+            inputs.forEach(input => {
+                let value = input.value;
+                let container = input;
+
+                // Handle hidden inputs for tags/cards
+                if (input.type === 'hidden') {
+                    if (input.id === 'orgSizeInput') {
+                        container = document.querySelector('.grid');
+                    } else {
+                        container = input.previousElementSibling;
+                    }
+                }
+
+                if (!value || value.trim() === '') {
+                    container.classList.add('error-field');
+                    if (!firstError) firstError = container;
+                } else {
+                    container.classList.remove('error-field');
+                }
+            });
+
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            // If valid, redirect
+            window.location.href = 'expectations.html';
+        }
+
+        // Real-time error clearing for text inputs
+        document.querySelectorAll('input, textarea').forEach(el => {
+            el.addEventListener('input', () => {
+                if (el.value.trim() !== '') el.classList.remove('error-field');
+            });
+        });
+    </script>
+
+</body>
+
+</html>
