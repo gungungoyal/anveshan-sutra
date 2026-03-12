@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
+            verified: true,
             message: 'Email verified successfully',
             purpose: otpRecord.purpose,
         });

@@ -62,6 +62,13 @@ function AuthPageContent() {
             return () => clearTimeout(timer);
         }
     }, [resendCooldown]);
+    
+    // Auto-verify OTP when 6 digits are reached for "on its own" redirect
+    useEffect(() => {
+        if (otp.length === 6 && step === "otp" && !isLoading) {
+            handleVerifyOtp();
+        }
+    }, [otp, step, isLoading]);
 
     // Role mapping for backend — must match DB values AND dashboard checks
     const roleMap = {

@@ -18,11 +18,6 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
         
-        // Extract session for email and metadata fallback
-        const { data: { session } } = await supabase.auth.getSession();
-        const userEmail = session?.user?.email || 'unknown@example.com';
-        const userName = session?.user?.user_metadata?.name || 'New User';
-
         const {
             userId,
             role,
@@ -41,6 +36,16 @@ export async function POST(request: NextRequest) {
 
         // Validate required fields
         if (!userId) return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+
+        // ✅ FIX: Fetch real user email from Auth via Admin API since session isn't available to service-role client
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userId);
+        if (authError || !authUser.user) {
+            console.error('[save-org-profile] Auth error:', authError);
+            return NextResponse.json({ error: 'User not found in authentication system' }, { status: 404 });
+        }
+
+        const userEmail = authUser.user.email || 'unknown@example.com';
+        const userName = authUser.user.user_metadata?.name || authUser.user.email?.split('@')[0] || 'New User';
         if (!orgName?.trim()) return NextResponse.json({ error: 'Organization name is required' }, { status: 400 });
         if (!description?.trim()) return NextResponse.json({ error: 'Description is required' }, { status: 400 });
         if (!focusAreas || focusAreas.length === 0) return NextResponse.json({ error: 'At least one focus area is required' }, { status: 400 });

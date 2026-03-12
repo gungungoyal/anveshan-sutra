@@ -232,6 +232,16 @@ export default function DashboardPage() {
 
     // Fetch dynamic data
     useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            router.push('/auth');
+            return;
+        }
+
+        if (isAuthenticated && user && !user.profile_complete) {
+            router.push('/org-profile');
+            return;
+        }
+
         if (!user || !isAuthenticated) return;
 
         async function loadDashboard() {
